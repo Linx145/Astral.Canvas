@@ -4,6 +4,11 @@
 #include "Linxc.h"
 #include "option.hpp"
 
+#ifdef MACOS
+#include <Foundation/Foundation.h>
+#include <QuartzCore/CAMetalLayer.h>
+#endif
+
 struct AstralCanvasWindow
 {
 	static bool windowLibraryInitialized;
@@ -18,3 +23,7 @@ struct AstralCanvasWindow
 		glfwDestroyWindow(handle);
 	}
 };
+
+#ifdef MACOS
+CAMetalLayer AstralCanvasWindow_GetMetalLayer(AstralCanvasWindow* window);
+#endif

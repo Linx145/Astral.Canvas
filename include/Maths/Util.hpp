@@ -108,7 +108,7 @@ namespace Maths
 	}
 	float inline ModuloFloat(float A, float B)
 	{
-		i32 n = floorl(A / B);
+		i32 n = (i32)floorl(A / B);
 		return A - (n * B);
 	}
 	float inline WrapAngle(float angle)

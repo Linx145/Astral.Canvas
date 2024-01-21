@@ -33,7 +33,7 @@ namespace Maths
         }
         inline Vec2 operator-()
         {
-            return Vec2(-X, -Y);
+            return Vec2((float)(-X), (float)(-Y));
         }
     };
 }
