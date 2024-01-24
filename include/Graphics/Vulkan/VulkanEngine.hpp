@@ -4,6 +4,7 @@
 #define ASTRAL_VK_H
 #include <Linxc.h>
 #include <vulkan/vulkan.h>
+#include <Windowing/Window.hpp>
 #include <GLFW/glfw3.h>
 #include "vector.hpp"
 #include "array.hpp"
@@ -17,13 +18,13 @@ extern VkInstance AstralCanvasVk_Instance;
 
 VkBool32 AstralCanvasVk_ErrorCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
-bool AstralCanvasVk_Initialize(IAllocator* allocator, collections::Array<const char*> validationLayersToUse, string appName, string engineName, u32 appVersion, u32 engineVersion);
+bool AstralCanvasVk_Initialize(IAllocator* allocator, collections::Array<const char*> validationLayersToUse, collections::Array<const char*> requiredExtensions, AstralCanvasWindow* window);
 
-collections::vector<const char*> AstralCanvasVk_GetDefaultExtensions(IAllocator *allocator);
+collections::vector<const char*> AstralCanvasVk_GetDefaultInstanceExtensions(IAllocator *allocator);
 
 bool AstralCanvasVk_CreateInstance(IAllocator* allocator, collections::Array<const char*> validationLayersToUse, const char* appName, const char* engineName, u32 applicationVersion, u32 engineVersion, u32 vulkanVersion = VK_API_VERSION_1_3);
 
 bool AstralCanvasVk_CreateDebugMessenger();
 
-bool AstralCanvasVk_Deinitialize(IAllocator* allocator);
+void AstralCanvasVk_Deinitialize(IAllocator *allocator, AstralCanvasWindow *window);
 #endif

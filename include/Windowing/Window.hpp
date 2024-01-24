@@ -15,6 +15,8 @@ struct AstralCanvasWindow
 	GLFWwindow* handle;
 	Maths::Point2 resolution;
 	Maths::Point2 position;
+	
+	void *windowSurfaceHandle;
 
 	AstralCanvasWindow();
 	static option<AstralCanvasWindow> init(i32 width, i32 height, i32 fps, bool resizeable = true);

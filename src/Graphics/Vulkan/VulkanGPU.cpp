@@ -14,28 +14,28 @@ option<AstralVulkanGPU> AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstan
 
 	IAllocator cAllocator = GetCAllocator();
 
-	Array<AstralVulkanGPU> gpus = Array<AstralVulkanGPU>();
+	Array<AstralVulkanGPU> gpus = Array<AstralVulkanGPU>(&cAllocator, deviceCount);
 	Array<VkPhysicalDevice> physicalDevices = Array<VkPhysicalDevice>(&cAllocator, deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDevices.data);
 
 	for (usize i = 0; i < physicalDevices.length; i++)
 	{
-		u32 flagsCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices.data[i], &flagsCount, NULL);
+		u32 propertiesCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices.data[i], &propertiesCount, NULL);
 
 		//need to allocate with regular allocator just in case we are going to be persistent
-		Array<VkQueueFamilyProperties> allFamilyProperties = Array<VkQueueFamilyProperties>(allocator);
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices.data[i], &flagsCount, allFamilyProperties.data);
+		Array<VkQueueFamilyProperties> allFamilyProperties = Array<VkQueueFamilyProperties>(allocator, propertiesCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices.data[i], &propertiesCount, allFamilyProperties.data);
 
 		gpus.data[i] = AstralVulkanGPU(requiredExtensions, physicalDevices.data[i], AstralVulkanQueueProperties(allocator, allFamilyProperties, windowSurface));
 	}
 	physicalDevices.deinit();
 
-	u32 maxScore = 0;
+	i32 maxScore = -1;
 	u32 bestGPU = -1;
 	for (u32 i = 0; i < gpus.length; i++)
 	{
-		u32 newScore = AstralCanvasVk_GetGPUScore(&gpus.data[i], windowSurface);
+		i32 newScore = AstralCanvasVk_GetGPUScore(&gpus.data[i], windowSurface);
 		if (newScore > maxScore)
 		{
 			bestGPU = i;
@@ -44,9 +44,17 @@ option<AstralVulkanGPU> AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstan
 
 	if (bestGPU == -1)
 	{
+		for (usize i = 0; i < gpus.length; i++)
+		{
+			gpus.data[i].queueInfo.deinit();
+		}
+		gpus.deinit();
 		return option<AstralVulkanGPU>();
 	}
 	AstralVulkanGPU result = gpus.data[bestGPU];
+
+	AstralCanvasVk_CreateLogicalDevice(&result, &cAllocator);
+
 	for (usize i = 0; i < gpus.length; i++)
 	{
 		if (i != bestGPU)
@@ -59,7 +67,7 @@ option<AstralVulkanGPU> AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstan
 	}
 	gpus.deinit();
 
-	return result;
+	return option<AstralVulkanGPU>(result);
 }
 u32 AstralCanvasVk_GetGPUScore(AstralVulkanGPU* gpu, VkSurfaceKHR windowSurface)
 {
@@ -123,24 +131,29 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* alloca
 	collections::vector<VkDeviceQueueCreateInfo> createInfos = collections::vector<VkDeviceQueueCreateInfo>(allocator);
 	float queuePriorities = 1.0f;
 
-	VkDeviceQueueCreateInfo createInfo;
+	VkDeviceQueueCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	createInfo.queueCount = 1;
 	createInfo.pQueuePriorities = &queuePriorities;
+	createInfo.pNext = NULL;
+	createInfo.flags = NULL;
 
 	i32 graphicsQueueIndex = AstralCanvasVk_GetQueue(&gpu->queueInfo, gpu->physicalDevice, AstralVulkanQueue_Graphics);
+	printf("Graphics queue: %i\n", graphicsQueueIndex);
 	createInfo.queueFamilyIndex = graphicsQueueIndex;
 	createInfos.Add(createInfo);
 	
 	i32 transferQueueIndex = AstralCanvasVk_GetQueue(&gpu->queueInfo, gpu->physicalDevice, AstralVulkanQueue_Transfer);
+	printf("Transfer queue: %i\n", transferQueueIndex);
 	createInfo.queueFamilyIndex = transferQueueIndex;
 	createInfos.Add(createInfo);
 	
 	i32 computeQueueIndex = AstralCanvasVk_GetQueue(&gpu->queueInfo, gpu->physicalDevice, AstralVulkanQueue_Compute);
+	printf("Compute queue: %i\n", computeQueueIndex);
 	createInfo.queueFamilyIndex = computeQueueIndex;
 	createInfos.Add(createInfo);
 
-	VkDeviceCreateInfo deviceCreateInfo;
+	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	deviceCreateInfo.queueCreateInfoCount = (u32)createInfos.count;
 	deviceCreateInfo.pQueueCreateInfos = createInfos.ptr;
@@ -148,6 +161,7 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* alloca
 	deviceCreateInfo.ppEnabledExtensionNames = gpu->requiredExtensions.data;
 	deviceCreateInfo.enabledLayerCount = 0;
 	deviceCreateInfo.ppEnabledLayerNames = NULL;
+	deviceCreateInfo.pNext = NULL;
 
 	if (vkCreateDevice(gpu->physicalDevice, &deviceCreateInfo, NULL, &gpu->logicalDevice) != VK_SUCCESS)
 	{

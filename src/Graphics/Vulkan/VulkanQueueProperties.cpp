@@ -5,7 +5,7 @@ i32 AstralCanvasVk_GetQueue(AstralVulkanQueueProperties *properties, VkPhysicalD
     switch (type)
     {
         case AstralVulkanQueue_Graphics:
-            return AstralCanvasVk_GetGraphicsQueue(properties, physicalDevice, false);
+            return AstralCanvasVk_GetGraphicsQueue(properties, physicalDevice, true);
         case AstralVulkanQueue_Transfer:
             return AstralCanvasVk_GetTransferQueue(properties, physicalDevice);
         case AstralVulkanQueue_Compute:

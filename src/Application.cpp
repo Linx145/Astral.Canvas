@@ -48,8 +48,10 @@ bool AstralCanvasApplication::FinalizeGraphicsBackend()
 	#if NDEBUG
 	collections::Array<const char *> validationLayersToUse = collections::Array<const char *>();
 	#endif
-	
-	AstralCanvasVk_Initialize(this->allocator, validationLayersToUse, this->appName, this->engineName, this->appVersion, this->engineVersion);
+
+	collections::Array<const char *> requiredExtensions = collections::Array<const char *>();
+
+	AstralCanvasVk_Initialize(this->allocator, validationLayersToUse, requiredExtensions, &windows.ptr[0]);
 	//AstralCanvasWgpu_Initialize(this->allocator, &this->windows.ptr[0], Array<AstralCanvas_GraphicsFeatures>(), Array<AstralCanvas_GraphicsFeatures>());
 	return true;
 }
@@ -79,5 +81,6 @@ void AstralCanvasApplication::Run(AstralCanvas_Update updateFunc, AstralCanvas_I
 	{
 		deinitFunc();
 	}
+	AstralCanvasVk_Deinitialize(allocator, &windows.ptr[0]);
 	//AstralCanvasWgpu_Deinit();
 }

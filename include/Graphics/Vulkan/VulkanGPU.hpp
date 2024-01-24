@@ -68,6 +68,14 @@ struct AstralVulkanGPU
         DedicatedComputeQueue = AstralVulkanCommandQueue();
         DedicatedTransferQueue = AstralVulkanCommandQueue();
     }
+    inline void deinit()
+    {
+        if (logicalDevice != NULL)
+        {
+            vkDestroyDevice(logicalDevice, NULL);
+        }
+        requiredExtensions.deinit();
+    }
 };
 option<AstralVulkanGPU> AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstance instance, VkSurfaceKHR windowSurface, collections::Array<const char*> requiredExtensions);
 bool AstralCanvasVk_GPUExtensionsSupported(AstralVulkanGPU *gpu);

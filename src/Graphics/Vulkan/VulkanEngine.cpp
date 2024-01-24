@@ -1,11 +1,14 @@
 #include <Graphics/Vulkan/VulkanEngine.hpp>
+#include <Graphics/Vulkan/VulkanGPU.hpp>
 
 using namespace collections;
 
 VkDebugUtilsMessengerCreateInfoEXT AstralCanvasVk_debugCreateInfo;
 VkDebugUtilsMessengerEXT AstralCanvasVk_debugMessenger;
-bool AstralCanvasVk_validationLayers = false;
+bool AstralCanvasVk_validationLayers = true;
+
 VkInstance AstralCanvasVk_Instance;
+AstralVulkanGPU AstralCanvasVk_GPU;
 
 VkBool32 AstralCanvasVk_ErrorCallback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -24,7 +27,7 @@ VkBool32 AstralCanvasVk_ErrorCallback(
 	return VK_FALSE;
 }
 
-collections::vector<const char*> AstralCanvasVk_GetDefaultExtensions(IAllocator* allocator)
+collections::vector<const char*> AstralCanvasVk_GetDefaultInstanceExtensions(IAllocator* allocator)
 {
 	u32 count = 0;
 	const char** ptrs = glfwGetRequiredInstanceExtensions(&count);
@@ -39,12 +42,27 @@ collections::vector<const char*> AstralCanvasVk_GetDefaultExtensions(IAllocator*
 	return result;
 }
 
-bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validationLayersToUse, string appName, string engineName, u32 appVersion, u32 engineVersion)
+bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validationLayersToUse, Array<const char*> requiredExtensions, AstralCanvasWindow* window)
 {
-	if (!AstralCanvasVk_CreateInstance(allocator, validationLayersToUse, appName.buffer, engineName.buffer, appVersion, engineVersion))
+	if (!AstralCanvasVk_CreateInstance(allocator, validationLayersToUse, "", "", 0, 0))
 	{
 		return false;
 	}
+	printf("Created vulkan instance\n");
+
+	if (glfwCreateWindowSurface(AstralCanvasVk_Instance, window->handle, NULL, (VkSurfaceKHR*)&window->windowSurfaceHandle) != VK_SUCCESS)
+	{
+		printf("Failed to create window surface!\n");
+		return false;
+	}
+	printf("Created window surface\n");
+	option<AstralVulkanGPU> gpu = AstralCanvasVk_SelectGPU(allocator, AstralCanvasVk_Instance, (VkSurfaceKHR)window->windowSurfaceHandle, requiredExtensions);
+	if (!gpu.present)
+	{
+		return false;
+	}
+	AstralCanvasVk_GPU = gpu.value;
+	printf("Created GPU interface\n");
 }
 
 bool AstralCanvasVk_CreateInstance(IAllocator* allocator, Array<const char*> validationLayersToUse, const char* appName, const char* engineName, u32 applicationVersion, u32 engineVersion, u32 vulkanVersion)
@@ -58,7 +76,7 @@ bool AstralCanvasVk_CreateInstance(IAllocator* allocator, Array<const char*> val
 	appInfo.applicationVersion = applicationVersion;
 	appInfo.pNext = NULL;
 
-	collections::vector<const char*> extensions = AstralCanvasVk_GetDefaultExtensions(allocator);
+	collections::vector<const char*> extensions = AstralCanvasVk_GetDefaultInstanceExtensions(allocator);
 	if (AstralCanvasVk_validationLayers)
 	{
 		extensions.Add(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -133,8 +151,12 @@ bool AstralCanvasVk_CreateDebugMessenger()
 	}
 }
 
-bool AstralCanvasVk_Deinitialize(IAllocator* allocator)
+void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvasWindow* window)
 {
+	AstralCanvasVk_GPU.deinit();
+
+	vkDestroySurfaceKHR(AstralCanvasVk_Instance, (VkSurfaceKHR)window->windowSurfaceHandle, NULL);
+
 	if (AstralCanvasVk_validationLayers)
 	{
 		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(AstralCanvasVk_Instance, "vkDestroyDebugUtilsMessengerEXT");
@@ -142,7 +164,9 @@ bool AstralCanvasVk_Deinitialize(IAllocator* allocator)
 			func(AstralCanvasVk_Instance, AstralCanvasVk_debugMessenger, NULL);
 		}
 	}
-	vkDestroyInstance(AstralCanvasVk_Instance, NULL);
 
-	return true;
+	if (AstralCanvasVk_Instance != NULL)
+	{
+		vkDestroyInstance(AstralCanvasVk_Instance, NULL);
+	}
 }

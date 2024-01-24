@@ -52,6 +52,7 @@ struct AstralVulkanQueueProperties
     }
     inline void deinit()
     {
+        queueCreationResults.deinit();
         all.deinit();
     }
 };
