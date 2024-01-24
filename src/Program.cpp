@@ -1,39 +1,45 @@
 #include <Application.hpp>
 #include <allocators.hpp>
+#include "ArenaAllocator.hpp"
+#include "Json.hpp"
+#include "time.h"
+#include "Graphics/Shader.hpp"
 
-extern "C"
+AstralCanvasShader shader;
+
+void Initialize()
 {
-	i32 main()
+	/*IAllocator cAllocator = GetCAllocator();
+	string fileContents = io::ReadFile(&cAllocator, "C:/Users/Linus/source/repos/SomnialGametech/TestContent/Triangle.shaderobj");
+	if (fileContents.buffer != NULL)
 	{
-		IAllocator defaultAllocator = GetCAllocator();
-		string appName = string(&defaultAllocator, "test");
-		string engineName = string(&defaultAllocator, "AstralGametech");
-		AstralCanvasApplication* appPtr = AstralCanvasApplication::init(&defaultAllocator, appName, engineName, 0, 0);
-		appPtr->AddWindow(1920, 1080, -1, true);
-		appPtr->Run(NULL, NULL);
-
-		appName.deinit();
-		engineName.deinit();
-		/*GLFWwindow* handle;
-		if (!glfwInit())
+		i32 errorCode = AstralCanvas_CreateShaderFromString(&cAllocator, AstralCanvasShader_VertexFragment, fileContents, &shader);
+		if (errorCode != 0)
 		{
-			return -1;
+			fprintf(stderr, "Failed to load shader: Error code %i\n", errorCode);
 		}
-
-		glfwWindowHint(GLFW_NO_API, GL_TRUE);
-		handle = glfwCreateWindow(1920, 1080, "Hello Window", NULL, NULL);
-		if (!handle)
-		{
-			glfwTerminate();
-			return -1;
-		}
-
-		while (!glfwWindowShouldClose(handle))
-		{
-			glfwPollEvents();
-		}
-
-		glfwTerminate();*/
-		return 0;
+		else printf("Created shader successfully\n");
 	}
+	else
+		fprintf(stderr, "Failed to load file\n");
+
+	fileContents.deinit();*/
+}
+void Deinitialize()
+{
+	shader.deinit();
+}
+
+i32 main()
+{
+	IAllocator defaultAllocator = GetCAllocator();
+	string appName = string(&defaultAllocator, "test");
+	string engineName = string(&defaultAllocator, "AstralGametech");
+	AstralCanvasApplication* appPtr = AstralCanvasApplication::init(&defaultAllocator, appName, engineName, 0, 0);
+	appPtr->AddWindow(1920, 1080, -1, true);
+	appPtr->Run(NULL, &Initialize, &Deinitialize);
+
+	appName.deinit();
+	engineName.deinit();
+	return 0;
 }

@@ -1,3 +1,5 @@
+VULKAN_SDK = os.getenv("VULKAN_SDK")
+
 project "Astral.Canvas"
     kind "ConsoleApp"
     language "C++"
@@ -9,9 +11,11 @@ project "Astral.Canvas"
         "include", 
         "../dependencies/glfw/include", 
         "../Somnial.Core/include",
-        "../dependencies/wgpu/include"
+        "%{VULKAN_SDK}/Include",
+        -- "../dependencies/wgpu/include",
+        "../Somnial.Json"
     }
-    links {"GLFW", "../dependencies/wgpu/Windows/wgpu_native.dll.lib"}
+    links {"GLFW", "%{VULKAN_SDK}/Lib/vulkan-1.lib"}--"../dependencies/wgpu/Windows/wgpu_native.dll.lib"
 
     files { 
         --Canvas stuff
@@ -19,6 +23,10 @@ project "Astral.Canvas"
         "src/**.cpp", 
         "include/**.h", 
         "include/**.hpp",
+        "%{VULKAN_SDK}/Include/*.h",
+
+        "../Somnial.Json/Json.cpp",
+        "../Somnial.Json/Json.hpp"
     }
 
     filter "platforms:Windows"

@@ -1,3 +1,5 @@
+#ifdef ASTRALCANVAS_WGPU
+
 #include "Graphics/WGPU/WgpuEngine.hpp"
 #include "ErrorHandling.hpp"
 #include "io.hpp"
@@ -155,7 +157,7 @@ void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvasWindow* wind
     vector<WGPUFeatureName> enabledWGPUFeatures = vector<WGPUFeatureName>(&cAllocator);
     engineInstance.enabledFeatures = vector<AstralCanvas_GraphicsFeatures>(allocator);
 
-    WGPUFeatureName allSupportedFeatures[64] = {0};
+    WGPUFeatureName allSupportedFeatures[64];
     usize featureCount = wgpuAdapterEnumerateFeatures(engineInstance.adapter, allSupportedFeatures);
 
     for (usize i = 0; i < featureCount; i++)
@@ -224,15 +226,6 @@ void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvasWindow* wind
     //'resize' it so we can create the surface
     AstralCanvasWgpu_ResizeWindow(window);
 }
-WGPUShaderModule AstralCanvasWgpu_LoadShaderFromFile(IAllocator *allocator, string fileName, string shaderInternalName)
-{
-    IAllocator cAllocator = GetCAllocator();
-    string fileContents = io::ReadFile(&cAllocator, fileName.buffer);
-    if (fileContents.buffer == NULL)
-    {
-        return NULL;
-    }
-}
 
 void AstralCanvasWgpu_ResizeWindow(AstralCanvasWindow *window)
 {
@@ -267,4 +260,7 @@ void AstralCanvasWgpu_Deinit()
         wgpuSurfaceRelease(engineInstance.surface);
     if (engineInstance.instance != NULL)
         wgpuInstanceRelease(engineInstance.instance);
+    printf("Deinit'd WGPU\n");
 }
+
+#endif

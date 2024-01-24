@@ -1,5 +1,6 @@
 #include "Application.hpp"
 #include "Graphics/WGPU/WgpuEngine.hpp"
+#include "Graphics/Vulkan/VulkanEngine.hpp"
 #include "array.hpp"
 using namespace collections;
 
@@ -40,12 +41,25 @@ bool AstralCanvasApplication::AddWindow(i32 width, i32 height, i32 fps, bool res
 }
 bool AstralCanvasApplication::FinalizeGraphicsBackend()
 {
-	AstralCanvasWgpu_Initialize(this->allocator, &this->windows.ptr[0], Array<AstralCanvas_GraphicsFeatures>(), Array<AstralCanvas_GraphicsFeatures>());
+	#if DEBUG
+	collections::Array<const char *> validationLayersToUse = collections::Array<const char *>(this->allocator, 1);
+	validationLayersToUse.data[0] = "VK_LAYER_KHRONOS_validation";
+	#endif
+	#if NDEBUG
+	collections::Array<const char *> validationLayersToUse = collections::Array<const char *>();
+	#endif
+	
+	AstralCanvasVk_Initialize(this->allocator, validationLayersToUse, this->appName, this->engineName, this->appVersion, this->engineVersion);
+	//AstralCanvasWgpu_Initialize(this->allocator, &this->windows.ptr[0], Array<AstralCanvas_GraphicsFeatures>(), Array<AstralCanvas_GraphicsFeatures>());
 	return true;
 }
-void AstralCanvasApplication::Run(AstralCanvas_Update updateFunc, AstralCanvas_Init initFunc)
+void AstralCanvasApplication::Run(AstralCanvas_Update updateFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc)
 {
 	FinalizeGraphicsBackend();
+	if (initFunc != NULL)
+	{
+		initFunc();
+	}
 
 	bool shouldStop = false;
 	while (!shouldStop)
@@ -61,5 +75,9 @@ void AstralCanvasApplication::Run(AstralCanvas_Update updateFunc, AstralCanvas_I
 
 		glfwPollEvents();
 	}
-	AstralCanvasWgpu_Deinit();
+	if (deinitFunc != NULL)
+	{
+		deinitFunc();
+	}
+	//AstralCanvasWgpu_Deinit();
 }

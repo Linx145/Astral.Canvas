@@ -1,4 +1,6 @@
 #pragma once
+
+#ifdef ASTRALCANVAS_WGPU
 #include "wgpu.h"
 #include "webgpu-headers/webgpu.h"
 #include "Windowing/Window.h"
@@ -27,8 +29,8 @@ void AstralCanvasWgpu_HandleRequestedDevice(WGPURequestDeviceStatus status, WGPU
 
 AstralCanvasWgpu_Engine* AstralCanvasWgpu_GetEngineInstance();
 void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvasWindow* window, collections::Array<AstralCanvas_GraphicsFeatures> requiredFeatures, collections::Array<AstralCanvas_GraphicsFeatures> optionalFeatures);
-WGPUShaderModule AstralCanvasWgpu_LoadShaderFromFile(IAllocator *allocator, string fileName, string shaderInternalName);
 
 void AstralCanvasWgpu_ResizeWindow(AstralCanvasWindow *window);
 
 void AstralCanvasWgpu_Deinit();
+#endif
