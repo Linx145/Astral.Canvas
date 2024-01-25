@@ -5,7 +5,7 @@
 
 #include "array.hpp"
 
-struct AstralVulkanSwapchainSupportDetails
+struct AstralVkSwapchainSupportDetails
 {
     VkSurfaceCapabilitiesKHR capabilities;
     collections::Array<VkSurfaceFormatKHR> supportedSurfaceFormats;
@@ -18,4 +18,4 @@ struct AstralVulkanSwapchainSupportDetails
     }
 };
 
-AstralVulkanSwapchainSupportDetails AstralCanvasVk_QuerySwapchainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR windowSurface, IAllocator *allocator);
+AstralVkSwapchainSupportDetails AstralCanvasVk_QuerySwapchainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR windowSurface, IAllocator *allocator);

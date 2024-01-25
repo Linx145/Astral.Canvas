@@ -11,11 +11,6 @@
 #include "string.hpp"
 #include "ErrorHandling.hpp"
 
-extern VkDebugUtilsMessengerCreateInfoEXT AstralCanvasVk_debugCreateInfo;
-extern VkDebugUtilsMessengerEXT AstralCanvasVk_debugMessenger;
-extern bool AstralCanvasVk_validationLayers;
-extern VkInstance AstralCanvasVk_Instance;
-
 VkBool32 AstralCanvasVk_ErrorCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
 bool AstralCanvasVk_Initialize(IAllocator* allocator, collections::Array<const char*> validationLayersToUse, collections::Array<const char*> requiredExtensions, AstralCanvasWindow* window);

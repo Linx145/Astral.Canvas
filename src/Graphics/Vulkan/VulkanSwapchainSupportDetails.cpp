@@ -2,9 +2,9 @@
 
 using namespace collections;
 
-AstralVulkanSwapchainSupportDetails AstralCanvasVk_QuerySwapchainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR windowSurface, IAllocator* allocator)
+AstralVkSwapchainSupportDetails AstralCanvasVk_QuerySwapchainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR windowSurface, IAllocator* allocator)
 {
-    AstralVulkanSwapchainSupportDetails details;
+    AstralVkSwapchainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, windowSurface, &details.capabilities);
 

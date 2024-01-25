@@ -31,6 +31,7 @@ project "Astral.Canvas"
 
     filter "platforms:Windows"
 		systemversion "latest"
+        defines { "ASTRALCANVAS_VULKAN" }
 
     filter "configurations:Debug"
         defines { "DEBUG" }

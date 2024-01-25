@@ -84,7 +84,7 @@ u32 AstralCanvasVk_GetGPUScore(AstralVulkanGPU* gpu, VkSurfaceKHR windowSurface)
 	}
 
 	IAllocator cAllocator = GetCAllocator();
-	AstralVulkanSwapchainSupportDetails details = AstralCanvasVk_QuerySwapchainSupport(gpu->physicalDevice, windowSurface, &cAllocator);
+	AstralVkSwapchainSupportDetails details = AstralCanvasVk_QuerySwapchainSupport(gpu->physicalDevice, windowSurface, &cAllocator);
 	bool swapchainSupports = details.presentModes.length > 0 && details.supportedSurfaceFormats.length > 0;
 	details.deinit();
 	if (!swapchainSupports) //the gpu doesn't support the swapchain
@@ -167,31 +167,56 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* alloca
 	{
 		return false;
 	}
+	bool encounteredErrorCreatingCommandPools;
 
 	for (usize i = 0; i < gpu->queueInfo.queueCreationResults.count; i++)
 	{
 		AstralVulkanQueueResult *queueData = gpu->queueInfo.queueCreationResults.Get(i);
 		VkQueue queue;
 		vkGetDeviceQueue(gpu->logicalDevice, queueData->queueID, queueData->queueIndex, &queue);
+
+		VkCommandPool commandPool;
+		VkCommandPoolCreateInfo commandPoolCreateInfo = {};
+		commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+		commandPoolCreateInfo.queueFamilyIndex = queueData->queueID;
+		commandPoolCreateInfo.pNext = NULL;
+
+		if (vkCreateCommandPool(gpu->logicalDevice, &commandPoolCreateInfo, NULL, &commandPool) != VK_SUCCESS)
+		{
+			encounteredErrorCreatingCommandPools = true;
+		}
+
+		VkFence fence;
+		VkFenceCreateInfo fenceCreateInfo = {};
+		fenceCreateInfo.flags = 0;
+		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+		if (vkCreateFence(gpu->logicalDevice, &fenceCreateInfo, NULL, &fence))
+		{
+			encounteredErrorCreatingCommandPools = true;
+		}
 		switch (queueData->type)
 		{
 			case AstralVulkanQueue_Compute:
 			{
-				gpu->DedicatedComputeQueue = AstralVulkanCommandQueue(queue);
+				gpu->DedicatedComputeQueue = AstralCanvasVkCommandQueue(gpu->logicalDevice, queue, fence, commandPool);
 				break;
 			}
 			case AstralVulkanQueue_Transfer:
 			{
-				gpu->DedicatedTransferQueue = AstralVulkanCommandQueue(queue);
+				gpu->DedicatedTransferQueue = AstralCanvasVkCommandQueue(gpu->logicalDevice, queue, fence, commandPool);
 				break;
 			}
 			default:
 			{
-				gpu->DedicatedGraphicsQueue = AstralVulkanCommandQueue(queue);
+				gpu->DedicatedGraphicsQueue = AstralCanvasVkCommandQueue(gpu->logicalDevice, queue, fence, commandPool);
 				break;
 			}
 		}
 	}
 
 	createInfos.deinit();
+
+	return !encounteredErrorCreatingCommandPools;
 }

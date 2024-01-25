@@ -9,24 +9,47 @@
 #include "string.hpp"
 #include "threading.hpp"
 
-struct AstralVulkanCommandQueue
+struct AstralCanvasVkCommandQueue
 {
-    Threading::Mutex mutex;
-    VkQueue queue;
+    VkDevice logicalDevice;
 
-    inline AstralVulkanCommandQueue()
+    VkQueue queue;
+    Threading::Mutex queueMutex;
+    VkFence queueFence;
+
+    VkCommandPool transientCommandPool;
+    Threading::Mutex commandPoolMutex;
+
+    inline AstralCanvasVkCommandQueue()
     {
+        logicalDevice = NULL;
         queue = NULL;
-        mutex = Threading::Mutex();
+        queueMutex = Threading::Mutex();
+        transientCommandPool = NULL;
+        commandPoolMutex = Threading::Mutex();
+        queueFence = NULL;
     }
-    inline AstralVulkanCommandQueue(VkQueue thisQueue)
+    inline AstralCanvasVkCommandQueue(VkDevice thisLogicalDevice, VkQueue thisQueue, VkFence thisQueueFence, VkCommandPool thisTransientCommandPool)
     {
+        logicalDevice = thisLogicalDevice;
         queue = thisQueue;
-        mutex = Threading::Mutex::init();
+        queueFence = thisQueueFence;
+        transientCommandPool = thisTransientCommandPool;
+        queueMutex = Threading::Mutex::init();
+        commandPoolMutex = Threading::Mutex::init();
     }
     inline void deinit()
     {
-        mutex.deinit();
+        if (queueFence != NULL)
+        {
+            vkDestroyFence(logicalDevice, queueFence, NULL);
+        }
+        if (transientCommandPool != NULL)
+        {
+            vkDestroyCommandPool(logicalDevice, transientCommandPool, NULL);
+        }
+        queueMutex.deinit();
+        commandPoolMutex.deinit();
     }
 };
 
@@ -39,9 +62,9 @@ struct AstralVulkanGPU
     VkPhysicalDeviceProperties properties;
     VkPhysicalDeviceFeatures features;
 
-    AstralVulkanCommandQueue DedicatedGraphicsQueue;
-    AstralVulkanCommandQueue DedicatedComputeQueue;
-    AstralVulkanCommandQueue DedicatedTransferQueue;
+    AstralCanvasVkCommandQueue DedicatedGraphicsQueue;
+    AstralCanvasVkCommandQueue DedicatedComputeQueue;
+    AstralCanvasVkCommandQueue DedicatedTransferQueue;
 
     inline AstralVulkanGPU()
     {
@@ -51,9 +74,9 @@ struct AstralVulkanGPU
         queueInfo = AstralVulkanQueueProperties();
         properties = {};
         features = {};
-        DedicatedGraphicsQueue = AstralVulkanCommandQueue();
-        DedicatedComputeQueue = AstralVulkanCommandQueue();
-        DedicatedTransferQueue = AstralVulkanCommandQueue();
+        DedicatedGraphicsQueue = AstralCanvasVkCommandQueue();
+        DedicatedComputeQueue = AstralCanvasVkCommandQueue();
+        DedicatedTransferQueue = AstralCanvasVkCommandQueue();
     }
     inline AstralVulkanGPU(collections::Array<const char *> thisRequiredExtensions, VkPhysicalDevice thisPhysicalDevice, AstralVulkanQueueProperties thisQueueInfos)
     {
@@ -64,12 +87,15 @@ struct AstralVulkanGPU
         vkGetPhysicalDeviceFeatures(thisPhysicalDevice, &this->features);
         vkGetPhysicalDeviceProperties(thisPhysicalDevice, &this->properties);
 
-        DedicatedGraphicsQueue = AstralVulkanCommandQueue();
-        DedicatedComputeQueue = AstralVulkanCommandQueue();
-        DedicatedTransferQueue = AstralVulkanCommandQueue();
+        DedicatedGraphicsQueue = AstralCanvasVkCommandQueue();
+        DedicatedComputeQueue = AstralCanvasVkCommandQueue();
+        DedicatedTransferQueue = AstralCanvasVkCommandQueue();
     }
     inline void deinit()
     {
+        DedicatedGraphicsQueue.deinit();
+        DedicatedComputeQueue.deinit();
+        DedicatedTransferQueue.deinit();
         if (logicalDevice != NULL)
         {
             vkDestroyDevice(logicalDevice, NULL);

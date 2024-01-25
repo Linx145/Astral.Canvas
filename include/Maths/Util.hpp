@@ -75,6 +75,18 @@ namespace Maths
 		}
 		return value;
 	}
+	i32 inline Clamp(i32 min, i32 max, i32 value)
+	{
+		if (value < min)
+		{
+			return min;
+		}
+		else if (value > max)
+		{
+			return max;
+		}
+		return value;
+	}
 	float inline Distance(float A, float B)
 	{
 		return fabsf(B - A);
