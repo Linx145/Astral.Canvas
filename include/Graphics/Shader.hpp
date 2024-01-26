@@ -4,18 +4,22 @@
 #include "array.hpp"
 #include "Graphics/ShaderResources.hpp"
 
-struct AstralCanvasShader
+namespace AstralCanvas
 {
-    AstralCanvas_ShaderType shaderType;
-    AstralCanvasShaderModule shaderModule1;
-    AstralCanvasShaderModule shaderModule2;
-    AstralCanvasPipelineLayout shaderPipelineLayout1;
-    AstralCanvasPipelineLayout shaderPipelineLayout2;
-    AstralCanvasShaderVariables shaderVariables;
+    struct Shader
+    {
+        ShaderType shaderType;
+        ShaderModule shaderModule1;
+        ShaderModule shaderModule2;
+        PipelineLayout shaderPipelineLayout1;
+        PipelineLayout shaderPipelineLayout2;
+        ShaderVariables shaderVariables;
 
-    AstralCanvasShader();
-    AstralCanvasShader(IAllocator *allocator, AstralCanvas_ShaderType type);
-    void deinit();
-};
+        Shader();
+        Shader(IAllocator *allocator, ShaderType type);
+        void deinit();
+    };
+    i32 CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader* result);
+}
 
-i32 AstralCanvas_CreateShaderFromString(IAllocator *allocator, AstralCanvas_ShaderType shaderType, string jsonString, AstralCanvasShader* result);
+//i32 AstralCanvas_CreateShaderFromString(IAllocator *allocator, AstralCanvas_ShaderType shaderType, string jsonString, AstralCanvasShader* result);

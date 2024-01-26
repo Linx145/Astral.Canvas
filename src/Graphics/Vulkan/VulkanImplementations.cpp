@@ -2,6 +2,8 @@
 #include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 #include "Graphics/Vulkan/VulkanGPU.hpp"
 
+using namespace AstralCanvas;
+
 VkBuffer AstralCanvasVk_CreateResourceBuffer(AstralVulkanGPU *gpu, usize size, VkBufferUsageFlags usageFlags)
 {
     VkBufferCreateInfo createInfo = {};

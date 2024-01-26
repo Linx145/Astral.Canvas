@@ -8,89 +8,99 @@
 
 #include "ErrorHandling.hpp"
 
-SamplerState AstralCanvas_SamplerState_PointClamp = {};
-SamplerState AstralCanvas_SamplerState_LinearClamp = {};
-SamplerState AstralCanvas_SamplerState_PointWrap = {};
-SamplerState AstralCanvas_SamplerState_LinearWrap = {};
-
-SamplerState AstralCanvas_ConstructSamplerState(SampleMode thisSampleMode, RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel)
+namespace AstralCanvas
 {
-    SamplerState samplerState = {};
+    SamplerState AstralCanvas_SamplerState_PointClamp = {};
+    SamplerState AstralCanvas_SamplerState_LinearClamp = {};
+    SamplerState AstralCanvas_SamplerState_PointWrap = {};
+    SamplerState AstralCanvas_SamplerState_LinearWrap = {};
 
-    samplerState.backend = AstralCanvas_GetActiveBackend();
-    samplerState.sampleMode = thisSampleMode;
-    samplerState.repeatMode = thisRepeatMode;
-    samplerState.anisotropic = isAnisotropic;
-    samplerState.anisotropyLevel = thisAnisotropyLevel;
-    samplerState.handle = NULL;
-    samplerState.constructed = false;
-
-    switch (samplerState.backend)
+    SamplerState::SamplerState()
     {
-        #ifdef ASTRALCANVAS_VULKAN
-        AstralCanvas_Vulkan:
-        {
-            AstralCanvasVk_CreateSamplerState(AstralCanvasVk_GetCurrentGPU(), &samplerState);
-            break;
-        }
-        #endif
-        default:
-        {
-            THROW_ERR("Unimplemented backend");
-            break;
-        }
+        this->backend = Backend_Vulkan;
+        this->constructed = false;
+        this->handle = NULL;
+        this->sampleMode = SampleMode_Point;
+        this->repeatMode = RepeatMode_Repeat;
+        this->anisotropic = false;
+        this->anisotropyLevel = 0.0f;
     }
-    return samplerState;
-}
-void AstralCanvas_DestroySamplerState(SamplerState* samplerState)
-{
-    if (samplerState->constructed)
+    SamplerState::SamplerState(SampleMode thisSampleMode, RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel)
     {
-        switch (samplerState->backend)
+        this->backend = GetActiveBackend();
+        this->sampleMode = thisSampleMode;
+        this->repeatMode = thisRepeatMode;
+        this->anisotropic = isAnisotropic;
+        this->anisotropyLevel = thisAnisotropyLevel;
+        this->handle = NULL;
+        this->constructed = false;
+
+        switch (this->backend)
         {
+            #ifdef ASTRALCANVAS_VULKAN
             AstralCanvas_Vulkan:
             {
-                AstralCanvasVk_DestroySamplerState(AstralCanvasVk_GetCurrentGPU(), samplerState);
+                AstralCanvasVk_CreateSamplerState(AstralCanvasVk_GetCurrentGPU(), this);
                 break;
             }
+            #endif
             default:
+            {
                 THROW_ERR("Unimplemented backend");
+                break;
+            }
         }
     }
-}
-
-SamplerState *AstralCanvas_SamplerGetPointClamp()
-{
-    if (AstralCanvas_SamplerState_PointClamp.handle == NULL)
+    void SamplerState::deinit()
     {
-        AstralCanvas_SamplerState_PointClamp = AstralCanvas_ConstructSamplerState(AstralCanvas_GetActiveBackend(), SampleMode_Point, RepeatMode_ClampToEdgeColor, false, 0.0f);
+        if (this->constructed)
+        {
+            switch (this->backend)
+            {
+                AstralCanvas_Vulkan:
+                {
+                    AstralCanvasVk_DestroySamplerState(AstralCanvasVk_GetCurrentGPU(), this);
+                    break;
+                }
+                default:
+                    THROW_ERR("Unimplemented backend");
+            }
+        }
     }
-    return &AstralCanvas_SamplerState_PointClamp;
-}
 
-SamplerState *AstralCanvas_SamplerGetLinearClamp()
-{
-    if (AstralCanvas_SamplerState_LinearClamp.handle == NULL)
+    SamplerState *SamplerGetPointClamp()
     {
-        AstralCanvas_SamplerState_LinearClamp = AstralCanvas_ConstructSamplerState(AstralCanvas_GetActiveBackend(), SampleMode_Linear, RepeatMode_ClampToEdgeColor, false, 0.0f);
+        if (AstralCanvas_SamplerState_PointClamp.handle == NULL)
+        {
+            AstralCanvas_SamplerState_PointClamp = SamplerState(SampleMode_Point, RepeatMode_ClampToEdgeColor, false, 0.0f);
+        }
+        return &AstralCanvas_SamplerState_PointClamp;
     }
-    return &AstralCanvas_SamplerState_LinearClamp;
-}
 
-SamplerState *AstralCanvas_SamplerGetPointWrap()
-{
-    if (AstralCanvas_SamplerState_PointWrap.handle == NULL)
+    SamplerState *SamplerGetLinearClamp()
     {
-        AstralCanvas_SamplerState_PointWrap = AstralCanvas_ConstructSamplerState(AstralCanvas_GetActiveBackend(), SampleMode_Point, RepeatMode_Repeat, false, 0.0f);
+        if (AstralCanvas_SamplerState_LinearClamp.handle == NULL)
+        {
+            AstralCanvas_SamplerState_LinearClamp = SamplerState(SampleMode_Linear, RepeatMode_ClampToEdgeColor, false, 0.0f);
+        }
+        return &AstralCanvas_SamplerState_LinearClamp;
     }
-    return &AstralCanvas_SamplerState_PointWrap;
-}
 
-SamplerState *AstralCanvas_SamplerGetLinearWrap()
-{
-    if (AstralCanvas_SamplerState_LinearWrap.handle == NULL)
+    SamplerState *SamplerGetPointWrap()
     {
-        AstralCanvas_SamplerState_LinearWrap = AstralCanvas_ConstructSamplerState(AstralCanvas_GetActiveBackend(), SampleMode_Linear, RepeatMode_Repeat, false, 0.0f);
+        if (AstralCanvas_SamplerState_PointWrap.handle == NULL)
+        {
+            AstralCanvas_SamplerState_PointWrap = SamplerState(SampleMode_Point, RepeatMode_Repeat, false, 0.0f);
+        }
+        return &AstralCanvas_SamplerState_PointWrap;
     }
-    return &AstralCanvas_SamplerState_LinearWrap;
+
+    SamplerState *SamplerGetLinearWrap()
+    {
+        if (AstralCanvas_SamplerState_LinearWrap.handle == NULL)
+        {
+            AstralCanvas_SamplerState_LinearWrap = SamplerState(SampleMode_Linear, RepeatMode_Repeat, false, 0.0f);
+        }
+        return &AstralCanvas_SamplerState_LinearWrap;
+    }
 }

@@ -2,9 +2,11 @@
 #include "Linxc.h"
 #include "Enums.hpp"
 
+namespace AstralCanvas
+{
 struct SamplerState
 {
-    AstralCanvasGraphicsBackend backend;
+    GraphicsBackend backend;
     /// Whether the sampler state handle has been created
     bool constructed;
     /// The handle of the sampler in the graphics API. Corresponds to a sampler state in the current graphics backend
@@ -18,16 +20,26 @@ struct SamplerState
     bool anisotropic;
     /// The level of anisotropy, if anisotropic is enabled
     float anisotropyLevel;
+
+    SamplerState();
+    SamplerState(SampleMode thisSampleMode, RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel);
+
+    void deinit();
 };
 
-SamplerState AstralCanvas_ConstructSamplerState(AstralCanvasGraphicsBackend preferredBackend, SampleMode thisSampleMode, RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel);
+    // SamplerState AstralCanvas_ConstructSamplerState(AstralCanvasGraphicsBackend preferredBackend, SampleMode thisSampleMode, RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel);
 
-void AstralCanvas_DestroySamplerState(SamplerState* samplerState);
+    // void AstralCanvas_DestroySamplerState(SamplerState* samplerState);
 
-SamplerState *AstralCanvas_SamplerGetPointClamp();
+    // SamplerState *AstralCanvas_SamplerGetPointClamp();
 
-SamplerState *AstralCanvas_SamplerGetLinearClamp();
+    // SamplerState *AstralCanvas_SamplerGetLinearClamp();
 
-SamplerState *AstralCanvas_SamplerGetPointWrap();
+    // SamplerState *AstralCanvas_SamplerGetPointWrap();
 
-SamplerState *AstralCanvas_SamplerGetLinearWrap();
+    // SamplerState *AstralCanvas_SamplerGetLinearWrap();
+    SamplerState *SamplerGetPointClamp();
+    SamplerState *SamplerGetLinearClamp();
+    SamplerState *SamplerGetPointWrap();
+    SamplerState *SamplerGetLinearWrap();
+}

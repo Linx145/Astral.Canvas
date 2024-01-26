@@ -12,13 +12,13 @@ VkBuffer AstralCanvasVk_CreateResourceBuffer(AstralVulkanGPU *gpu, usize size, V
 VkCommandBuffer AstralCanvasVk_CreateTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvasVkCommandQueue *queueToUse, bool alsoBeginBuffer);
 void AstralCanvasVk_EndTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvasVkCommandQueue *queueToUse, VkCommandBuffer commandBuffer);
 
-void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, Texture2D *texture, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout);
+void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, AstralCanvas::Texture2D *texture, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-void AstralCanvasVk_CreateSamplerState(AstralVulkanGPU *gpu, SamplerState *samplerState);
-void AstralCanvasVk_DestroySamplerState(AstralVulkanGPU *gpu, SamplerState *samplerState);
+void AstralCanvasVk_CreateSamplerState(AstralVulkanGPU *gpu, AstralCanvas::SamplerState *samplerState);
+void AstralCanvasVk_DestroySamplerState(AstralVulkanGPU *gpu, AstralCanvas::SamplerState *samplerState);
 
-void AstralCanvasVk_DestroyTexture2D(AstralVulkanGPU *gpu, Texture2D *texture);
-void AstralCanvasVk_CreateTexture2D(AstralVulkanGPU *gpu, Texture2D *texture);
+void AstralCanvasVk_DestroyTexture2D(AstralVulkanGPU *gpu, AstralCanvas::Texture2D *texture);
+void AstralCanvasVk_CreateTexture2D(AstralVulkanGPU *gpu, AstralCanvas::Texture2D *texture);
 
 inline AstralCanvasMemoryAllocation AstralCanvasVk_AllocateMemoryForImage(VkImage image, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlagBits memoryProperties)
 {

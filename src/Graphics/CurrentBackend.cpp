@@ -1,10 +1,13 @@
 #include "Graphics/CurrentBackend.hpp"
 
-AstralCanvasGraphicsBackend AstralCanvas_GetActiveBackend()
+namespace AstralCanvas
 {
-    return AstralCanvas_Vulkan;
-}
-void AstralCanvas_SetActiveBackend(AstralCanvasGraphicsBackend backend)
-{
-    //do nothing atm
+    GraphicsBackend GetActiveBackend()
+    {
+        return Backend_Vulkan;
+    }
+    void AstralCanvas_SetActiveBackend(GraphicsBackend backend)
+    {
+        //do nothing atm
+    }
 }

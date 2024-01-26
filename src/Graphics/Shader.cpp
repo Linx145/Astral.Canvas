@@ -5,8 +5,6 @@
 using namespace SomnialJson;
 
 #ifdef ASTRALCANVAS_WGPU
-#include "Graphics/WGPU/WgpuEngine.hpp"
-
 i32 AstralCanvas_CreateShaderFromString(IAllocator *allocator, AstralCanvas_ShaderType shaderType, string jsonString, AstralCanvasShader* result)
 {
     *result = AstralCanvasShader(allocator, shaderType);
@@ -90,46 +88,49 @@ i32 AstralCanvas_CreateShaderFromString(IAllocator *allocator, AstralCanvas_Shad
 }
 #endif
 
-AstralCanvasShader::AstralCanvasShader()
+namespace AstralCanvas
 {
-    shaderType = AstralCanvasShader_VertexFragment;
-    shaderModule1 = NULL;
-    shaderModule2 = NULL;
-    shaderPipelineLayout1 = NULL;
-    shaderPipelineLayout2 = NULL;
-    shaderVariables = AstralCanvasShaderVariables();
-}
-AstralCanvasShader::AstralCanvasShader(IAllocator *allocator, AstralCanvas_ShaderType type)
-{
-    shaderType = type;
-    shaderModule1 = NULL;
-    shaderModule2 = NULL;
-    shaderPipelineLayout1 = NULL;
-    shaderPipelineLayout2 = NULL;
-    shaderVariables = AstralCanvasShaderVariables(allocator);
-}
-void AstralCanvasShader::deinit()
-{
-    if (this->shaderModule1 != NULL) 
+    Shader::Shader()
     {
-        
+        shaderType = ShaderType_VertexFragment;
+        shaderModule1 = NULL;
+        shaderModule2 = NULL;
+        shaderPipelineLayout1 = NULL;
+        shaderPipelineLayout2 = NULL;
+        shaderVariables = ShaderVariables();
     }
-        //wgpuShaderModuleRelease(this->shaderModule1);
-    if (this->shaderModule2 != NULL) 
+    Shader::Shader(IAllocator *allocator, ShaderType type)
     {
-
+        shaderType = type;
+        shaderModule1 = NULL;
+        shaderModule2 = NULL;
+        shaderPipelineLayout1 = NULL;
+        shaderPipelineLayout2 = NULL;
+        shaderVariables = ShaderVariables(allocator);
     }
-        //wgpuShaderModuleRelease(this->shaderModule2);
-    if (this->shaderPipelineLayout1 != NULL)
+    void Shader::deinit()
     {
+        if (this->shaderModule1 != NULL) 
+        {
+            
+        }
+            //wgpuShaderModuleRelease(this->shaderModule1);
+        if (this->shaderModule2 != NULL) 
+        {
 
+        }
+            //wgpuShaderModuleRelease(this->shaderModule2);
+        if (this->shaderPipelineLayout1 != NULL)
+        {
+
+        }
+            //wgpuPipelineLayoutRelease(this->shaderPipelineLayout1);
+        if (this->shaderPipelineLayout2 != NULL)
+        {
+
+        }
+            //wgpuPipelineLayoutRelease(this->shaderPipelineLayout2);
+
+        this->shaderVariables.deinit();
     }
-        //wgpuPipelineLayoutRelease(this->shaderPipelineLayout1);
-    if (this->shaderPipelineLayout2 != NULL)
-    {
-
-    }
-        //wgpuPipelineLayoutRelease(this->shaderPipelineLayout2);
-
-    this->shaderVariables.deinit();
 }
