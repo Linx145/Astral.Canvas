@@ -13,11 +13,11 @@ SamplerState AstralCanvas_SamplerState_LinearClamp = {};
 SamplerState AstralCanvas_SamplerState_PointWrap = {};
 SamplerState AstralCanvas_SamplerState_LinearWrap = {};
 
-SamplerState AstralCanvas_ConstructSamplerState(AstralCanvasGraphicsBackend preferredBackend, SampleMode thisSampleMode, RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel)
+SamplerState AstralCanvas_ConstructSamplerState(SampleMode thisSampleMode, RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel)
 {
     SamplerState samplerState = {};
 
-    samplerState.backend = preferredBackend;
+    samplerState.backend = AstralCanvas_GetActiveBackend();
     samplerState.sampleMode = thisSampleMode;
     samplerState.repeatMode = thisRepeatMode;
     samplerState.anisotropic = isAnisotropic;

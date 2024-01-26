@@ -1,5 +1,6 @@
 #pragma once
 #include <Graphics/Vulkan/VulkanGPU.hpp>
+#include "Graphics/Vulkan/vk_mem_alloc.h"
 
 VkDebugUtilsMessengerCreateInfoEXT *AstralCanvasVk_GetDebugCreateInfo();
 void AstralCanvasVk_SetDebugCreateInfo(VkDebugUtilsMessengerCreateInfoEXT info);
@@ -15,3 +16,6 @@ void AstralCanvasVk_SetInstance(VkInstance instance);
 
 AstralVulkanGPU *AstralCanvasVk_GetCurrentGPU();
 void AstralCanvasVk_SetCurrentGPU(AstralVulkanGPU gpu);
+
+VmaAllocator AstralCanvasVk_GetCurrentVulkanAllocator();
+void AstralCanvasVk_SetCurrentVulkanAllocator(VmaAllocator allocator);

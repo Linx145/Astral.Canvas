@@ -57,6 +57,27 @@ bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validat
 	}
 	AstralCanvasVk_SetCurrentGPU(gpu.value);
 	printf("Created GPU interface\n");
+
+	VmaVulkanFunctions vulkanAllocatorFunctions = {};
+	vulkanAllocatorFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+	vulkanAllocatorFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+
+	VmaAllocator vulkanAllocator;
+	VmaAllocatorCreateInfo allocatorCreateInfo = {};
+	allocatorCreateInfo.device = gpu.value.logicalDevice;
+	allocatorCreateInfo.instance = AstralCanvasVk_GetInstance();
+	allocatorCreateInfo.physicalDevice = gpu.value.physicalDevice;
+	allocatorCreateInfo.pAllocationCallbacks = NULL;
+	allocatorCreateInfo.pDeviceMemoryCallbacks = NULL;
+	allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+	allocatorCreateInfo.pVulkanFunctions = &vulkanAllocatorFunctions;
+
+	if (vmaCreateAllocator(&allocatorCreateInfo, &vulkanAllocator) != VK_SUCCESS)
+	{
+		return false;
+	}
+	AstralCanvasVk_SetCurrentVulkanAllocator(vulkanAllocator);
+	printf("Created memory allocator\n");
 }
 
 bool AstralCanvasVk_CreateInstance(IAllocator* allocator, Array<const char*> validationLayersToUse, const char* appName, const char* engineName, u32 applicationVersion, u32 engineVersion, u32 vulkanVersion)
@@ -161,6 +182,12 @@ bool AstralCanvasVk_CreateDebugMessenger()
 
 void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvasWindow* window)
 {
+	VmaAllocator vma = AstralCanvasVk_GetCurrentVulkanAllocator();
+	if (vma != NULL)
+	{
+		vmaDestroyAllocator(vma);
+	}
+	
 	VkInstance instance = AstralCanvasVk_GetInstance();
 	AstralCanvasVk_GetCurrentGPU()->deinit();
 

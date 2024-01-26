@@ -1,6 +1,7 @@
 #pragma once
 #include "Linxc.h"
 #include "Graphics/SamplerState.hpp"
+#include "Graphics/MemoryAllocation.hpp"
 
 struct Texture2D
 {
@@ -28,10 +29,13 @@ struct Texture2D
     bool usedForRenderTarget;
     /// The handle of the texture in the graphics API. Corresponds to a texture pointer type in the current graphics backend
     void *imageHandle;
-    /// The VRAM object that stores the image's memory. Correlates to a buffer object in most graphics backends
-    void *imageMemory;
-    
+    /// The view into the image in the graphics API.
     void *imageView;
+    /// The allocated VRAM for the image
+    AstralCanvasMemoryAllocation allocatedMemory;
+
+    void deinit();
 };
 
+void AstralCanvas_DestroyTexture(Texture2D *texture);
 Texture2D AstralCanvas_CreateTextureFromData(u8* data, usize width, usize height, SamplerState *samplerForTexture, ImageFormat imageFormat, bool storeData);

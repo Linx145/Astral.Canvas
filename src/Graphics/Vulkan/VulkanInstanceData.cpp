@@ -1,10 +1,11 @@
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
 
-VkDebugUtilsMessengerCreateInfoEXT AstralCanvasVk_debugCreateInfo;
-VkDebugUtilsMessengerEXT AstralCanvasVk_debugMessenger;
-bool AstralCanvasVk_validationLayers;
-VkInstance AstralCanvasVk_instance;
-AstralVulkanGPU AstralCanvasVk_GPU;
+VkDebugUtilsMessengerCreateInfoEXT      AstralCanvasVk_debugCreateInfo = {};
+VkDebugUtilsMessengerEXT                AstralCanvasVk_debugMessenger = {};
+bool                                    AstralCanvasVk_validationLayers = false;
+VkInstance                              AstralCanvasVk_instance = NULL;
+AstralVulkanGPU                         AstralCanvasVk_GPU = {};
+VmaAllocator                            AstralCanvasVk_vma = NULL;
 
 VkDebugUtilsMessengerEXT AstralCanvasVk_GetDebugMessenger()
 {
@@ -49,4 +50,13 @@ AstralVulkanGPU *AstralCanvasVk_GetCurrentGPU()
 void AstralCanvasVk_SetCurrentGPU(AstralVulkanGPU gpu)
 {
     AstralCanvasVk_GPU = gpu;
+}
+
+VmaAllocator AstralCanvasVk_GetCurrentVulkanAllocator()
+{
+    return AstralCanvasVk_vma;
+}
+void AstralCanvasVk_SetCurrentVulkanAllocator(VmaAllocator allocator)
+{
+    AstralCanvasVk_vma = allocator;
 }

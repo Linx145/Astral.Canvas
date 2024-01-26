@@ -1,10 +1,22 @@
 #include "Graphics/Vulkan/VulkanImplementations.hpp"
-#include "Graphics/Vulkan/VulkanInstanceData.hpp"
 #include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 #include "Graphics/Vulkan/VulkanGPU.hpp"
-#include "Graphics/Vulkan/vk_mem_alloc.h"
-#include "ErrorHandling.hpp"
 
+VkBuffer AstralCanvasVk_CreateResourceBuffer(AstralVulkanGPU *gpu, usize size, VkBufferUsageFlags usageFlags)
+{
+    VkBufferCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    createInfo.size = size;
+    createInfo.usage = usageFlags;
+    createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkBuffer result;
+    if (vkCreateBuffer(gpu->logicalDevice, &createInfo, NULL, &result) == VK_SUCCESS)
+    {
+        return result;
+    }
+    return NULL;
+}
 VkCommandBuffer AstralCanvasVk_CreateTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvasVkCommandQueue *queueToUse, bool alsoBeginBuffer)
 {
     VkCommandBufferAllocateInfo allocInfo = {};
@@ -209,6 +221,38 @@ void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, Texture2D *tex
         AstralCanvasVk_EndTransientCommandBuffer(gpu, cmdQueue, cmdBuffer);
     }
 }
+void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, Texture2D *to)
+{
+    VkCommandBuffer transientCmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, &gpu->DedicatedGraphicsQueue, true);
+
+    VkBufferImageCopy bufferImageCopy = {};
+    
+    bufferImageCopy.bufferOffset = 0;
+    //only set values other than 0 if the image buffer is not tightly packed
+    bufferImageCopy.bufferRowLength = 0;
+    bufferImageCopy.bufferImageHeight = 0;
+
+    bufferImageCopy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    bufferImageCopy.imageSubresource.mipLevel = 0;
+    bufferImageCopy.imageSubresource.baseArrayLayer = 0;
+    bufferImageCopy.imageSubresource.layerCount = 1;
+
+    bufferImageCopy.imageOffset = {};
+    bufferImageCopy.imageExtent.width = to->width;
+    bufferImageCopy.imageExtent.height = to->height;
+    bufferImageCopy.imageExtent.depth = 1;
+
+    vkCmdCopyBufferToImage(
+        transientCmdBuffer,
+        from,
+        (VkImage)to->imageHandle,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        1, //length of things to copy
+        &bufferImageCopy
+        );
+
+    AstralCanvasVk_EndTransientCommandBuffer(gpu, &gpu->DedicatedGraphicsQueue, transientCmdBuffer);
+}
 
 void AstralCanvasVk_CreateSamplerState(AstralVulkanGPU *gpu, SamplerState *samplerState)
 {
@@ -247,6 +291,16 @@ void AstralCanvasVk_DestroySamplerState(AstralVulkanGPU *gpu, SamplerState *samp
     vkDestroySampler(gpu->logicalDevice, (VkSampler)samplerState->handle, NULL);
 }
 
+void AstralCanvasVk_DestroyTexture2D(AstralVulkanGPU *gpu, Texture2D *texture)
+{
+    if (!texture->isDisposed && texture->constructed)
+    {
+        vkDestroyImageView(gpu->logicalDevice, (VkImageView)texture->imageView, NULL);
+        vkDestroyImage(gpu->logicalDevice, (VkImage)texture->imageHandle, NULL);
+        vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), texture->allocatedMemory.vkAllocation);
+        texture->isDisposed = true;
+    }
+}
 void AstralCanvasVk_CreateTexture2D(AstralVulkanGPU *gpu, Texture2D *texture)
 {
     VkImage image;
@@ -264,13 +318,20 @@ void AstralCanvasVk_CreateTexture2D(AstralVulkanGPU *gpu, Texture2D *texture)
         createInfo.format = AstralCanvasVk_FromImageFormat(texture->imageFormat);
         createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        if (texture->usedForRenderTarget)
+        if (createInfo.format >= ImageFormat_DepthNone)
         {
-            createInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            createInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
         }
         else
         {
-            createInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            if (texture->usedForRenderTarget)
+            {
+                createInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            }
+            else
+            {
+                createInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            }
         }
         createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -286,5 +347,96 @@ void AstralCanvasVk_CreateTexture2D(AstralVulkanGPU *gpu, Texture2D *texture)
     if (texture->bytes != NULL && (texture->width * texture->height > 0) && texture->ownsHandle)
     {
         //VmaAllocation
+        texture->allocatedMemory = AstralCanvasVk_AllocateMemoryForImage(image, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        if (!texture->usedForRenderTarget)
+        {
+            VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, texture->width * texture->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+
+            AstralCanvasMemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), true);
+
+            memcpy(stagingMemory.vkAllocationInfo.pMappedData, texture->bytes, (usize)(texture->width * texture->height * 4));
+
+            AstralCanvasVk_TransitionTextureLayout(gpu, texture, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+            AstralCanvasVk_CopyBufferToImage(gpu, stagingBuffer, texture);
+
+            AstralCanvasVk_TransitionTextureLayout(gpu, texture, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+            vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
+
+            vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
+        }
+    }
+    else
+    {
+        if (texture->imageFormat >= ImageFormat_DepthNone)
+        {
+            AstralCanvasVk_TransitionTextureLayout(gpu, texture, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+        }
+        else AstralCanvasVk_TransitionTextureLayout(gpu, texture, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    }
+
+    VkImageViewCreateInfo viewCreateInfo = {};
+    viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    viewCreateInfo.image = image;
+    viewCreateInfo.format = AstralCanvasVk_FromImageFormat(texture->imageFormat);
+    viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
+    if (texture->imageFormat >= ImageFormat_DepthNone)
+    {
+        viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    }
+    else 
+        viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewCreateInfo.subresourceRange.baseMipLevel = 0;
+    viewCreateInfo.subresourceRange.levelCount = texture->mipLevels;
+    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
+    viewCreateInfo.subresourceRange.layerCount = 1;
+
+    viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+    if (vkCreateImageView(gpu->logicalDevice, &viewCreateInfo, NULL, (VkImageView*)&texture->imageView) != VK_SUCCESS)
+    {
+        THROW_ERR("Failed to create image view");
+    }
+
+    texture->constructed = true;
+}
+
+void AstralCanvasVk_CreateRenderTarget(AstralVulkanGPU *gpu, RenderTarget *renderTarget)
+{
+    VkFramebufferCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    createInfo.width = renderTarget->width;
+    createInfo.height = renderTarget->height;
+    createInfo.layers = 1;
+
+    VkImageView imageViews[2];
+    imageViews[0] = (VkImageView)renderTarget->backendTexture.imageView;
+
+    createInfo.attachmentCount = 1;
+    if (renderTarget->depthBuffer.imageHandle != NULL)
+    {
+        createInfo.attachmentCount += 1;
+        imageViews[1] = (VkImageView)renderTarget->depthBuffer.imageView;
+    }
+
+    //createInfo requires a renderpass to set what renderpass the framebuffer is
+    //compatible with. Even if we pass in a different renderpass that is compatible
+
+    //with the one it is created with, it will still be alright
+    //https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#renderpass-compatibility
+
+    if (renderTarget->isBackbuffer)
+    {
+
+    }
+    else
+    {
+        
     }
 }
