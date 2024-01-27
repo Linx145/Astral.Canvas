@@ -1,7 +1,11 @@
 #include "Graphics/Vulkan/VulkanImplementations.hpp"
 #include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 #include "Graphics/Vulkan/VulkanGPU.hpp"
+#include "Graphics/Vulkan/VulkanVertex.hpp"
+#include "Json.hpp"
+#include "ArenaAllocator.hpp"
 
+using namespace SomnialJson;
 using namespace AstralCanvas;
 
 VkBuffer AstralCanvasVk_CreateResourceBuffer(AstralVulkanGPU *gpu, usize size, VkBufferUsageFlags usageFlags)
@@ -409,7 +413,7 @@ void AstralCanvasVk_CreateTexture2D(AstralVulkanGPU *gpu, Texture2D *texture)
     texture->constructed = true;
 }
 
-void AstralCanvasVk_CreateRenderTarget(AstralVulkanGPU *gpu, RenderTarget *renderTarget)
+VkFramebuffer AstralCanvasVk_GetOrCreateRenderTarget(AstralVulkanGPU *gpu, RenderTarget *renderTarget, RenderProgram *forProgram)
 {
     VkFramebufferCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -423,7 +427,7 @@ void AstralCanvasVk_CreateRenderTarget(AstralVulkanGPU *gpu, RenderTarget *rende
     createInfo.attachmentCount = 1;
     if (renderTarget->depthBuffer.imageHandle != NULL)
     {
-        createInfo.attachmentCount += 1;
+        createInfo.attachmentCount = 2;
         imageViews[1] = (VkImageView)renderTarget->depthBuffer.imageView;
     }
 
@@ -441,4 +445,361 @@ void AstralCanvasVk_CreateRenderTarget(AstralVulkanGPU *gpu, RenderTarget *rende
     {
         
     }
+    
+}
+
+VkRenderPass AstralCanvasVk_CreateRenderProgram(AstralVulkanGPU *gpu, AstralCanvas::RenderProgram *program)
+{
+    if (program->renderPasses.count <= 0 || program->attachments.count <= 0)
+    {
+        return NULL;
+    }
+
+    IAllocator defaultAllocator = GetCAllocator();
+    collections::vector<VkAttachmentReference> subpassDescriptionAttachmentRefs = collections::vector<VkAttachmentReference>(&defaultAllocator);
+    VkSubpassDescription *subpassDescriptions = (VkSubpassDescription*)malloc(sizeof(VkSubpassDescription) * program->renderPasses.count);
+    
+    for (usize i = 0; i < program->renderPasses.count; i++)
+    {
+        RenderPass renderPassData = program->renderPasses.ptr[i];
+        subpassDescriptions[i] = {};
+        subpassDescriptions[i].flags = 0;
+
+        //input attachments are currently unused
+        subpassDescriptions[i].inputAttachmentCount = 0;
+        subpassDescriptions[i].pInputAttachments = NULL;
+
+        //references to the color attachments
+        //can have multiple color attachments (The shader can read from multiple input buffers)
+        u32 startCount = subpassDescriptionAttachmentRefs.count;
+        for (usize j = 0; j < renderPassData.colorAttachmentIndices.length; j++)
+        {
+            VkAttachmentReference ref;
+            ref.attachment = renderPassData.colorAttachmentIndices.data[j];
+            ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            subpassDescriptionAttachmentRefs.Add(ref);
+        }
+
+        subpassDescriptions[i].colorAttachmentCount = (u32)renderPassData.colorAttachmentIndices.length;
+        subpassDescriptions[i].pColorAttachments = &subpassDescriptionAttachmentRefs.ptr[startCount];
+
+        //lastly, depth attachment (if any)
+        if (renderPassData.depthAttachmentIndex > -1)
+        {
+            VkAttachmentReference ref;
+            ref.attachment = renderPassData.depthAttachmentIndex;
+            ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            subpassDescriptionAttachmentRefs.Add(ref);
+
+            subpassDescriptions[i].pDepthStencilAttachment = &subpassDescriptionAttachmentRefs.ptr[subpassDescriptionAttachmentRefs.count - 1];
+        }
+
+        //no clue what these are AKA dont need them rn
+        subpassDescriptions[i].preserveAttachmentCount = 0;
+        subpassDescriptions[i].pResolveAttachments = NULL;
+        subpassDescriptions[i].pResolveAttachments = NULL;
+
+        subpassDescriptions[i].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    }
+
+    VkAttachmentDescription *attachmentDescriptions = (VkAttachmentDescription *)malloc(sizeof(VkAttachmentDescription) * program->attachments.count);
+    for (usize i = 0; i < program->attachments.count; i++)
+    {
+        RenderProgramImageAttachment attachmentData = program->attachments.ptr[i];
+        attachmentDescriptions[i] = {};
+        attachmentDescriptions[i].samples = VK_SAMPLE_COUNT_1_BIT;
+        attachmentDescriptions[i].flags = 0;
+        if (attachmentData.imageFormat >= ImageFormat_DepthNone)
+        {
+            attachmentDescriptions[i].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            if (attachmentData.clearColor != COLOR_TRANSPARENT)
+            {
+                attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            }
+            else
+            {
+                attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            }
+        }
+        else
+        {
+            attachmentDescriptions[i].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            if (attachmentData.clearDepth)
+            {
+                attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+                attachmentDescriptions[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                if (attachmentData.imageFormat == ImageFormat_Depth16Stencil8 || attachmentData.imageFormat == ImageFormat_Depth24Stencil8)
+                {
+                    attachmentDescriptions[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+                }
+            }
+            else
+            {
+                attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+                attachmentDescriptions[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                if (attachmentData.imageFormat == ImageFormat_Depth16Stencil8 || attachmentData.imageFormat == ImageFormat_Depth24Stencil8)
+                {
+                    attachmentDescriptions[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+                }
+            }
+        }
+    }
+
+    //create dependencies in order that renderpasses were placed into the program.
+    //Should (probably) make this customisable in the future
+    //No non-linear/complex renderprograms for now
+    VkSubpassDependency *subpassDependencies = (VkSubpassDependency*)malloc(sizeof(VkSubpassDependency) * program->renderPasses.count - 1);
+    for (usize i = 0; i < program->renderPasses.count - 1; i++)
+    {
+        subpassDependencies[i].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+        subpassDependencies[i].srcSubpass = i;
+        subpassDependencies[i].dstSubpass = i + 1;
+        subpassDependencies[i].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        subpassDependencies[i].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        subpassDependencies[i].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        subpassDependencies[i].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    }
+
+    VkRenderPassCreateInfo programCreateInfo = {};
+    programCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+
+    programCreateInfo.attachmentCount = (u32)program->attachments.count;
+    programCreateInfo.pAttachments = attachmentDescriptions;
+
+    programCreateInfo.subpassCount = program->renderPasses.count;
+    programCreateInfo.pSubpasses = subpassDescriptions;
+
+    programCreateInfo.dependencyCount = program->renderPasses.count - 1;
+    programCreateInfo.pDependencies = subpassDependencies;
+
+    programCreateInfo.flags = 0;
+    programCreateInfo.pNext = NULL;
+
+    VkRenderPass result;
+    vkCreateRenderPass(gpu->logicalDevice, &programCreateInfo, NULL, &result);
+
+    free(subpassDependencies);
+    free(attachmentDescriptions);
+    free(subpassDescriptions);
+    subpassDescriptionAttachmentRefs.deinit();
+
+    return result;
+}
+
+void AstralCanvasVk_DestroyRenderPipeline(RenderPipeline *pipeline)
+{
+    for (usize i = 0; i < pipeline->zoneToPipelineInstance.bucketsCount; i++)
+    {
+        if (pipeline->zoneToPipelineInstance.buckets[i].initialized)
+        {
+            for (usize j = 0; j < pipeline->zoneToPipelineInstance.buckets[i].entries.count; j++)
+            {
+                VkPipeline vkPipeline = (VkPipeline)pipeline->zoneToPipelineInstance.buckets[i].entries.ptr[j].value;
+                vkDestroyPipeline(AstralCanvasVk_GetCurrentGPU()->logicalDevice, vkPipeline, NULL);
+            }
+        }
+    }
+    pipeline->zoneToPipelineInstance.deinit();
+    //do not dispose shader
+}
+VkPipeline AstralCanvasVk_CreateRenderPipeline(RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse)
+{
+    //dynamic states
+    IAllocator cAllocator = GetCAllocator();
+    ArenaAllocator arena = ArenaAllocator(&cAllocator);
+
+    const i32 dynamicStateCount = 2;
+    collections::Array<VkDynamicState> dynamicStates = collections::Array<VkDynamicState>(&arena.asAllocator, dynamicStateCount);
+    dynamicStates.data[0] = VK_DYNAMIC_STATE_VIEWPORT;
+    dynamicStates.data[1] = VK_DYNAMIC_STATE_SCISSOR;
+
+    VkPipelineDynamicStateCreateInfo dynamicState{};
+    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamicState.dynamicStateCount = dynamicStateCount;
+    dynamicState.pDynamicStates = dynamicStates.data;
+
+    //vertex declarations
+
+    usize vertexDeclCount = pipeline->vertexDeclarations.length;
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+
+    if (vertexDeclCount > 0)
+    {
+        usize attribCount = 0;
+        collections::Array<AstralCanvasVk_VertexDecl> vertexDecls = collections::Array<AstralCanvasVk_VertexDecl>(&arena.asAllocator, vertexDeclCount);
+        for (usize i = 0; i < vertexDeclCount; i++)
+        {
+            vertexDecls.data[i] = AstralCanvasVk_CreateVertexDecl(&arena.asAllocator, &pipeline->vertexDeclarations.data[i]);
+            attribCount += vertexDecls.data[i].attributeDescriptions.length;
+        }
+
+        collections::Array<VkVertexInputBindingDescription> bindingDescriptions = collections::Array<VkVertexInputBindingDescription>(&arena.asAllocator, vertexDeclCount);
+        for (usize i = 0; i < vertexDeclCount; i++)
+        {
+            bindingDescriptions.data[i] = vertexDecls.data[i].bindingDescription;
+        }
+
+        collections::Array<VkVertexInputAttributeDescription> attribDescriptions = collections::Array<VkVertexInputAttributeDescription>(&arena.asAllocator, attribCount);
+        usize attribIndex = 0;
+        for (usize i = 0; i < vertexDeclCount; i++)
+        {
+            for (usize j = 0; j < vertexDecls.data[i].attributeDescriptions.length; j++)
+            {
+                attribDescriptions.data[attribIndex] = vertexDecls.data[i].attributeDescriptions.data[j];
+                attribIndex++;
+            }
+        }
+
+        vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertexInputInfo.vertexBindingDescriptionCount = vertexDeclCount;
+        vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data;
+        vertexInputInfo.vertexAttributeDescriptionCount = attribCount;
+        vertexInputInfo.pVertexAttributeDescriptions = attribDescriptions.data;
+    }
+
+    //primitive type
+
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
+    inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssemblyInfo.topology = AstralCanvasVk_FromPrimitiveType(pipeline->primitiveType);
+    inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
+
+    //viewport data
+
+    VkPipelineViewportStateCreateInfo viewportStateInfo{};
+    viewportStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportStateInfo.viewportCount = 1;
+    viewportStateInfo.scissorCount = 1;
+
+    //rasterization behaviour
+
+    VkPipelineRasterizationStateCreateInfo rasterizerInfo{};
+    rasterizerInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterizerInfo.depthClampEnable = false;
+    rasterizerInfo.rasterizerDiscardEnable = false;
+    rasterizerInfo.polygonMode = VK_POLYGON_MODE_FILL;
+    if (inputAssemblyInfo.topology == VK_PRIMITIVE_TOPOLOGY_LINE_LIST || inputAssemblyInfo.topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP)
+    {
+        rasterizerInfo.polygonMode = VK_POLYGON_MODE_LINE;
+    }
+    rasterizerInfo.lineWidth = 1.0f;
+    rasterizerInfo.cullMode = AstralCanvasVk_FromCullMode(pipeline->cullMode);
+    rasterizerInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+
+    rasterizerInfo.depthBiasEnable = false;
+    rasterizerInfo.depthBiasConstantFactor = 0.0f;
+    rasterizerInfo.depthBiasClamp = 0.0f;
+    rasterizerInfo.depthBiasSlopeFactor = 0.0f;
+
+    //multisampling data
+    //todo
+
+    VkPipelineMultisampleStateCreateInfo multisamplingInfo{};
+    multisamplingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisamplingInfo.sampleShadingEnable = false;
+    multisamplingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisamplingInfo.minSampleShading = 1.0f;
+    multisamplingInfo.pSampleMask = nullptr;
+    multisamplingInfo.alphaToCoverageEnable = false;
+    multisamplingInfo.alphaToOneEnable = false;
+
+    //depth stencil data
+    
+    VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+    depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencilInfo.depthTestEnable = pipeline->depthTest;
+    depthStencilInfo.depthWriteEnable = pipeline->depthWrite;
+    depthStencilInfo.depthCompareOp = pipeline->depthTest ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_NEVER;
+    depthStencilInfo.depthBoundsTestEnable = false;
+    depthStencilInfo.minDepthBounds = 0.0f;
+    depthStencilInfo.maxDepthBounds = 1.0f;
+    depthStencilInfo.stencilTestEnable = false;
+
+    VkPipelineColorBlendAttachmentState colorBlendState {};
+    colorBlendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT; // ColorComponentFlags.RBit | ColorComponentFlags.GBit | ColorComponentFlags.BBit | ColorComponentFlags.ABit;
+    if (pipeline->blendState != NULL)
+    {
+        colorBlendState.srcColorBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState->sourceColorBlend);
+        colorBlendState.srcAlphaBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState->sourceAlphaBlend);
+        colorBlendState.dstColorBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState->destinationColorBlend);
+        colorBlendState.dstAlphaBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState->destinationAlphaBlend);
+        colorBlendState.colorBlendOp = VK_BLEND_OP_ADD;
+        colorBlendState.alphaBlendOp = VK_BLEND_OP_ADD;
+        colorBlendState.blendEnable = true;
+    }
+    else
+        colorBlendState.blendEnable = false;
+
+    //color blend data
+
+    VkPipelineColorBlendStateCreateInfo colorBlendInfo {};
+    colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    colorBlendInfo.blendConstants[0] = 1.0f;
+    colorBlendInfo.blendConstants[1] = 1.0f;
+    colorBlendInfo.blendConstants[2] = 1.0f;
+    colorBlendInfo.blendConstants[3] = 1.0f;
+    colorBlendInfo.logicOpEnable = false;
+    colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;
+    colorBlendInfo.attachmentCount = 1;
+    colorBlendInfo.pAttachments = &colorBlendState;
+
+    //pipeline layout itself
+
+    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+    pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
+    pipelineLayoutCreateInfo.pPushConstantRanges = NULL;
+    pipelineLayoutCreateInfo.flags = 0;
+
+    //u32 descriptorsCount = pipeline->shader->shaderVariables.samplers.length + pipeline->shader->shaderVariables.textures.length + pipeline->shader->shaderVariables.uniforms.length;
+    pipelineLayoutCreateInfo.setLayoutCount = 0;
+    if (pipeline->shader->shaderPipelineLayout != NULL)
+    {
+        pipelineLayoutCreateInfo.setLayoutCount = 1;
+        pipelineLayoutCreateInfo.pSetLayouts = (VkDescriptorSetLayout*)&pipeline->shader->shaderPipelineLayout;
+    }
+
+    if (vkCreatePipelineLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &pipelineLayoutCreateInfo, NULL, (VkPipelineLayout*)&pipeline->layout) != VK_SUCCESS)
+    {
+        arena.deinit();
+        return NULL;
+    }
+
+    //pipeline itself
+
+    VkPipelineShaderStageCreateInfo shaderStageInfos[2] = {{}, {}};
+    shaderStageInfos[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStageInfos[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+    shaderStageInfos[0].module = (VkShaderModule)pipeline->shader->shaderModule1;
+    shaderStageInfos[0].pName = "main"; //entry point
+
+    shaderStageInfos[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStageInfos[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    shaderStageInfos[1].module = (VkShaderModule)pipeline->shader->shaderModule2;
+    shaderStageInfos[1].pName = "main"; //entry point
+
+    VkGraphicsPipelineCreateInfo pipelineCreateInfo{};
+    pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineCreateInfo.pStages = shaderStageInfos;
+    pipelineCreateInfo.stageCount = 2;
+    pipelineCreateInfo.pVertexInputState = &vertexInputInfo;
+    pipelineCreateInfo.pInputAssemblyState = &inputAssemblyInfo;
+    pipelineCreateInfo.pViewportState = &viewportStateInfo;
+    pipelineCreateInfo.pRasterizationState = &rasterizerInfo;
+    pipelineCreateInfo.pMultisampleState = &multisamplingInfo;
+    pipelineCreateInfo.pColorBlendState = &colorBlendInfo;
+    pipelineCreateInfo.pDepthStencilState = &depthStencilInfo;
+    pipelineCreateInfo.pDynamicState = &dynamicState;
+    pipelineCreateInfo.layout = (VkPipelineLayout)pipeline->layout;
+    pipelineCreateInfo.renderPass = (VkRenderPass)renderProgram->handle;
+    pipelineCreateInfo.subpass = renderPassToUse;
+
+    VkPipeline result;
+    vkCreateGraphicsPipelines(AstralCanvasVk_GetCurrentGPU()->logicalDevice, NULL, 1, &pipelineCreateInfo, NULL, &result);
+
+    arena.deinit();
+
+    return result;
 }

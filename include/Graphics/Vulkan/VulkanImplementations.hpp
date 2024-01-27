@@ -5,6 +5,9 @@
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
 #include "Graphics/MemoryAllocation.hpp"
 #include "Graphics/RenderTarget.hpp"
+#include "Graphics/RenderPass.hpp"
+#include "Graphics/Shader.hpp"
+#include "Graphics/RenderPipeline.hpp"
 #include "ErrorHandling.hpp"
 
 VkBuffer AstralCanvasVk_CreateResourceBuffer(AstralVulkanGPU *gpu, usize size, VkBufferUsageFlags usageFlags);
@@ -19,6 +22,13 @@ void AstralCanvasVk_DestroySamplerState(AstralVulkanGPU *gpu, AstralCanvas::Samp
 
 void AstralCanvasVk_DestroyTexture2D(AstralVulkanGPU *gpu, AstralCanvas::Texture2D *texture);
 void AstralCanvasVk_CreateTexture2D(AstralVulkanGPU *gpu, AstralCanvas::Texture2D *texture);
+
+VkRenderPass AstralCanvasVk_CreateRenderProgram(AstralVulkanGPU *gpu, AstralCanvas::RenderProgram *program);
+
+void AstralCanvasVk_DestroyShader(AstralCanvas::Shader *shader);
+
+VkPipeline AstralCanvasVk_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse);
+void AstralCanvasVk_DestroyRenderPipeline(AstralCanvas::RenderPipeline *pipeline);
 
 inline AstralCanvasMemoryAllocation AstralCanvasVk_AllocateMemoryForImage(VkImage image, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlagBits memoryProperties)
 {

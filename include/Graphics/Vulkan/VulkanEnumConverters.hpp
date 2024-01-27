@@ -28,6 +28,26 @@ inline VkSamplerAddressMode AstralCanvasVk_FromRepeatMode(RepeatMode repeatMode)
             return VK_SAMPLER_ADDRESS_MODE_REPEAT;
     }
 }
+inline VkFormat AstralCanvasVk_FromVertexElementFormat(VertexElementFormat format)
+{
+    switch (format)
+    {
+        case VertexElement_Float:
+            return VK_FORMAT_R32_SFLOAT;
+        case VertexElement_Vector2:
+            return VK_FORMAT_R32G32_SFLOAT;
+        case VertexElement_Vector3:
+            return VK_FORMAT_R32G32B32_SFLOAT;
+        case VertexElement_Vector4:
+            return VK_FORMAT_R32G32B32A32_SFLOAT;
+        case VertexElement_Int:
+            return VK_FORMAT_R32_SINT;
+        case VertexElement_Color:
+            return VK_FORMAT_R8G8B8A8_UNORM;
+        case VertexElement_Uint:
+            return VK_FORMAT_R32_UINT;
+    }
+}
 inline VkFormat AstralCanvasVk_FromImageFormat(ImageFormat format)
 {
     switch (format)
@@ -64,5 +84,61 @@ inline VkFormat AstralCanvasVk_FromImageFormat(ImageFormat format)
         
         default:
             return VK_FORMAT_UNDEFINED;
+    }
+}
+inline VkPrimitiveTopology AstralCanvasVk_FromPrimitiveType(AstralCanvas::PrimitiveType primitiveType)
+{
+    switch (primitiveType)
+    {
+        case PrimitiveType_LineList:
+            return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        case PrimitiveType_LineStrip:
+            return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+        case PrimitiveType_TriangleList:
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        case PrimitiveType_TriangleStrip:
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        case PrimitiveType_TriangleFan:
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+    }
+}
+inline VkCullModeFlags AstralCanvasVk_FromCullMode(AstralCanvas::CullMode cullMode)
+{
+    switch (cullMode)
+    {
+        case CullMode_CullNone:
+            return VK_CULL_MODE_NONE;
+        case CullMode_CullClockwise:
+            return VK_CULL_MODE_FRONT_BIT;
+        case CullMode_CullCounterClockwise:
+            return VK_CULL_MODE_BACK_BIT;
+    }
+}
+inline VkBlendFactor AstralCanvasVk_FromBlend(Blend blend)
+{
+    switch (blend)
+    {
+        case Blend_DestinationAlpha:
+            return VK_BLEND_FACTOR_DST_ALPHA;
+        case Blend_DestinationColor:
+            return VK_BLEND_FACTOR_DST_COLOR;
+        case Blend_SourceAlpha:
+            return VK_BLEND_FACTOR_SRC_ALPHA;
+        case Blend_SourceColor:
+            return VK_BLEND_FACTOR_SRC_COLOR;
+
+        case Blend_InverseDestinationAlpha:
+            return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+        case Blend_InverseDestinationColor:
+            return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+        case Blend_InverseSourceAlpha:
+            return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        case Blend_InverseSourceColor:
+            return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+        
+        case Blend_One:
+            return VK_BLEND_FACTOR_ONE;
+        case Blend_Zero:
+            return VK_BLEND_FACTOR_ZERO;
     }
 }

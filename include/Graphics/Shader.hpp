@@ -11,14 +11,18 @@ namespace AstralCanvas
         ShaderType shaderType;
         ShaderModule shaderModule1;
         ShaderModule shaderModule2;
-        PipelineLayout shaderPipelineLayout1;
-        PipelineLayout shaderPipelineLayout2;
+        PipelineLayout shaderPipelineLayout;
+        //PipelineLayout shaderPipelineLayout1;
+        //PipelineLayout shaderPipelineLayout2;
         ShaderVariables shaderVariables;
 
         Shader();
         Shader(IAllocator *allocator, ShaderType type);
         void deinit();
     };
+
+    void ParseShaderVariables(SomnialJson::JsonElement *json, ShaderVariables *results, ShaderInputAccessedBy accessedByShaderOfType);
+
     i32 CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader* result);
 }
 

@@ -33,4 +33,6 @@ void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvasWindow* wind
 void AstralCanvasWgpu_ResizeWindow(AstralCanvasWindow *window);
 
 void AstralCanvasWgpu_Deinit();
+
+i32 AstralCanvasWgpu_CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader *result);
 #endif
