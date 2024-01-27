@@ -1,4 +1,4 @@
-#include "Graphics/Vulkan/VulkanImplementations.hpp"
+#include "Graphics/Vulkan/VulkanHelpers.hpp"
 #include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 #include "Graphics/Vulkan/VulkanGPU.hpp"
 #include "Graphics/Vulkan/VulkanVertex.hpp"
@@ -96,7 +96,7 @@ void AstralCanvasVk_EndTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvas
     queueToUse->commandPoolMutex.ExitLock();
 }
 
-void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, Texture2D *texture, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout)
+void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, VkImage imageHandle, u32 mipLevels, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
     VkImageMemoryBarrier memBarrier = {};
     memBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -104,10 +104,10 @@ void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, Texture2D *tex
     memBarrier.newLayout = newLayout;
     memBarrier.srcQueueFamilyIndex = 0;
     memBarrier.dstQueueFamilyIndex = 0;
-    memBarrier.image = (VkImage)texture->imageHandle;
+    memBarrier.image = imageHandle;
     memBarrier.subresourceRange.aspectMask = aspectFlags;
     memBarrier.subresourceRange.baseMipLevel = 0;
-    memBarrier.subresourceRange.levelCount = texture->mipLevels;
+    memBarrier.subresourceRange.levelCount = mipLevels;
     memBarrier.subresourceRange.baseArrayLayer = 0;
     memBarrier.subresourceRange.layerCount = 1;
 
@@ -227,7 +227,7 @@ void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, Texture2D *tex
         AstralCanvasVk_EndTransientCommandBuffer(gpu, cmdQueue, cmdBuffer);
     }
 }
-void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, Texture2D *to)
+void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, VkImage imageHandle, u32 width, u32 height)
 {
     VkCommandBuffer transientCmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, &gpu->DedicatedGraphicsQueue, true);
 
@@ -244,173 +244,20 @@ void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, Textu
     bufferImageCopy.imageSubresource.layerCount = 1;
 
     bufferImageCopy.imageOffset = {};
-    bufferImageCopy.imageExtent.width = to->width;
-    bufferImageCopy.imageExtent.height = to->height;
+    bufferImageCopy.imageExtent.width = width;
+    bufferImageCopy.imageExtent.height = height;
     bufferImageCopy.imageExtent.depth = 1;
 
     vkCmdCopyBufferToImage(
         transientCmdBuffer,
         from,
-        (VkImage)to->imageHandle,
+        (VkImage)imageHandle,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         1, //length of things to copy
         &bufferImageCopy
         );
 
     AstralCanvasVk_EndTransientCommandBuffer(gpu, &gpu->DedicatedGraphicsQueue, transientCmdBuffer);
-}
-
-void AstralCanvasVk_CreateSamplerState(AstralVulkanGPU *gpu, SamplerState *samplerState)
-{
-    VkSamplerCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    createInfo.magFilter = AstralCanvasVk_FromSampleMode(samplerState->sampleMode);
-    createInfo.minFilter = AstralCanvasVk_FromSampleMode(samplerState->sampleMode);
-
-    VkSamplerAddressMode mode = AstralCanvasVk_FromRepeatMode(samplerState->repeatMode);
-
-    createInfo.addressModeU = mode;
-    createInfo.addressModeV = mode;
-    createInfo.addressModeW = mode;
-
-    createInfo.anisotropyEnable = (i32)samplerState->anisotropic;
-    createInfo.maxAnisotropy = samplerState->anisotropyLevel;
-    createInfo.unnormalizedCoordinates = (i32)false;
-    createInfo.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
-    createInfo.compareEnable = false;
-    createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-
-    createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    createInfo.mipLodBias = 0.0f;
-    createInfo.minLod = 0.0f;
-    createInfo.maxLod = 0.0f;
-
-    VkSampler sampler;
-    if (vkCreateSampler(gpu->logicalDevice, &createInfo, NULL, &sampler) != VK_SUCCESS)
-    {
-        THROW_ERR("Failed to create sampler");
-        samplerState->constructed = true;
-    }
-}
-void AstralCanvasVk_DestroySamplerState(AstralVulkanGPU *gpu, SamplerState *samplerState)
-{
-    vkDestroySampler(gpu->logicalDevice, (VkSampler)samplerState->handle, NULL);
-}
-
-void AstralCanvasVk_DestroyTexture2D(AstralVulkanGPU *gpu, Texture2D *texture)
-{
-    if (!texture->isDisposed && texture->constructed)
-    {
-        vkDestroyImageView(gpu->logicalDevice, (VkImageView)texture->imageView, NULL);
-        vkDestroyImage(gpu->logicalDevice, (VkImage)texture->imageHandle, NULL);
-        vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), texture->allocatedMemory.vkAllocation);
-        texture->isDisposed = true;
-    }
-}
-void AstralCanvasVk_CreateTexture2D(AstralVulkanGPU *gpu, Texture2D *texture)
-{
-    VkImage image;
-    if (texture->imageHandle == NULL)
-    {
-        VkImageCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        createInfo.imageType = VK_IMAGE_TYPE_2D;
-        createInfo.extent.width = texture->width;
-        createInfo.extent.height = texture->height;
-        createInfo.extent.depth = 1;
-
-        createInfo.mipLevels = texture->mipLevels;
-        createInfo.arrayLayers = 1;
-        createInfo.format = AstralCanvasVk_FromImageFormat(texture->imageFormat);
-        createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        if (createInfo.format >= ImageFormat_DepthNone)
-        {
-            createInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        }
-        else
-        {
-            if (texture->usedForRenderTarget)
-            {
-                createInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-            }
-            else
-            {
-                createInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-            }
-        }
-        createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        createInfo.flags = 0;
-
-        if (vkCreateImage(gpu->logicalDevice, &createInfo, NULL, (VkImage*)&texture->imageHandle) != VK_SUCCESS)
-        {
-            THROW_ERR("Failed to create image");
-        }
-    }
-    image = (VkImage)texture->imageHandle;
-
-    if (texture->bytes != NULL && (texture->width * texture->height > 0) && texture->ownsHandle)
-    {
-        //VmaAllocation
-        texture->allocatedMemory = AstralCanvasVk_AllocateMemoryForImage(image, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-        if (!texture->usedForRenderTarget)
-        {
-            VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, texture->width * texture->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-
-            AstralCanvasMemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), true);
-
-            memcpy(stagingMemory.vkAllocationInfo.pMappedData, texture->bytes, (usize)(texture->width * texture->height * 4));
-
-            AstralCanvasVk_TransitionTextureLayout(gpu, texture, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-            AstralCanvasVk_CopyBufferToImage(gpu, stagingBuffer, texture);
-
-            AstralCanvasVk_TransitionTextureLayout(gpu, texture, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-            vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
-
-            vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
-        }
-    }
-    else
-    {
-        if (texture->imageFormat >= ImageFormat_DepthNone)
-        {
-            AstralCanvasVk_TransitionTextureLayout(gpu, texture, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-        }
-        else AstralCanvasVk_TransitionTextureLayout(gpu, texture, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    }
-
-    VkImageViewCreateInfo viewCreateInfo = {};
-    viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewCreateInfo.image = image;
-    viewCreateInfo.format = AstralCanvasVk_FromImageFormat(texture->imageFormat);
-    viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-
-    if (texture->imageFormat >= ImageFormat_DepthNone)
-    {
-        viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    }
-    else 
-        viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    viewCreateInfo.subresourceRange.baseMipLevel = 0;
-    viewCreateInfo.subresourceRange.levelCount = texture->mipLevels;
-    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-    viewCreateInfo.subresourceRange.layerCount = 1;
-
-    viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-    if (vkCreateImageView(gpu->logicalDevice, &viewCreateInfo, NULL, (VkImageView*)&texture->imageView) != VK_SUCCESS)
-    {
-        THROW_ERR("Failed to create image view");
-    }
-
-    texture->constructed = true;
 }
 
 VkFramebuffer AstralCanvasVk_GetOrCreateRenderTarget(AstralVulkanGPU *gpu, RenderTarget *renderTarget, RenderProgram *forProgram)
@@ -446,146 +293,6 @@ VkFramebuffer AstralCanvasVk_GetOrCreateRenderTarget(AstralVulkanGPU *gpu, Rende
         
     }
     
-}
-
-VkRenderPass AstralCanvasVk_CreateRenderProgram(AstralVulkanGPU *gpu, AstralCanvas::RenderProgram *program)
-{
-    if (program->renderPasses.count <= 0 || program->attachments.count <= 0)
-    {
-        return NULL;
-    }
-
-    IAllocator defaultAllocator = GetCAllocator();
-    collections::vector<VkAttachmentReference> subpassDescriptionAttachmentRefs = collections::vector<VkAttachmentReference>(&defaultAllocator);
-    VkSubpassDescription *subpassDescriptions = (VkSubpassDescription*)malloc(sizeof(VkSubpassDescription) * program->renderPasses.count);
-    
-    for (usize i = 0; i < program->renderPasses.count; i++)
-    {
-        RenderPass renderPassData = program->renderPasses.ptr[i];
-        subpassDescriptions[i] = {};
-        subpassDescriptions[i].flags = 0;
-
-        //input attachments are currently unused
-        subpassDescriptions[i].inputAttachmentCount = 0;
-        subpassDescriptions[i].pInputAttachments = NULL;
-
-        //references to the color attachments
-        //can have multiple color attachments (The shader can read from multiple input buffers)
-        u32 startCount = subpassDescriptionAttachmentRefs.count;
-        for (usize j = 0; j < renderPassData.colorAttachmentIndices.length; j++)
-        {
-            VkAttachmentReference ref;
-            ref.attachment = renderPassData.colorAttachmentIndices.data[j];
-            ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            subpassDescriptionAttachmentRefs.Add(ref);
-        }
-
-        subpassDescriptions[i].colorAttachmentCount = (u32)renderPassData.colorAttachmentIndices.length;
-        subpassDescriptions[i].pColorAttachments = &subpassDescriptionAttachmentRefs.ptr[startCount];
-
-        //lastly, depth attachment (if any)
-        if (renderPassData.depthAttachmentIndex > -1)
-        {
-            VkAttachmentReference ref;
-            ref.attachment = renderPassData.depthAttachmentIndex;
-            ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            subpassDescriptionAttachmentRefs.Add(ref);
-
-            subpassDescriptions[i].pDepthStencilAttachment = &subpassDescriptionAttachmentRefs.ptr[subpassDescriptionAttachmentRefs.count - 1];
-        }
-
-        //no clue what these are AKA dont need them rn
-        subpassDescriptions[i].preserveAttachmentCount = 0;
-        subpassDescriptions[i].pResolveAttachments = NULL;
-        subpassDescriptions[i].pResolveAttachments = NULL;
-
-        subpassDescriptions[i].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    }
-
-    VkAttachmentDescription *attachmentDescriptions = (VkAttachmentDescription *)malloc(sizeof(VkAttachmentDescription) * program->attachments.count);
-    for (usize i = 0; i < program->attachments.count; i++)
-    {
-        RenderProgramImageAttachment attachmentData = program->attachments.ptr[i];
-        attachmentDescriptions[i] = {};
-        attachmentDescriptions[i].samples = VK_SAMPLE_COUNT_1_BIT;
-        attachmentDescriptions[i].flags = 0;
-        if (attachmentData.imageFormat >= ImageFormat_DepthNone)
-        {
-            attachmentDescriptions[i].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            if (attachmentData.clearColor != COLOR_TRANSPARENT)
-            {
-                attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            }
-            else
-            {
-                attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-            }
-        }
-        else
-        {
-            attachmentDescriptions[i].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            if (attachmentData.clearDepth)
-            {
-                attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-                attachmentDescriptions[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-                if (attachmentData.imageFormat == ImageFormat_Depth16Stencil8 || attachmentData.imageFormat == ImageFormat_Depth24Stencil8)
-                {
-                    attachmentDescriptions[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-                }
-            }
-            else
-            {
-                attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-                attachmentDescriptions[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-                if (attachmentData.imageFormat == ImageFormat_Depth16Stencil8 || attachmentData.imageFormat == ImageFormat_Depth24Stencil8)
-                {
-                    attachmentDescriptions[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-                }
-            }
-        }
-    }
-
-    //create dependencies in order that renderpasses were placed into the program.
-    //Should (probably) make this customisable in the future
-    //No non-linear/complex renderprograms for now
-    VkSubpassDependency *subpassDependencies = (VkSubpassDependency*)malloc(sizeof(VkSubpassDependency) * program->renderPasses.count - 1);
-    for (usize i = 0; i < program->renderPasses.count - 1; i++)
-    {
-        subpassDependencies[i].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-        subpassDependencies[i].srcSubpass = i;
-        subpassDependencies[i].dstSubpass = i + 1;
-        subpassDependencies[i].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        subpassDependencies[i].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        subpassDependencies[i].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        subpassDependencies[i].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    }
-
-    VkRenderPassCreateInfo programCreateInfo = {};
-    programCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-
-    programCreateInfo.attachmentCount = (u32)program->attachments.count;
-    programCreateInfo.pAttachments = attachmentDescriptions;
-
-    programCreateInfo.subpassCount = program->renderPasses.count;
-    programCreateInfo.pSubpasses = subpassDescriptions;
-
-    programCreateInfo.dependencyCount = program->renderPasses.count - 1;
-    programCreateInfo.pDependencies = subpassDependencies;
-
-    programCreateInfo.flags = 0;
-    programCreateInfo.pNext = NULL;
-
-    VkRenderPass result;
-    vkCreateRenderPass(gpu->logicalDevice, &programCreateInfo, NULL, &result);
-
-    free(subpassDependencies);
-    free(attachmentDescriptions);
-    free(subpassDescriptions);
-    subpassDescriptionAttachmentRefs.deinit();
-
-    return result;
 }
 
 void AstralCanvasVk_DestroyRenderPipeline(RenderPipeline *pipeline)

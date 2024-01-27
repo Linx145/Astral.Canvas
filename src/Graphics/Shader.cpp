@@ -7,6 +7,7 @@
 
 #ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
+#include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 #endif
 
 using namespace SomnialJson;
@@ -127,17 +128,23 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_VULKAN
             case Backend_Vulkan:
             {
+                VkDevice logicalDevice = AstralCanvasVk_GetCurrentGPU()->logicalDevice;
+                
+                if (this->shaderPipelineLayout != NULL)
+                {
+                    vkDestroyDescriptorSetLayout(logicalDevice, (VkDescriptorSetLayout)this->shaderPipelineLayout, NULL);
+                }
                 if (this->shaderModule1 != NULL)
                 {
-                    vkDestroyShaderModule(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkShaderModule)this->shaderModule1, NULL);
+                    vkDestroyShaderModule(logicalDevice, (VkShaderModule)this->shaderModule1, NULL);
                 }
                 if (this->shaderModule2 != NULL)
                 {
-                    vkDestroyShaderModule(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkShaderModule)this->shaderModule2, NULL);
+                    vkDestroyShaderModule(logicalDevice, (VkShaderModule)this->shaderModule2, NULL);
                 }
                 if (this->shaderPipelineLayout != NULL)
                 {
-                    vkDestroyDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkDescriptorSetLayout)this->shaderPipelineLayout, NULL);
+                    vkDestroyDescriptorSetLayout(logicalDevice, (VkDescriptorSetLayout)this->shaderPipelineLayout, NULL);
                 }
                 this->shaderVariables.deinit();
                 break;
@@ -248,11 +255,18 @@ namespace AstralCanvas
                                         VkDescriptorSetLayoutBinding layoutBinding = {};
                                         layoutBinding.binding = resource.binding;
                                         layoutBinding.descriptorCount = max(resource.arrayLength, 1);
-                                        //layoutBinding.descriptorType = 
+                                        layoutBinding.descriptorType = AstralCanvasVk_FromResourceType(resource.type);
+                                        layoutBinding.stageFlags = AstralCanvasVk_FromAccessedBy(resource.accessedBy);
+                                        layoutBinding.pImmutableSamplers = NULL;
+
+                                        bindings.data[resource.binding] = layoutBinding;
                                     }
                                 }
                             }
+                            layoutInfo.pBindings = bindings.data;
                         }
+
+                        vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout);
                     }
                     else
                     {

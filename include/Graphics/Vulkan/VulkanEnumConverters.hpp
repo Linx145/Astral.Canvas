@@ -114,6 +114,43 @@ inline VkCullModeFlags AstralCanvasVk_FromCullMode(AstralCanvas::CullMode cullMo
             return VK_CULL_MODE_BACK_BIT;
     }
 }
+inline VkDescriptorType AstralCanvasVk_FromResourceType(ShaderResourceType type)
+{
+    switch (type)
+    {
+        case ShaderResourceType_Texture:
+            return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        case ShaderResourceType_Sampler:
+            return VK_DESCRIPTOR_TYPE_SAMPLER;
+        case ShaderResourceType_Uniform:
+            return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        case ShaderResourceType_StructuredBuffer:
+            return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    }
+}
+inline VkShaderStageFlags AstralCanvasVk_FromAccessedBy(ShaderInputAccessedBy accessedBy)
+{
+    VkShaderStageFlags stageFlags = 0;
+    if ((accessedBy & InputAccessedBy_Compute) != 0)
+    {
+        stageFlags = stageFlags | VK_SHADER_STAGE_COMPUTE_BIT;
+    }
+    if ((accessedBy & InputAccessedBy_Fragment) != 0)
+    {
+        stageFlags = stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT;
+    }
+    if ((accessedBy & InputAccessedBy_Vertex) != 0)
+    {
+        stageFlags = stageFlags | VK_SHADER_STAGE_VERTEX_BIT;
+    }
+    return stageFlags;
+    // switch (blend)
+    // {
+    //     case InputAccessedBy_Compute:
+    //         return VK_SHADER_STAGE_COMPUTE_BIT;
+    //     case InputAccessedBy_Fragment:
+    // }
+}
 inline VkBlendFactor AstralCanvasVk_FromBlend(Blend blend)
 {
     switch (blend)

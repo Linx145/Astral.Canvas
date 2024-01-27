@@ -15,20 +15,8 @@ VkBuffer AstralCanvasVk_CreateResourceBuffer(AstralVulkanGPU *gpu, usize size, V
 VkCommandBuffer AstralCanvasVk_CreateTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvasVkCommandQueue *queueToUse, bool alsoBeginBuffer);
 void AstralCanvasVk_EndTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvasVkCommandQueue *queueToUse, VkCommandBuffer commandBuffer);
 
-void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, AstralCanvas::Texture2D *texture, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout);
-
-void AstralCanvasVk_CreateSamplerState(AstralVulkanGPU *gpu, AstralCanvas::SamplerState *samplerState);
-void AstralCanvasVk_DestroySamplerState(AstralVulkanGPU *gpu, AstralCanvas::SamplerState *samplerState);
-
-void AstralCanvasVk_DestroyTexture2D(AstralVulkanGPU *gpu, AstralCanvas::Texture2D *texture);
-void AstralCanvasVk_CreateTexture2D(AstralVulkanGPU *gpu, AstralCanvas::Texture2D *texture);
-
-VkRenderPass AstralCanvasVk_CreateRenderProgram(AstralVulkanGPU *gpu, AstralCanvas::RenderProgram *program);
-
-void AstralCanvasVk_DestroyShader(AstralCanvas::Shader *shader);
-
-VkPipeline AstralCanvasVk_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse);
-void AstralCanvasVk_DestroyRenderPipeline(AstralCanvas::RenderPipeline *pipeline);
+void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, VkImage imageHandle, u32 width, u32 height);
+void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, VkImage imageHandle, u32 mipLevels, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 inline AstralCanvasMemoryAllocation AstralCanvasVk_AllocateMemoryForImage(VkImage image, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlagBits memoryProperties)
 {
@@ -68,3 +56,8 @@ inline AstralCanvasMemoryAllocation AstralCanvasVk_AllocateMemoryForBuffer(VkBuf
 
     return memoryAllocated;
 }
+
+
+VkPipeline AstralCanvasVk_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse);
+void AstralCanvasVk_DestroyRenderPipeline(AstralCanvas::RenderPipeline *pipeline);
+

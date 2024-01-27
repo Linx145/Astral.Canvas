@@ -2,8 +2,8 @@
 #include "Graphics/CurrentBackend.hpp"
 
 #ifdef ASTRALCANVAS_VULKAN
-#include "Graphics/Vulkan/VulkanImplementations.hpp"
-#include "Graphics/Vulkan/VulkanInstanceData.hpp"
+#include "Graphics/Vulkan/VulkanEnumConverters.hpp"
+#include "Graphics/Vulkan/VulkanHelpers.hpp"
 #endif
 
 #include "ErrorHandling.hpp"
@@ -40,7 +40,36 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_VULKAN
             AstralCanvas_Vulkan:
             {
-                AstralCanvasVk_CreateSamplerState(AstralCanvasVk_GetCurrentGPU(), this);
+                AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+                VkSamplerCreateInfo createInfo = {};
+                createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                createInfo.magFilter = AstralCanvasVk_FromSampleMode(this->sampleMode);
+                createInfo.minFilter = AstralCanvasVk_FromSampleMode(this->sampleMode);
+
+                VkSamplerAddressMode mode = AstralCanvasVk_FromRepeatMode(this->repeatMode);
+
+                createInfo.addressModeU = mode;
+                createInfo.addressModeV = mode;
+                createInfo.addressModeW = mode;
+
+                createInfo.anisotropyEnable = (i32)this->anisotropic;
+                createInfo.maxAnisotropy = this->anisotropyLevel;
+                createInfo.unnormalizedCoordinates = (i32)false;
+                createInfo.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+                createInfo.compareEnable = false;
+                createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+                createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                createInfo.mipLodBias = 0.0f;
+                createInfo.minLod = 0.0f;
+                createInfo.maxLod = 0.0f;
+
+                VkSampler sampler;
+                if (vkCreateSampler(gpu->logicalDevice, &createInfo, NULL, &sampler) != VK_SUCCESS)
+                {
+                    THROW_ERR("Failed to create sampler");
+                    this->constructed = true;
+                }
                 break;
             }
             #endif
@@ -57,11 +86,13 @@ namespace AstralCanvas
         {
             switch (this->backend)
             {
+                #ifdef ASTRALCANVAS_VULKAN
                 AstralCanvas_Vulkan:
                 {
-                    AstralCanvasVk_DestroySamplerState(AstralCanvasVk_GetCurrentGPU(), this);
+                    vkDestroySampler(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkSampler)this->handle, NULL);
                     break;
                 }
+                #endif
                 default:
                     THROW_ERR("Unimplemented backend");
             }
