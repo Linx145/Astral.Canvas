@@ -283,5 +283,6 @@ namespace AstralCanvas
                 THROW_ERR("Unimplemented backend");
                 break;
         }
+        return -1;
     }
 }

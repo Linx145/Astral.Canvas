@@ -1,5 +1,6 @@
 #include <Graphics/Vulkan/VulkanEngine.hpp>
 #include <Graphics/Vulkan/VulkanInstanceData.hpp>
+#include "Graphics/Vulkan/vk_mem_alloc.h"
 
 using namespace collections;
 
@@ -50,12 +51,12 @@ bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validat
 		return false;
 	}
 	printf("Created window surface\n");
-	option<AstralVulkanGPU> gpu = AstralCanvasVk_SelectGPU(allocator, AstralCanvasVk_GetInstance(), (VkSurfaceKHR)window->windowSurfaceHandle, requiredExtensions);
-	if (!gpu.present)
+	AstralVulkanGPU gpu;
+	if (!AstralCanvasVk_SelectGPU(allocator, AstralCanvasVk_GetInstance(), (VkSurfaceKHR)window->windowSurfaceHandle, requiredExtensions, &gpu))
 	{
 		return false;
 	}
-	AstralCanvasVk_SetCurrentGPU(gpu.value);
+	AstralCanvasVk_SetCurrentGPU(gpu);
 	printf("Created GPU interface\n");
 
 	VmaVulkanFunctions vulkanAllocatorFunctions = {};
@@ -64,9 +65,9 @@ bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validat
 
 	VmaAllocator vulkanAllocator;
 	VmaAllocatorCreateInfo allocatorCreateInfo = {};
-	allocatorCreateInfo.device = gpu.value.logicalDevice;
+	allocatorCreateInfo.device = gpu.logicalDevice;
 	allocatorCreateInfo.instance = AstralCanvasVk_GetInstance();
-	allocatorCreateInfo.physicalDevice = gpu.value.physicalDevice;
+	allocatorCreateInfo.physicalDevice = gpu.physicalDevice;
 	allocatorCreateInfo.pAllocationCallbacks = NULL;
 	allocatorCreateInfo.pDeviceMemoryCallbacks = NULL;
 	allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
@@ -78,6 +79,10 @@ bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validat
 	}
 	AstralCanvasVk_SetCurrentVulkanAllocator(vulkanAllocator);
 	printf("Created memory allocator\n");
+
+	AstralVulkanSwapchain swapchain = AstralCanvasVk_CreateSwapchain(allocator, AstralCanvasVk_GetCurrentGPU(), window);
+	AstralCanvasVk_SetCurrentSwapchain(swapchain);
+	printf("Created swapchain\n");
 }
 
 bool AstralCanvasVk_CreateInstance(IAllocator* allocator, Array<const char*> validationLayersToUse, const char* appName, const char* engineName, u32 applicationVersion, u32 engineVersion, u32 vulkanVersion)
@@ -182,15 +187,25 @@ bool AstralCanvasVk_CreateDebugMessenger()
 
 void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvasWindow* window)
 {
+	AstralVulkanSwapchain *swapchain = AstralCanvasVk_GetCurrentSwapchain();
+	if (swapchain != NULL)
+	{
+		AstralCanvasVk_DestroySwapchain(swapchain);
+	}
+
 	VmaAllocator vma = AstralCanvasVk_GetCurrentVulkanAllocator();
 	if (vma != NULL)
 	{
 		vmaDestroyAllocator(vma);
 	}
-	
-	VkInstance instance = AstralCanvasVk_GetInstance();
-	AstralCanvasVk_GetCurrentGPU()->deinit();
 
+	AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+	if (gpu != NULL)
+	{
+		AstralCanvasVk_ReleaseGPU(gpu);
+	}
+
+	VkInstance instance = AstralCanvasVk_GetInstance();
 	vkDestroySurfaceKHR(instance, (VkSurfaceKHR)window->windowSurfaceHandle, NULL);
 
 	if (AstralCanvasVk_ValidationLayersIsEnabled())

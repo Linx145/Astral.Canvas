@@ -5,8 +5,6 @@
 #include "time.h"
 #include "Graphics/Shader.hpp"
 
-AstralCanvasShader shader;
-
 void Initialize()
 {
 	/*IAllocator cAllocator = GetCAllocator();
@@ -27,7 +25,6 @@ void Initialize()
 }
 void Deinitialize()
 {
-	shader.deinit();
 }
 
 i32 main()

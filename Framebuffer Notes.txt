@@ -1,0 +1,21 @@
+The idea of multiple framebuffers for a single texture is incorrect. 
+We are trying to get a render program that outputs the same image format, 
+depth format and final layout as the framebuffer's image format, depth 
+format and layout.
+
+A framebuffer cannot be used without a render program, since all 
+rendering needs to go through the render program, and without rendering, 
+the framebuffer has no use. Thus, whenever a framebuffer is used, it 
+is guaranteed that a render program is active as well. It is up to the 
+framework to ensure that the render program and the set framebuffer have 
+the same signature
+
+If they have the same signature, the renderprogram will be able to output 
+to the framebuffer. Only then, should we construct the framebuffer with 
+the renderprogram as it's template to draw from.
+
+An issue arises with the renderprogram final output layout. We want each program
+to be able to render to either a framebuffer, or the backbuffer. For framebuffers,
+the layout should be ShaderReadOnlyOptimal, while for the backbuffer, it should be
+PresentSrcKhr, so that we don't have to pipeline-barrier transition it again. Since
+there are 2 different output layouts, we'll actually need two renderprogram handles

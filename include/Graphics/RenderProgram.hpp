@@ -3,9 +3,30 @@
 #include "vector.hpp"
 #include "Graphics/Enums.hpp"
 #include "Color.hpp"
+#include "hash.hpp"
 
 namespace AstralCanvas
 {
+    struct RenderProgramSignature
+    {
+        ImageFormat imageFormat;
+        ImageFormat depthFormat;
+        bool mustClear;
+        bool willDrawToWindow;
+    };
+    inline u32 RenderProgramSignatureHash(RenderProgramSignature value)
+    {
+        return CombineHash(CombineHash((u32)value.imageFormat, (u32)value.depthFormat), CombineHash((u32)value.mustClear, (u32)value.willDrawToWindow));
+    }
+    inline bool RenderProgramSignatureEql(RenderProgramSignature A, RenderProgramSignature B)
+    {
+        return 
+        A.imageFormat == B.imageFormat
+         && A.depthFormat == B.depthFormat
+          && A.mustClear == B.mustClear
+           && A.willDrawToWindow == B.willDrawToWindow;
+    }
+
     struct RenderProgramImageAttachment
     {
         /// The format of the image that the render stage(s) with this associated attachment should take
@@ -16,6 +37,8 @@ namespace AstralCanvas
         bool clearDepth;
         /// Which renderprogram this pass belongs to
         void *belongsToProgram;
+
+        RenderPassOutputType outputType;
     };
     struct RenderPass
     {
@@ -33,10 +56,11 @@ namespace AstralCanvas
         collections::vector<RenderProgramImageAttachment> attachments;
         collections::vector<RenderPass> renderPasses;
 
+        RenderProgram();
         RenderProgram(IAllocator *allocator);
 
         /// Adds an attachment to the render program. An attachment refers to the state of the textures passing in and out of each renderpass
-        i32 AddAttachment(ImageFormat imageFormat, Color clearColor, bool clearDepth);
+        i32 AddAttachment(ImageFormat imageFormat, Color clearColor, bool clearDepth, RenderPassOutputType outputType);
         /// Adds a render pass to the render program. A render pass is a stage within the 
         /// program, defining how it can read the previous stage (if any)'s texture and how 
         /// it will output to the next stage, or to the result rendertarget.
@@ -51,4 +75,6 @@ namespace AstralCanvas
         /// will be in the aforementioned next pass.
         void NextRenderPass();
     };
+
+    RenderProgram *GetDynamicRenderProgram(IAllocator *allocator, ImageFormat imageFormat, ImageFormat depthFormat, bool mustClear, bool willDrawToWindow);
 }

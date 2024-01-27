@@ -1,5 +1,6 @@
 #pragma once
 #include "Linxc.h"
+
 #ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/vk_mem_alloc.h"
 #endif

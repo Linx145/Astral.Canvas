@@ -91,19 +91,9 @@ struct AstralVulkanGPU
         DedicatedComputeQueue = AstralCanvasVkCommandQueue();
         DedicatedTransferQueue = AstralCanvasVkCommandQueue();
     }
-    inline void deinit()
-    {
-        DedicatedGraphicsQueue.deinit();
-        DedicatedComputeQueue.deinit();
-        DedicatedTransferQueue.deinit();
-        if (logicalDevice != NULL)
-        {
-            vkDestroyDevice(logicalDevice, NULL);
-        }
-        requiredExtensions.deinit();
-    }
 };
-option<AstralVulkanGPU> AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstance instance, VkSurfaceKHR windowSurface, collections::Array<const char*> requiredExtensions);
+bool AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstance instance, VkSurfaceKHR windowSurface, collections::Array<const char *> requiredExtensions, AstralVulkanGPU *output);
+void AstralCanvasVk_ReleaseGPU(AstralVulkanGPU *gpu);
 bool AstralCanvasVk_GPUExtensionsSupported(AstralVulkanGPU *gpu);
 u32 AstralCanvasVk_GetGPUScore(AstralVulkanGPU* gpu, VkSurfaceKHR windowSurface);
 bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* allocator);

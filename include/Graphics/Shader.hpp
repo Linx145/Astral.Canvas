@@ -3,6 +3,8 @@
 #include "string.hpp"
 #include "array.hpp"
 #include "Graphics/ShaderResources.hpp"
+#include "Graphics/Enums.hpp"
+#include "Json.hpp"
 
 namespace AstralCanvas
 {

@@ -2,103 +2,141 @@
 #include "vulkan/vulkan.h"
 #include "Graphics/Enums.hpp"
 
-inline VkFilter AstralCanvasVk_FromSampleMode(SampleMode sampleMode)
+inline VkFilter AstralCanvasVk_FromSampleMode(AstralCanvas::SampleMode sampleMode)
 {
     switch (sampleMode)
     {
-        case SampleMode_Linear:
+        case AstralCanvas::SampleMode::SampleMode_Linear:
             return VK_FILTER_LINEAR;
-        case SampleMode_Point:
+        case AstralCanvas::SampleMode::SampleMode_Point:
             return VK_FILTER_NEAREST;
-        case SampleMode_Cubic:
+        case AstralCanvas::SampleMode::SampleMode_Cubic:
             return VK_FILTER_CUBIC_EXT;
     }
 }
-inline VkSamplerAddressMode AstralCanvasVk_FromRepeatMode(RepeatMode repeatMode)
+inline VkSamplerAddressMode AstralCanvasVk_FromRepeatMode(AstralCanvas::RepeatMode repeatMode)
 {
     switch (repeatMode)
     {
-        case RepeatMode_ClampToEdgeColor:
+        case AstralCanvas::RepeatMode::RepeatMode_ClampToEdgeColor:
             return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        case RepeatMode_ClampToSpecificColor:
+        case AstralCanvas::RepeatMode::RepeatMode_ClampToSpecificColor:
             return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-        case RepeatMode_Repeat:
+        case AstralCanvas::RepeatMode::RepeatMode_Repeat:
             return VK_SAMPLER_ADDRESS_MODE_REPEAT;
         default:
             return VK_SAMPLER_ADDRESS_MODE_REPEAT;
     }
 }
-inline VkFormat AstralCanvasVk_FromVertexElementFormat(VertexElementFormat format)
+inline VkFormat AstralCanvasVk_FromVertexElementFormat(AstralCanvas::VertexElementFormat format)
 {
     switch (format)
     {
-        case VertexElement_Float:
+        case AstralCanvas::VertexElementFormat::VertexElement_Float:
             return VK_FORMAT_R32_SFLOAT;
-        case VertexElement_Vector2:
+        case AstralCanvas::VertexElementFormat::VertexElement_Vector2:
             return VK_FORMAT_R32G32_SFLOAT;
-        case VertexElement_Vector3:
+        case AstralCanvas::VertexElementFormat::VertexElement_Vector3:
             return VK_FORMAT_R32G32B32_SFLOAT;
-        case VertexElement_Vector4:
+        case AstralCanvas::VertexElementFormat::VertexElement_Vector4:
             return VK_FORMAT_R32G32B32A32_SFLOAT;
-        case VertexElement_Int:
+        case AstralCanvas::VertexElementFormat::VertexElement_Int:
             return VK_FORMAT_R32_SINT;
-        case VertexElement_Color:
+        case AstralCanvas::VertexElementFormat::VertexElement_Color:
             return VK_FORMAT_R8G8B8A8_UNORM;
-        case VertexElement_Uint:
+        case AstralCanvas::VertexElementFormat::VertexElement_Uint:
             return VK_FORMAT_R32_UINT;
     }
 }
-inline VkFormat AstralCanvasVk_FromImageFormat(ImageFormat format)
+inline VkFormat AstralCanvasVk_FromImageFormat(AstralCanvas::ImageFormat format)
 {
     switch (format)
     {
-        case ImageFormat_B8G8R8A8SNorm:
+        case AstralCanvas::ImageFormat::ImageFormat_B8G8R8A8SNorm:
             return VK_FORMAT_B8G8R8A8_SNORM;
-        case ImageFormat_B8G8R8A8Srgb:
+        case AstralCanvas::ImageFormat::ImageFormat_B8G8R8A8Srgb:
             return VK_FORMAT_B8G8R8A8_SRGB;
-        case ImageFormat_B8G8R8A8Unorm:
+        case AstralCanvas::ImageFormat::ImageFormat_B8G8R8A8Unorm:
             return VK_FORMAT_B8G8R8A8_UNORM;
 
-        case ImageFormat_R8G8B8A8SNorm:
+        case AstralCanvas::ImageFormat::ImageFormat_R8G8B8A8SNorm:
             return VK_FORMAT_R8G8B8A8_SNORM;
-        case ImageFormat_R8G8B8A8Srgb:
+        case AstralCanvas::ImageFormat::ImageFormat_R8G8B8A8Srgb:
             return VK_FORMAT_R8G8B8A8_SRGB;
-        case ImageFormat_R8G8B8A8Unorm:
+        case AstralCanvas::ImageFormat::ImageFormat_R8G8B8A8Unorm:
             return VK_FORMAT_R8G8B8A8_UNORM;
 
-        case ImageFormat_HalfVector4:
+        case AstralCanvas::ImageFormat::ImageFormat_HalfVector4:
             return VK_FORMAT_R16G16B16A16_SFLOAT;
-        case ImageFormat_R32Uint:
+        case AstralCanvas::ImageFormat::ImageFormat_R32Uint:
             return VK_FORMAT_R32_UINT;
-        case ImageFormat_Vector4:
+        case AstralCanvas::ImageFormat::ImageFormat_Vector4:
             return VK_FORMAT_R32G32B32A32_SFLOAT;
 
-        case ImageFormat_Depth16:
+        case AstralCanvas::ImageFormat::ImageFormat_Depth16:
             return VK_FORMAT_D16_UNORM;
-        case ImageFormat_Depth16Stencil8:
+        case AstralCanvas::ImageFormat::ImageFormat_Depth16Stencil8:
             return VK_FORMAT_D16_UNORM_S8_UINT;
-        case ImageFormat_Depth24Stencil8:
+        case AstralCanvas::ImageFormat::ImageFormat_Depth24Stencil8:
             return VK_FORMAT_D24_UNORM_S8_UINT;
-        case ImageFormat_Depth32:
+        case AstralCanvas::ImageFormat::ImageFormat_Depth32:
             return VK_FORMAT_D32_SFLOAT;
         
         default:
             return VK_FORMAT_UNDEFINED;
     }
 }
+inline AstralCanvas::ImageFormat AstralCanvasVk_FromVkFormat(VkFormat format)
+{
+    switch (format)
+    {
+        case VK_FORMAT_B8G8R8A8_SNORM:
+            return AstralCanvas::ImageFormat::ImageFormat_B8G8R8A8SNorm;
+        case VK_FORMAT_B8G8R8A8_SRGB:
+            return AstralCanvas::ImageFormat::ImageFormat_B8G8R8A8Srgb;
+        case VK_FORMAT_B8G8R8A8_UNORM:
+            return AstralCanvas::ImageFormat::ImageFormat_B8G8R8A8Unorm;
+
+        case VK_FORMAT_R8G8B8A8_SNORM:
+            return AstralCanvas::ImageFormat::ImageFormat_R8G8B8A8SNorm;
+        case VK_FORMAT_R8G8B8A8_SRGB:
+            return AstralCanvas::ImageFormat::ImageFormat_R8G8B8A8Srgb;
+        case VK_FORMAT_R8G8B8A8_UNORM:
+            return AstralCanvas::ImageFormat::ImageFormat_R8G8B8A8Unorm;
+
+        case VK_FORMAT_R16G16B16A16_SFLOAT:
+            return AstralCanvas::ImageFormat::ImageFormat_HalfVector4;
+        case VK_FORMAT_R32_UINT:
+            return AstralCanvas::ImageFormat::ImageFormat_R32Uint;
+        case VK_FORMAT_R32G32B32A32_SFLOAT:
+            return AstralCanvas::ImageFormat::ImageFormat_Vector4;
+
+        case VK_FORMAT_D16_UNORM:
+            return AstralCanvas::ImageFormat::ImageFormat_Depth16;
+        case VK_FORMAT_D16_UNORM_S8_UINT:
+            return AstralCanvas::ImageFormat::ImageFormat_Depth16Stencil8;
+        case VK_FORMAT_D24_UNORM_S8_UINT:
+            return AstralCanvas::ImageFormat::ImageFormat_Depth24Stencil8;
+        case VK_FORMAT_D32_SFLOAT:
+            return AstralCanvas::ImageFormat::ImageFormat_Depth32;
+        
+        default:
+            return AstralCanvas::ImageFormat_Undefined;
+    }
+}
 inline VkPrimitiveTopology AstralCanvasVk_FromPrimitiveType(AstralCanvas::PrimitiveType primitiveType)
 {
     switch (primitiveType)
     {
-        case PrimitiveType_LineList:
+        case AstralCanvas::PrimitiveType::PrimitiveType_LineList:
             return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-        case PrimitiveType_LineStrip:
+        case AstralCanvas::PrimitiveType::PrimitiveType_LineStrip:
             return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-        case PrimitiveType_TriangleList:
+        case AstralCanvas::PrimitiveType::PrimitiveType_TriangleList:
             return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        case PrimitiveType_TriangleStrip:
+        case AstralCanvas::PrimitiveType::PrimitiveType_TriangleStrip:
             return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-        case PrimitiveType_TriangleFan:
+        case AstralCanvas::PrimitiveType::PrimitiveType_TriangleFan:
             return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
     }
 }
@@ -106,40 +144,40 @@ inline VkCullModeFlags AstralCanvasVk_FromCullMode(AstralCanvas::CullMode cullMo
 {
     switch (cullMode)
     {
-        case CullMode_CullNone:
+        case AstralCanvas::CullMode::CullMode_CullNone:
             return VK_CULL_MODE_NONE;
-        case CullMode_CullClockwise:
+        case AstralCanvas::CullMode::CullMode_CullClockwise:
             return VK_CULL_MODE_FRONT_BIT;
-        case CullMode_CullCounterClockwise:
+        case AstralCanvas::CullMode::CullMode_CullCounterClockwise:
             return VK_CULL_MODE_BACK_BIT;
     }
 }
-inline VkDescriptorType AstralCanvasVk_FromResourceType(ShaderResourceType type)
+inline VkDescriptorType AstralCanvasVk_FromResourceType(AstralCanvas::ShaderResourceType type)
 {
     switch (type)
     {
-        case ShaderResourceType_Texture:
+        case AstralCanvas::ShaderResourceType::ShaderResourceType_Texture:
             return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-        case ShaderResourceType_Sampler:
+        case AstralCanvas::ShaderResourceType::ShaderResourceType_Sampler:
             return VK_DESCRIPTOR_TYPE_SAMPLER;
-        case ShaderResourceType_Uniform:
+        case AstralCanvas::ShaderResourceType::ShaderResourceType_Uniform:
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        case ShaderResourceType_StructuredBuffer:
+        case AstralCanvas::ShaderResourceType::ShaderResourceType_StructuredBuffer:
             return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     }
 }
-inline VkShaderStageFlags AstralCanvasVk_FromAccessedBy(ShaderInputAccessedBy accessedBy)
+inline VkShaderStageFlags AstralCanvasVk_FromAccessedBy(AstralCanvas::ShaderInputAccessedBy accessedBy)
 {
     VkShaderStageFlags stageFlags = 0;
-    if ((accessedBy & InputAccessedBy_Compute) != 0)
+    if ((accessedBy & AstralCanvas::ShaderInputAccessedBy::InputAccessedBy_Compute) != 0)
     {
         stageFlags = stageFlags | VK_SHADER_STAGE_COMPUTE_BIT;
     }
-    if ((accessedBy & InputAccessedBy_Fragment) != 0)
+    if ((accessedBy & AstralCanvas::ShaderInputAccessedBy::InputAccessedBy_Fragment) != 0)
     {
         stageFlags = stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT;
     }
-    if ((accessedBy & InputAccessedBy_Vertex) != 0)
+    if ((accessedBy & AstralCanvas::ShaderInputAccessedBy::InputAccessedBy_Vertex) != 0)
     {
         stageFlags = stageFlags | VK_SHADER_STAGE_VERTEX_BIT;
     }
@@ -151,31 +189,31 @@ inline VkShaderStageFlags AstralCanvasVk_FromAccessedBy(ShaderInputAccessedBy ac
     //     case InputAccessedBy_Fragment:
     // }
 }
-inline VkBlendFactor AstralCanvasVk_FromBlend(Blend blend)
+inline VkBlendFactor AstralCanvasVk_FromBlend(AstralCanvas::Blend blend)
 {
     switch (blend)
     {
-        case Blend_DestinationAlpha:
+        case AstralCanvas::Blend::Blend_DestinationAlpha:
             return VK_BLEND_FACTOR_DST_ALPHA;
-        case Blend_DestinationColor:
+        case AstralCanvas::Blend::Blend_DestinationColor:
             return VK_BLEND_FACTOR_DST_COLOR;
-        case Blend_SourceAlpha:
+        case AstralCanvas::Blend::Blend_SourceAlpha:
             return VK_BLEND_FACTOR_SRC_ALPHA;
-        case Blend_SourceColor:
+        case AstralCanvas::Blend::Blend_SourceColor:
             return VK_BLEND_FACTOR_SRC_COLOR;
 
-        case Blend_InverseDestinationAlpha:
+        case AstralCanvas::Blend::Blend_InverseDestinationAlpha:
             return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-        case Blend_InverseDestinationColor:
+        case AstralCanvas::Blend::Blend_InverseDestinationColor:
             return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-        case Blend_InverseSourceAlpha:
+        case AstralCanvas::Blend::Blend_InverseSourceAlpha:
             return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-        case Blend_InverseSourceColor:
+        case AstralCanvas::Blend::Blend_InverseSourceColor:
             return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
         
-        case Blend_One:
+        case AstralCanvas::Blend::Blend_One:
             return VK_BLEND_FACTOR_ONE;
-        case Blend_Zero:
+        case AstralCanvas::Blend::Blend_Zero:
             return VK_BLEND_FACTOR_ZERO;
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
-#include "Texture2D.hpp"
+#include "Graphics/Texture2D.hpp"
+#include "Graphics/RenderProgram.hpp"
 
 namespace AstralCanvas
 {
@@ -24,12 +25,9 @@ namespace AstralCanvas
         bool isDisposed;
         bool constructed;
 
-        RenderTarget(Texture2D thisBackendTexture, Texture2D thisDepthBuffer);
+        RenderTarget(Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer);
         RenderTarget(u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat);
         void deinit();
+        void Construct(AstralCanvas::RenderProgram *renderProgram);
     };
-
-    //void AstralCanvas_DestroyRenderTarget(RenderTarget *renderTarget);
-    //RenderTarget AstralCanvas_CreateRenderTargetFrom(Texture2D thisBackendTexture, Texture2D thisDepthBuffer);
-    //RenderTarget AstralCanvas_CreateRenderTargetFromWH(u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat);
 }

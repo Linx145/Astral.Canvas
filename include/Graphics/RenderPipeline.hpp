@@ -4,6 +4,7 @@
 #include "Graphics/VertexDeclarations.hpp"
 #include "Graphics/Shader.hpp"
 #include "Graphics/BlendState.hpp"
+#include "Graphics/RenderProgram.hpp"
 
 namespace AstralCanvas
 {
@@ -28,6 +29,7 @@ namespace AstralCanvas
     }
     struct RenderPipeline
     {
+        collections::hashmap<RenderPipelineBindZone, void *> zoneToPipelineInstance;
         void *layout;
         Shader *shader;
         collections::Array<VertexDeclaration> vertexDeclarations;
@@ -36,9 +38,10 @@ namespace AstralCanvas
         BlendState *blendState;
         bool depthWrite;
         bool depthTest;
-        collections::hashmap<RenderPipelineBindZone, void *> zoneToPipelineInstance;
 
         void deinit();
+        /// Retrieves or creates an instance of this pipeline for use in the given render program and pass.
+        void *GetOrCreateFor(AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse);
         RenderPipeline(IAllocator *allocator, Shader *pipelineShader, CullMode pipelineCullMode, PrimitiveType pipelinePrimitiveType, BlendState *pipelineBlendState, bool testDepth, bool writeToDepth, collections::Array<VertexDeclaration> pipelineVertexDeclarations);
     };
 }

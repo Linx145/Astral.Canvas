@@ -1,9 +1,9 @@
 #include "Graphics/Vulkan/VulkanVertex.hpp"
 #include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 
-AstralCanvasVk_VertexDecl AstralCanvasVk_CreateVertexDecl(IAllocator *allocator, AstralCanvas::VertexDeclaration *vertexDecl)
+AstralVulkanVertexDecl AstralCanvasVk_CreateVertexDecl(IAllocator *allocator, AstralCanvas::VertexDeclaration *vertexDecl)
 {
-    AstralCanvasVk_VertexDecl result = {};
+    AstralVulkanVertexDecl result = {};
     result.bindingDescription.binding = 0;
     result.bindingDescription.inputRate = (VkVertexInputRate)vertexDecl->inputRate;
     result.bindingDescription.stride = vertexDecl->size;
@@ -17,8 +17,10 @@ AstralCanvasVk_VertexDecl AstralCanvasVk_CreateVertexDecl(IAllocator *allocator,
         attrib->location = 0;
         attrib->offset = vertexDecl->elements.ptr[i].offset;
     }
+
+    return result;
 }
-void AstralCanvasVk_DestroyVertexDecl(AstralCanvasVk_VertexDecl *vertexDecl)
+void AstralCanvasVk_DestroyVertexDecl(AstralVulkanVertexDecl *vertexDecl)
 {
     vertexDecl->attributeDescriptions.deinit();
 }

@@ -35,6 +35,17 @@ namespace AstralCanvas
         Blend_InverseDestinationAlpha
     };
 
+    /// How the render pass within a program will output it's results
+    enum RenderPassOutputType
+    {
+        /// The render pass is not the last in sequence and thus should output to the next pass (Default)
+        RenderPassOutput_ToNextPass,
+        /// The render pass is the last in sequence and the program should output to a render target
+        RenderPassOutput_ToRenderTarget,
+        /// The render pass is the last in sequence and the program should output to the window
+        RenderPassOutput_ToWindow
+    };
+
     enum GraphicsBackend
     {
         Backend_Vulkan,
@@ -51,6 +62,7 @@ namespace AstralCanvas
 
     enum ImageFormat
     {
+        ImageFormat_Undefined,
         ImageFormat_R8G8B8A8Unorm,
         ImageFormat_R8G8B8A8SNorm,
         ImageFormat_R8G8B8A8Srgb,

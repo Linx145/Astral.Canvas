@@ -4,11 +4,11 @@
 #include "vulkan/vulkan.h"
 #include "array.hpp"
 
-struct AstralCanvasVk_VertexDecl
+struct AstralVulkanVertexDecl
 {
     VkVertexInputBindingDescription bindingDescription;
     collections::Array<VkVertexInputAttributeDescription> attributeDescriptions;
 };
 
-AstralCanvasVk_VertexDecl AstralCanvasVk_CreateVertexDecl(IAllocator *allocator, AstralCanvas::VertexDeclaration *vertexDecl);
-void AstralCanvasVk_DestroyVertexDecl(AstralCanvasVk_VertexDecl *vertexDecl);
+AstralVulkanVertexDecl AstralCanvasVk_CreateVertexDecl(IAllocator *allocator, AstralCanvas::VertexDeclaration *vertexDecl);
+void AstralCanvasVk_DestroyVertexDecl(AstralVulkanVertexDecl *vertexDecl);

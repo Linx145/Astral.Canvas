@@ -2,23 +2,15 @@
 #include "Linxc.h"
 #include "Maths/Vec4.hpp"
 
+#define ONE_OVER_255 1.0f / 255.0f;
 namespace AstralCanvas
 {
     struct Color
     {
-        const float OneOver255 = 1.0f / 255.0f;
-
-        union
-        {
-            struct
-            {
-                u8 R;
-                u8 G;
-                u8 B;
-                u8 A;
-            };
-            u32 packed;
-        };
+        u8 R;
+        u8 G;
+        u8 B;
+        u8 A;
 
         inline Color()
         {
@@ -66,19 +58,20 @@ namespace AstralCanvas
         }
         inline Maths::Vec4 ToVector4()
         {
-            return Maths::Vec4(R * OneOver255, G * OneOver255, B * OneOver255, A * OneOver255);
+            const float oneOver255 = ONE_OVER_255;
+            return Maths::Vec4(R * oneOver255, G * oneOver255, B * oneOver255, A * oneOver255);
         }
         inline bool operator==(Color other)
         {
-            return packed == other.packed;
+            return this->R == other.R && this->G == other.G && this->B == other.B && this->A == other.A;
         }
         inline bool operator!=(Color other)
         {
-            return packed != other.packed;
+            return this->R != other.R || this->G != other.G || this->B != other.B || this->A != other.A;
         }
         inline Color operator*(float amount)
         {
-            return Color(R * amount, G * amount, B * amount, A);
+            return Color((u8)((float)R * amount), (u8)((float)G * amount), (u8)((float)B * amount), A);
         }
         inline void operator*=(float amount)
         {

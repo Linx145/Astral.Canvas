@@ -6,6 +6,7 @@ bool                                    AstralCanvasVk_validationLayers = false;
 VkInstance                              AstralCanvasVk_instance = NULL;
 AstralVulkanGPU                         AstralCanvasVk_GPU = {};
 VmaAllocator                            AstralCanvasVk_vma = NULL;
+AstralVulkanSwapchain                   AstralCanvasVk_swapchain = {};
 
 VkDebugUtilsMessengerEXT AstralCanvasVk_GetDebugMessenger()
 {
@@ -59,4 +60,13 @@ VmaAllocator AstralCanvasVk_GetCurrentVulkanAllocator()
 void AstralCanvasVk_SetCurrentVulkanAllocator(VmaAllocator allocator)
 {
     AstralCanvasVk_vma = allocator;
+}
+
+AstralVulkanSwapchain *AstralCanvasVk_GetCurrentSwapchain()
+{
+    return &AstralCanvasVk_swapchain;
+}
+void AstralCanvasVk_SetCurrentSwapchain(AstralVulkanSwapchain swapchain)
+{
+    AstralCanvasVk_swapchain = swapchain;
 }

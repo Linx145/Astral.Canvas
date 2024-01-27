@@ -3,13 +3,13 @@
 
 using namespace collections;
 
-option<AstralVulkanGPU> AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstance instance, VkSurfaceKHR windowSurface, Array<const char*> requiredExtensions)
+bool AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstance instance, VkSurfaceKHR windowSurface, Array<const char*> requiredExtensions, AstralVulkanGPU* output)
 {
 	u32 deviceCount = 0;
 	if (vkEnumeratePhysicalDevices(instance, &deviceCount, NULL) != VK_SUCCESS || deviceCount == 0)
 	{
 		//No GPUs with Vulkan support
-		return option<AstralVulkanGPU>();
+		return false;
 	}
 
 	IAllocator cAllocator = GetCAllocator();
@@ -49,7 +49,7 @@ option<AstralVulkanGPU> AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstan
 			gpus.data[i].queueInfo.deinit();
 		}
 		gpus.deinit();
-		return option<AstralVulkanGPU>();
+		return false;
 	}
 	AstralVulkanGPU result = gpus.data[bestGPU];
 
@@ -67,7 +67,8 @@ option<AstralVulkanGPU> AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstan
 	}
 	gpus.deinit();
 
-	return option<AstralVulkanGPU>(result);
+	*output = result;
+	return true;
 }
 u32 AstralCanvasVk_GetGPUScore(AstralVulkanGPU* gpu, VkSurfaceKHR windowSurface)
 {
@@ -219,4 +220,16 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* alloca
 	createInfos.deinit();
 
 	return !encounteredErrorCreatingCommandPools;
+}
+
+void AstralCanvasVk_ReleaseGPU(AstralVulkanGPU *gpu)
+{
+	gpu->DedicatedGraphicsQueue.deinit();
+	gpu->DedicatedComputeQueue.deinit();
+	gpu->DedicatedTransferQueue.deinit();
+	if (gpu->logicalDevice != NULL)
+	{
+		vkDestroyDevice(gpu->logicalDevice, NULL);
+	}
+	gpu->requiredExtensions.deinit();
 }

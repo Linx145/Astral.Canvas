@@ -9,40 +9,8 @@
 
 namespace AstralCanvas
 {
-    void Texture2D::deinit()
+    void Texture2D::Construct()
     {
-        switch (GetActiveBackend())
-        {
-            #ifdef ASTRALCANVAS_VULKAN
-            case Backend_Vulkan:
-            {
-                AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
-                if (!this->isDisposed && this->constructed)
-                {
-                    vkDestroyImageView(gpu->logicalDevice, (VkImageView)this->imageView, NULL);
-                    vkDestroyImage(gpu->logicalDevice, (VkImage)this->imageHandle, NULL);
-                    vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->allocatedMemory.vkAllocation);
-                    this->isDisposed = true;
-                }
-                break;
-            }
-            #endif
-            default:
-                THROW_ERR("Unrecognised backend when attempting to create a texture");
-                break;
-        }
-    }
-    Texture2D CreateTextureFromData(u8* data, usize width, usize height, SamplerState *samplerForTexture, ImageFormat imageFormat, bool usedForRenderTarget)
-    {
-        Texture2D result = {};
-        result.width = width;
-        result.height = height;
-        result.ownsHandle = true;
-        result.bytes = data;
-        result.imageFormat = imageFormat;
-        result.mipLevels = 1;
-        result.usedForRenderTarget = usedForRenderTarget;
-
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
@@ -50,18 +18,18 @@ namespace AstralCanvas
             {
                 AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
                 VkImage image;
-                if (result.imageHandle == NULL)
+                if (this->imageHandle == NULL)
                 {
                     VkImageCreateInfo createInfo = {};
                     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
                     createInfo.imageType = VK_IMAGE_TYPE_2D;
-                    createInfo.extent.width = result.width;
-                    createInfo.extent.height = result.height;
+                    createInfo.extent.width = this->width;
+                    createInfo.extent.height = this->height;
                     createInfo.extent.depth = 1;
 
-                    createInfo.mipLevels = result.mipLevels;
+                    createInfo.mipLevels = this->mipLevels;
                     createInfo.arrayLayers = 1;
-                    createInfo.format = AstralCanvasVk_FromImageFormat(result.imageFormat);
+                    createInfo.format = AstralCanvasVk_FromImageFormat(this->imageFormat);
                     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
                     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                     if (createInfo.format >= ImageFormat_DepthNone)
@@ -70,7 +38,7 @@ namespace AstralCanvas
                     }
                     else
                     {
-                        if (result.usedForRenderTarget)
+                        if (this->usedForRenderTarget)
                         {
                             createInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                         }
@@ -83,31 +51,31 @@ namespace AstralCanvas
                     createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
                     createInfo.flags = 0;
 
-                    if (vkCreateImage(gpu->logicalDevice, &createInfo, NULL, (VkImage*)&result.imageHandle) != VK_SUCCESS)
+                    if (vkCreateImage(gpu->logicalDevice, &createInfo, NULL, (VkImage*)&this->imageHandle) != VK_SUCCESS)
                     {
                         THROW_ERR("Failed to create image");
                     }
                 }
-                image = (VkImage)result.imageHandle;
+                image = (VkImage)this->imageHandle;
 
-                if (result.bytes != NULL && (result.width * result.height > 0) && result.ownsHandle)
+                if (this->bytes != NULL && (this->width * this->height > 0) && this->ownsHandle)
                 {
                     //VmaAllocation
-                    result.allocatedMemory = AstralCanvasVk_AllocateMemoryForImage(image, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+                    this->allocatedMemory = AstralCanvasVk_AllocateMemoryForImage(image, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-                    if (!result.usedForRenderTarget)
+                    if (!this->usedForRenderTarget)
                     {
-                        VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, result.width * result.height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+                        VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, this->width * this->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
                         AstralCanvasMemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), true);
 
-                        memcpy(stagingMemory.vkAllocationInfo.pMappedData, result.bytes, (usize)(result.width * result.height * 4));
+                        memcpy(stagingMemory.vkAllocationInfo.pMappedData, this->bytes, (usize)(this->width * this->height * 4));
 
-                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)result.imageHandle, result.mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-                        AstralCanvasVk_CopyBufferToImage(gpu, stagingBuffer, (VkImage)result.imageHandle, result.width, result.height);
+                        AstralCanvasVk_CopyBufferToImage(gpu, stagingBuffer, (VkImage)this->imageHandle, this->width, this->height);
 
-                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)result.imageHandle, result.mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
                         vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
 
@@ -116,27 +84,27 @@ namespace AstralCanvas
                 }
                 else
                 {
-                    if (result.imageFormat >= ImageFormat_DepthNone)
+                    if (this->imageFormat >= ImageFormat_DepthNone)
                     {
-                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)result.imageHandle, result.mipLevels, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
                     }
-                    else AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)result.imageHandle, result.mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                    else AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
                 }
 
                 VkImageViewCreateInfo viewCreateInfo = {};
                 viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
                 viewCreateInfo.image = image;
-                viewCreateInfo.format = AstralCanvasVk_FromImageFormat(result.imageFormat);
+                viewCreateInfo.format = AstralCanvasVk_FromImageFormat(this->imageFormat);
                 viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-                if (result.imageFormat >= ImageFormat_DepthNone)
+                if (this->imageFormat >= ImageFormat_DepthNone)
                 {
                     viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
                 }
                 else 
                     viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 viewCreateInfo.subresourceRange.baseMipLevel = 0;
-                viewCreateInfo.subresourceRange.levelCount = result.mipLevels;
+                viewCreateInfo.subresourceRange.levelCount = this->mipLevels;
                 viewCreateInfo.subresourceRange.baseArrayLayer = 0;
                 viewCreateInfo.subresourceRange.layerCount = 1;
 
@@ -145,12 +113,12 @@ namespace AstralCanvas
                 viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
                 viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
-                if (vkCreateImageView(gpu->logicalDevice, &viewCreateInfo, NULL, (VkImageView*)&result.imageView) != VK_SUCCESS)
+                if (vkCreateImageView(gpu->logicalDevice, &viewCreateInfo, NULL, (VkImageView*)&this->imageView) != VK_SUCCESS)
                 {
                     THROW_ERR("Failed to create image view");
                 }
 
-                result.constructed = true;
+                this->constructed = true;
                 break;
             }
             #endif
@@ -158,7 +126,65 @@ namespace AstralCanvas
                 THROW_ERR("Unrecognised backend when attempting to create a texture");
                 break;
         }
+    }
+    void Texture2D::deinit()
+    {
+        if (!this->constructed || this->isDisposed)
+        {
+            return;
+        }
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+                if (!this->isDisposed && this->constructed)
+                {
+                    vkDestroyImageView(gpu->logicalDevice, (VkImageView)this->imageView, NULL);
+                    if (this->ownsHandle)
+                    {
+                        vkDestroyImage(gpu->logicalDevice, (VkImage)this->imageHandle, NULL);
+                        vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->allocatedMemory.vkAllocation);
+                    }
+                    this->isDisposed = true;
+                }
+                break;
+            }
+            #endif
+            default:
+                THROW_ERR("Unrecognised backend when attempting to create a texture");
+                break;
+        }
+        this->isDisposed = true;
+    }
+    Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat)
+    {
+        Texture2D result = {};
+        result.width = width;
+        result.height = height;
+        result.imageHandle = handle;
+        result.ownsHandle = false;
+        result.usedForRenderTarget = false;
+        result.mipLevels = 1;
+        result.imageFormat = imageFormat;
+        result.bytes = NULL;
 
+        result.Construct();
+        return result;
+    }
+    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, SamplerState *samplerState, bool usedForRenderTarget)
+    {
+        Texture2D result = {};
+        result.width = width;
+        result.height = height;
+        result.ownsHandle = true;
+        result.bytes = data;
+        result.imageFormat = imageFormat;
+        result.mipLevels = 1;
+        result.usedForRenderTarget = usedForRenderTarget;
+
+        result.Construct();
         return result;
     }
 }

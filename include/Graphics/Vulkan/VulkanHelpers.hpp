@@ -5,7 +5,7 @@
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
 #include "Graphics/MemoryAllocation.hpp"
 #include "Graphics/RenderTarget.hpp"
-#include "Graphics/RenderPass.hpp"
+#include "Graphics/RenderProgram.hpp"
 #include "Graphics/Shader.hpp"
 #include "Graphics/RenderPipeline.hpp"
 #include "ErrorHandling.hpp"
@@ -56,8 +56,3 @@ inline AstralCanvasMemoryAllocation AstralCanvasVk_AllocateMemoryForBuffer(VkBuf
 
     return memoryAllocated;
 }
-
-
-VkPipeline AstralCanvasVk_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse);
-void AstralCanvasVk_DestroyRenderPipeline(AstralCanvas::RenderPipeline *pipeline);
-

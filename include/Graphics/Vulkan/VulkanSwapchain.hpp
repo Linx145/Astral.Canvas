@@ -1,34 +1,36 @@
 #pragma once
 #include "Windowing/Window.hpp"
 #include "VulkanSwapchainSupportDetails.hpp"
+#include "Graphics/RenderTarget.hpp"
+#include "Graphics/Vulkan/VulkanGPU.hpp"
+#include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 
-struct VulkanSwapchain
+struct AstralVulkanSwapchain
 {
+    IAllocator *allocator;
     AstralVkSwapchainSupportDetails supportDetails;
-
     AstralCanvasWindow *window;
-    VkDevice device;
+    AstralVulkanGPU *gpu;
     VkSwapchainKHR handle;
     VkSwapchainKHR oldHandle;
-    VkFormat imageFormat;
-    VkFormat depthFormat;
+    AstralCanvas::ImageFormat imageFormat;
+    AstralCanvas::ImageFormat depthFormat;
     VkColorSpaceKHR colorSpace;
     VkExtent2D imageExtents;
     u32 imageArrayLayers;
+    u32 imageCount;
     VkImageUsageFlags usageFlags;
     VkPresentModeKHR presentMode;
 
     u32 currentImageIndex;
-
-    inline void deinit()
-    {
-        vkDeviceWaitIdle(device);
-        vkDestroySwapchainKHR(device, handle, NULL);
-    }
+    collections::Array<AstralCanvas::RenderTarget> renderTargets;
+    collections::Array<void *> imageHandles;
 };
 
-void AstralCanvasVk_SwapchainRecreate(VulkanSwapchain* swapchain);
+AstralVulkanSwapchain AstralCanvasVk_CreateSwapchain(IAllocator *allocator, AstralVulkanGPU *gpu, AstralCanvasWindow *window);
+void AstralCanvasVk_DestroySwapchain(AstralVulkanSwapchain *swapchain);
 
-VulkanSwapchain AstralCanvasVk_SwapchainCreate(AstralCanvasWindow *window);
+void AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain *swapchain, AstralVulkanGPU *gpu);
+void AstralCanvasVk_SwapchainRecreateRendertargets(AstralVulkanSwapchain* swapchain);
 
 VkSurfaceFormatKHR AstralCanvasVk_FindSurfaceWith(VkColorSpaceKHR colorSpace, VkFormat format, collections::Array<VkSurfaceFormatKHR> toSearch);
