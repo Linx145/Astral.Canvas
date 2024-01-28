@@ -103,8 +103,8 @@ namespace AstralCanvas
                 {
                     info.clearValueCount++;
                 }
-                info.renderArea.offset.x = 0.0f;
-                info.renderArea.offset.y = 0.0f;
+                info.renderArea.offset.x = 0;
+                info.renderArea.offset.y = 0;
                 info.renderArea.extent.width = renderTarget->width;
                 info.renderArea.extent.height = renderTarget->height;
 

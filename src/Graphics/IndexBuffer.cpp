@@ -14,7 +14,6 @@ namespace AstralCanvas
         this->memoryAllocation.unused = 0;
         this->indexCount = 0;
         this->indexElementSize = IndexBufferSize_U16;
-        this->constructed = false;
     }
     IndexBuffer::IndexBuffer(IndexBufferSize thisIndexElementSize, usize indexCount)
     {
@@ -22,16 +21,11 @@ namespace AstralCanvas
         this->indexCount = indexCount;
         this->handle = NULL;
         this->memoryAllocation.unused = 0;
-        this->constructed = false;
 
         this->Construct();
     }
     void IndexBuffer::Construct()
     {
-        if (this->constructed)
-        {
-            return;
-        }
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
@@ -53,14 +47,9 @@ namespace AstralCanvas
             default:
                 break;
         }
-        this->constructed = true;
     }
     void IndexBuffer::SetData(u8* bytes, usize lengthOfBytes)
     {
-        if (!this->constructed)
-        {
-            return;
-        }
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
@@ -86,25 +75,21 @@ namespace AstralCanvas
     }
     void IndexBuffer::deinit()
     {
-        if (constructed)
+        switch (GetActiveBackend())
         {
-            switch (GetActiveBackend())
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
             {
-                #ifdef ASTRALCANVAS_VULKAN
-                case Backend_Vulkan:
-                {
-                    AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+                AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
 
-                    vkDestroyBuffer(gpu->logicalDevice, (VkBuffer)this->handle, NULL);
+                vkDestroyBuffer(gpu->logicalDevice, (VkBuffer)this->handle, NULL);
 
-                    vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->memoryAllocation.vkAllocation);
-
-                    break;
-                }
-                #endif
-                default:
-                    break;
+                vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->memoryAllocation.vkAllocation);
+                break;
             }
+            #endif
+            default:
+                break;
         }
     }
 }

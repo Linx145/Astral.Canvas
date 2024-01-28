@@ -1,7 +1,7 @@
 VULKAN_SDK = os.getenv("VULKAN_SDK")
 
 project "Astral.Canvas"
-    kind "ConsoleApp"
+    kind "StaticLib"
     language "C++"
     rtti "Off"
     cppdialect "C++14"
@@ -16,7 +16,7 @@ project "Astral.Canvas"
         -- "../dependencies/wgpu/include",
         "../Somnial.Json"
     }
-    links {"GLFW", "%{VULKAN_SDK}/Lib/vulkan-1.lib"}--"../dependencies/wgpu/Windows/wgpu_native.dll.lib"
+    links {"GLFW", "%{VULKAN_SDK}/Lib/vulkan-1.lib"}
 
     files { 
         --Canvas stuff

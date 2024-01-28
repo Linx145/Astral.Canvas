@@ -13,8 +13,6 @@ namespace AstralCanvas
 
         MemoryAllocation memoryAllocation;
 
-        bool constructed;
-
         IndexBuffer();
         IndexBuffer(IndexBufferSize thisIndexElementSize, usize indexCount);
 
