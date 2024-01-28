@@ -87,15 +87,17 @@ namespace AstralCanvas
 
                         memcpy(stagingMemory.vkAllocationInfo.pMappedData, this->bytes, (usize)(this->width * this->height * 4));
 
-                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                        AstralCanvasVk_TransitionImageLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
                         AstralCanvasVk_CopyBufferToImage(gpu, stagingBuffer, (VkImage)this->imageHandle, this->width, this->height);
 
-                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                        AstralCanvasVk_TransitionImageLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
                         vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
 
                         vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
+
+                        this->imageLayout = (u32)VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     }
                 }
 
@@ -103,9 +105,14 @@ namespace AstralCanvas
                 {
                     if (this->imageFormat >= ImageFormat_DepthNone)
                     {
-                        AstralCanvasVk_TransitionTextureLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+                        AstralCanvasVk_TransitionImageLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+                        this->imageLayout = (u32)VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
                     }
-                    else AstralCanvasVk_TransitionTextureLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                    else 
+                    {
+                        AstralCanvasVk_TransitionImageLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                        this->imageLayout = (u32)VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    }
                 }
 
                 VkImageViewCreateInfo viewCreateInfo = {};

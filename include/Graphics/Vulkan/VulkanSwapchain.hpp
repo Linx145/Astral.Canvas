@@ -21,6 +21,7 @@ struct AstralVulkanSwapchain
     u32 imageCount;
     VkImageUsageFlags usageFlags;
     VkPresentModeKHR presentMode;
+    bool recreatedThisFrame;
 
     u32 currentImageIndex;
     collections::Array<AstralCanvas::RenderTarget> renderTargets;

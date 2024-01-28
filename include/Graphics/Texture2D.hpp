@@ -37,6 +37,8 @@ namespace AstralCanvas
         void *imageView;
         /// The allocated VRAM for the image
         AstralCanvas::MemoryAllocation allocatedMemory;
+        /// The internal layout of the image. Will be modified at render time!
+        u32 imageLayout;
 
         void deinit();
         void Construct();

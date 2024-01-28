@@ -25,7 +25,7 @@ namespace AstralCanvas
 
     void ParseShaderVariables(SomnialJson::JsonElement *json, ShaderVariables *results, ShaderInputAccessedBy accessedByShaderOfType);
 
-    i32 CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader* result);
+    i32 CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader *result);
 }
 
 //i32 AstralCanvas_CreateShaderFromString(IAllocator *allocator, AstralCanvas_ShaderType shaderType, string jsonString, AstralCanvasShader* result);

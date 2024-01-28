@@ -6,18 +6,30 @@
 #ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
 #include "Graphics/Vulkan/VulkanEnumConverters.hpp"
-#include "Graphics/Vulkan/VulkanVertex.hpp"
 #endif
 
 namespace AstralCanvas
 {
-    RenderPipeline::RenderPipeline(IAllocator *allocator, Shader *pipelineShader, CullMode pipelineCullMode, PrimitiveType pipelinePrimitiveType, BlendState *pipelineBlendState, bool testDepth, bool writeToDepth, collections::Array<VertexDeclaration> pipelineVertexDeclarations)
+    RenderPipeline::RenderPipeline()
+    {
+        this->shader = NULL;
+        this->cullMode = CullMode_CullNone;
+        this->blendState = DISABLE_BLEND;
+        this->depthTest = false;
+        this->depthWrite = false;
+        this->layout = NULL;
+        this->primitiveType = PrimitiveType_TriangleList;
+        this->vertexDeclarations = collections::Array<VertexDeclaration *>();
+        this->zoneToPipelineInstance = collections::hashmap<RenderPipelineBindZone, void *>();
+    }
+    RenderPipeline::RenderPipeline(IAllocator *allocator, Shader *pipelineShader, CullMode pipelineCullMode, PrimitiveType pipelinePrimitiveType, BlendState pipelineBlendState, bool testDepth, bool writeToDepth, collections::Array<VertexDeclaration*> pipelineVertexDeclarations)
     {
         this->shader = pipelineShader;
         this->cullMode = pipelineCullMode;
         this->primitiveType = pipelinePrimitiveType;
         this->blendState = pipelineBlendState;
         this->depthTest = testDepth;
+        this->layout = NULL;
         this->depthWrite = writeToDepth;
         this->vertexDeclarations = pipelineVertexDeclarations;
         this->zoneToPipelineInstance = collections::hashmap<RenderPipelineBindZone, void *>(allocator, &RenderPipelineBindZoneHash, &RenderPipelineBindZoneEql);
@@ -61,26 +73,29 @@ namespace AstralCanvas
                 if (vertexDeclCount > 0)
                 {
                     usize attribCount = 0;
-                    collections::Array<AstralVulkanVertexDecl> vertexDecls = collections::Array<AstralVulkanVertexDecl>(&arena.asAllocator, vertexDeclCount);
-                    for (usize i = 0; i < vertexDeclCount; i++)
-                    {
-                        vertexDecls.data[i] = AstralCanvasVk_CreateVertexDecl(&arena.asAllocator, &pipeline->vertexDeclarations.data[i]);
-                        attribCount += vertexDecls.data[i].attributeDescriptions.length;
-                    }
 
                     collections::Array<VkVertexInputBindingDescription> bindingDescriptions = collections::Array<VkVertexInputBindingDescription>(&arena.asAllocator, vertexDeclCount);
                     for (usize i = 0; i < vertexDeclCount; i++)
                     {
-                        bindingDescriptions.data[i] = vertexDecls.data[i].bindingDescription;
+                        bindingDescriptions.data[i].inputRate = (VkVertexInputRate)pipeline->vertexDeclarations.data[i]->inputRate;
+                        bindingDescriptions.data[i].stride = pipeline->vertexDeclarations.data[i]->size;
+                        bindingDescriptions.data[i].binding = i;
+
+                        attribCount += pipeline->vertexDeclarations.data[i]->elements.count;
                     }
 
                     collections::Array<VkVertexInputAttributeDescription> attribDescriptions = collections::Array<VkVertexInputAttributeDescription>(&arena.asAllocator, attribCount);
                     usize attribIndex = 0;
                     for (usize i = 0; i < vertexDeclCount; i++)
                     {
-                        for (usize j = 0; j < vertexDecls.data[i].attributeDescriptions.length; j++)
+                        for (usize j = 0; j < pipeline->vertexDeclarations.data[i]->elements.count; j++)
                         {
-                            attribDescriptions.data[attribIndex] = vertexDecls.data[i].attributeDescriptions.data[j];
+                            AstralCanvas::VertexElement element = pipeline->vertexDeclarations.data[i]->elements.ptr[j];
+
+                            attribDescriptions.data[attribIndex].format = AstralCanvasVk_FromVertexElementFormat(element.format);
+                            attribDescriptions.data[attribIndex].binding = i;
+                            attribDescriptions.data[attribIndex].offset = element.offset;
+                            attribDescriptions.data[attribIndex].location = attribIndex; //very important!!
                             attribIndex++;
                         }
                     }
@@ -139,8 +154,8 @@ namespace AstralCanvas
                 multisamplingInfo.alphaToOneEnable = false;
 
                 //depth stencil data
-                
-                VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+
+                VkPipelineDepthStencilStateCreateInfo depthStencilInfo{};
                 depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
                 depthStencilInfo.depthTestEnable = pipeline->depthTest;
                 depthStencilInfo.depthWriteEnable = pipeline->depthWrite;
@@ -152,12 +167,12 @@ namespace AstralCanvas
 
                 VkPipelineColorBlendAttachmentState colorBlendState {};
                 colorBlendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT; // ColorComponentFlags.RBit | ColorComponentFlags.GBit | ColorComponentFlags.BBit | ColorComponentFlags.ABit;
-                if (pipeline->blendState != NULL)
+                if (pipeline->blendState != DISABLE_BLEND)
                 {
-                    colorBlendState.srcColorBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState->sourceColorBlend);
-                    colorBlendState.srcAlphaBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState->sourceAlphaBlend);
-                    colorBlendState.dstColorBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState->destinationColorBlend);
-                    colorBlendState.dstAlphaBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState->destinationAlphaBlend);
+                    colorBlendState.srcColorBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState.sourceColorBlend);
+                    colorBlendState.srcAlphaBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState.sourceAlphaBlend);
+                    colorBlendState.dstColorBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState.destinationColorBlend);
+                    colorBlendState.dstAlphaBlendFactor = AstralCanvasVk_FromBlend(pipeline->blendState.destinationAlphaBlend);
                     colorBlendState.colorBlendOp = VK_BLEND_OP_ADD;
                     colorBlendState.alphaBlendOp = VK_BLEND_OP_ADD;
                     colorBlendState.blendEnable = true;
@@ -179,25 +194,27 @@ namespace AstralCanvas
                 colorBlendInfo.pAttachments = &colorBlendState;
 
                 //pipeline layout itself
-
-                VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
-                pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-                pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
-                pipelineLayoutCreateInfo.pPushConstantRanges = NULL;
-                pipelineLayoutCreateInfo.flags = 0;
-
-                //u32 descriptorsCount = pipeline->shader->shaderVariables.samplers.length + pipeline->shader->shaderVariables.textures.length + pipeline->shader->shaderVariables.uniforms.length;
-                pipelineLayoutCreateInfo.setLayoutCount = 0;
-                if (pipeline->shader->shaderPipelineLayout != NULL)
+                if (pipeline->layout == NULL)
                 {
-                    pipelineLayoutCreateInfo.setLayoutCount = 1;
-                    pipelineLayoutCreateInfo.pSetLayouts = (VkDescriptorSetLayout*)&pipeline->shader->shaderPipelineLayout;
-                }
+                    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+                    pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+                    pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
+                    pipelineLayoutCreateInfo.pPushConstantRanges = NULL;
+                    pipelineLayoutCreateInfo.flags = 0;
 
-                if (vkCreatePipelineLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &pipelineLayoutCreateInfo, NULL, (VkPipelineLayout*)&pipeline->layout) != VK_SUCCESS)
-                {
-                    arena.deinit();
-                    break;
+                    //u32 descriptorsCount = pipeline->shader->shaderVariables.samplers.length + pipeline->shader->shaderVariables.textures.length + pipeline->shader->shaderVariables.uniforms.length;
+                    pipelineLayoutCreateInfo.setLayoutCount = 0;
+                    if (pipeline->shader->shaderPipelineLayout != NULL)
+                    {
+                        pipelineLayoutCreateInfo.setLayoutCount = 1;
+                        pipelineLayoutCreateInfo.pSetLayouts = (VkDescriptorSetLayout*)&pipeline->shader->shaderPipelineLayout;
+                    }
+
+                    if (vkCreatePipelineLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &pipelineLayoutCreateInfo, NULL, (VkPipelineLayout*)&pipeline->layout) != VK_SUCCESS)
+                    {
+                        arena.deinit();
+                        break;
+                    }
                 }
 
                 //pipeline itself
@@ -232,6 +249,8 @@ namespace AstralCanvas
                 VkPipeline result;
                 vkCreateGraphicsPipelines(AstralCanvasVk_GetCurrentGPU()->logicalDevice, NULL, 1, &pipelineCreateInfo, NULL, &result);
 
+                zoneToPipelineInstance.Add(bindZone, result);
+
                 arena.deinit();
 
                 return result;
@@ -262,6 +281,7 @@ namespace AstralCanvas
                     }
                 }
                 this->zoneToPipelineInstance.deinit();
+                vkDestroyPipelineLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkPipelineLayout)this->layout, NULL);
                 break;
             }
             #endif

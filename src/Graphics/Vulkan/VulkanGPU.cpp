@@ -191,6 +191,10 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* alloca
 		VkFence queueFence;
 		VkFenceCreateInfo fenceCreateInfo = {};
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		/*if (queueData->type == AstralVulkanQueue_Graphics)
+		{
+			fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		}*/
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
 		if (vkCreateFence(gpu->logicalDevice, &fenceCreateInfo, NULL, &queueFence))

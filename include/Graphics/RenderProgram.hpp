@@ -32,7 +32,7 @@ namespace AstralCanvas
         /// The format of the image that the render stage(s) with this associated attachment should take
         ImageFormat imageFormat;
         /// Whether the attached image should be cleared when beginning the pass. If transparent, no clearing is performed
-        Color clearColor;
+        bool clearColor;
         /// Whether the attached depth buffer should be cleared when beginning the pass. Not applicable if depthAttachmentIndex is -1
         bool clearDepth;
         /// Which renderprogram this pass belongs to
@@ -60,7 +60,7 @@ namespace AstralCanvas
         RenderProgram(IAllocator *allocator);
 
         /// Adds an attachment to the render program. An attachment refers to the state of the textures passing in and out of each renderpass
-        i32 AddAttachment(ImageFormat imageFormat, Color clearColor, bool clearDepth, RenderPassOutputType outputType);
+        i32 AddAttachment(ImageFormat imageFormat, bool clearColor, bool clearDepth, RenderPassOutputType outputType);
         /// Adds a render pass to the render program. A render pass is a stage within the 
         /// program, defining how it can read the previous stage (if any)'s texture and how 
         /// it will output to the next stage, or to the result rendertarget.

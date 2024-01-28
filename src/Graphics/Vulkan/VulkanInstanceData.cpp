@@ -8,6 +8,9 @@ AstralVulkanGPU                         AstralCanvasVk_GPU = {};
 VmaAllocator                            AstralCanvasVk_vma = NULL;
 AstralVulkanSwapchain                   AstralCanvasVk_swapchain = {};
 VkSemaphore                             AstralCanvasVk_AwaitPresentCompleteSemaphore = NULL;
+VkSemaphore                             AstralCanvasVk_AwaitRenderCompleteSemaphore = NULL;
+VkCommandPool                           AstralCanvasVk_MainCommandPool = NULL;
+VkCommandBuffer                         AstralCanvasVk_MainCommandBuffer = NULL;
 
 VkDebugUtilsMessengerEXT AstralCanvasVk_GetDebugMessenger()
 {
@@ -79,4 +82,31 @@ VkSemaphore AstralCanvasVk_GetAwaitPresentCompleteSemaphore()
 void AstralCanvasVk_SetAwaitPresentCompleteSemaphore(VkSemaphore semaphore)
 {
     AstralCanvasVk_AwaitPresentCompleteSemaphore = semaphore;
+}
+
+VkSemaphore AstralCanvasVk_GetAwaitRenderCompleteSemaphore()
+{
+    return AstralCanvasVk_AwaitRenderCompleteSemaphore;
+}
+void AstralCanvasVk_SetAwaitRenderCompleteSemaphore(VkSemaphore semaphore)
+{
+    AstralCanvasVk_AwaitRenderCompleteSemaphore = semaphore;
+}
+
+VkCommandPool AstralCanvasVk_GetMainCmdPool()
+{
+    return AstralCanvasVk_MainCommandPool;
+}
+void AstralCanvasVk_SetMainCmdPool(VkCommandPool commandPool)
+{
+    AstralCanvasVk_MainCommandPool = commandPool;
+}
+
+VkCommandBuffer AstralCanvasVk_GetMainCmdBuffer()
+{
+    return AstralCanvasVk_MainCommandBuffer;
+}
+void AstralCanvasVk_SetMainCmdBuffer(VkCommandBuffer commandBuffer)
+{
+    AstralCanvasVk_MainCommandBuffer = commandBuffer;
 }

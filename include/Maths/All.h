@@ -6,3 +6,4 @@
 #include "Vec4.hpp"
 #include "Quaternion.hpp"
 #include "Util.hpp"
+#include "Rectangle.hpp"

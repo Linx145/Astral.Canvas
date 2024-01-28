@@ -59,7 +59,7 @@ namespace AstralCanvas
         inline Maths::Vec4 ToVector4()
         {
             const float oneOver255 = ONE_OVER_255;
-            return Maths::Vec4(R * oneOver255, G * oneOver255, B * oneOver255, A * oneOver255);
+            return Maths::Vec4((float)R * oneOver255, (float)G * oneOver255, (float)B * oneOver255, (float)A * oneOver255);
         }
         inline bool operator==(Color other)
         {

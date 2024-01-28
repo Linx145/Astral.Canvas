@@ -23,9 +23,14 @@ namespace AstralCanvas
         this->attachments = collections::vector<RenderProgramImageAttachment>(allocator);
         this->renderPasses = collections::vector<RenderPass>(allocator);
     }
-    i32 RenderProgram::AddAttachment(ImageFormat imageFormat, Color clearColor, bool clearDepth, RenderPassOutputType outputType)
+    i32 RenderProgram::AddAttachment(ImageFormat imageFormat, bool clearColor, bool clearDepth, RenderPassOutputType outputType)
     {
         i32 result = (i32)this->attachments.count;
+
+        if (imageFormat == ImageFormat_BackbufferFormat)
+        {
+            imageFormat = AstralCanvasVk_GetCurrentSwapchain()->imageFormat;
+        }
 
         RenderProgramImageAttachment imageAttachment{
             imageFormat,
@@ -96,6 +101,7 @@ namespace AstralCanvas
                         VkAttachmentReference ref;
                         ref.attachment = renderPassData.colorAttachmentIndices.data[j];
                         ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                        
                         subpassDescriptionAttachmentRefs.Add(ref);
                     }
 
@@ -128,10 +134,11 @@ namespace AstralCanvas
                     attachmentDescriptions[i] = {};
                     attachmentDescriptions[i].samples = VK_SAMPLE_COUNT_1_BIT;
                     attachmentDescriptions[i].flags = 0;
+                    attachmentDescriptions[i].format = AstralCanvasVk_FromImageFormat(program->attachments.ptr[i].imageFormat);
                     if (attachmentData.imageFormat < ImageFormat_DepthNone)
                     {
                         attachmentDescriptions[i].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                        if (attachmentData.outputType == RenderPassOutput_ToNextPass || i < program->attachments.count - 1)
+                        if (attachmentData.outputType == RenderPassOutput_ToNextPass)// || i < program->attachments.count - 1)
                         {
                             attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                         }
@@ -144,7 +151,7 @@ namespace AstralCanvas
                             attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
                         }
 
-                        if (attachmentData.clearColor != COLOR_TRANSPARENT)
+                        if (attachmentData.clearColor)
                         {
                             attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
                         }
@@ -266,11 +273,11 @@ namespace AstralCanvas
 
         RenderProgram newProgram = RenderProgram(allocator);
 
-        i32 outputAttachment = newProgram.AddAttachment(imageFormat, mustClear ? COLOR_TRANSPARENT : Color(0, 0, 0), mustClear, willDrawToWindow ? RenderPassOutput_ToWindow : RenderPassOutput_ToRenderTarget);
+        i32 outputAttachment = newProgram.AddAttachment(imageFormat, mustClear, mustClear, willDrawToWindow ? RenderPassOutput_ToWindow : RenderPassOutput_ToRenderTarget);
         
         if (depthFormat > ImageFormat_DepthNone)
         {
-            i32 depthAttachment = newProgram.AddAttachment(depthFormat, COLOR_TRANSPARENT, true, willDrawToWindow ? RenderPassOutput_ToWindow : RenderPassOutput_ToRenderTarget);
+            i32 depthAttachment = newProgram.AddAttachment(depthFormat, mustClear, mustClear, willDrawToWindow ? RenderPassOutput_ToWindow : RenderPassOutput_ToRenderTarget);
             newProgram.AddRenderPass(allocator, outputAttachment, depthAttachment);
         }
         else

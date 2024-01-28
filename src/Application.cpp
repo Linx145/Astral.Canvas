@@ -1,6 +1,7 @@
 #include "Application.hpp"
 #include "Graphics/WGPU/WgpuEngine.hpp"
 #include "Graphics/Vulkan/VulkanEngine.hpp"
+#include "Graphics/CurrentBackend.hpp"
 #include "array.hpp"
 using namespace collections;
 
@@ -54,9 +55,12 @@ bool AstralCanvasApplication::FinalizeGraphicsBackend()
 
 	AstralCanvasVk_Initialize(this->allocator, validationLayersToUse, requiredExtensions, &windows.ptr[0]);
 	//AstralCanvasWgpu_Initialize(this->allocator, &this->windows.ptr[0], Array<AstralCanvas_GraphicsFeatures>(), Array<AstralCanvas_GraphicsFeatures>());
+	this->graphicsDevice = AstralCanvas::Graphics();
+	this->graphicsDevice.ClipArea = this->windows.ptr[0].AsRectangle();
+	this->graphicsDevice.Viewport = this->windows.ptr[0].AsRectangle();
 	return true;
 }
-void AstralCanvasApplication::Run(AstralCanvas_Update updateFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc)
+void AstralCanvasApplication::Run(AstralCanvas_Update updateFunc, AstralCanvas_Update drawFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc)
 {
 	FinalizeGraphicsBackend();
 	if (initFunc != NULL)
@@ -76,8 +80,54 @@ void AstralCanvasApplication::Run(AstralCanvas_Update updateFunc, AstralCanvas_I
 			}
 		}
 
+		updateFunc(1.0f / 60.0f);
+
+		switch (AstralCanvas::GetActiveBackend())
+		{
+			#ifdef ASTRALCANVAS_VULKAN
+			case AstralCanvas::Backend_Vulkan:
+			{
+				AstralCanvasVk_BeginDraw();
+				break;
+			}
+			#endif
+			default:
+				break;
+		}
+
+		drawFunc(1.0f / 60.0f);
+
+		switch (AstralCanvas::GetActiveBackend())
+		{
+			#ifdef ASTRALCANVAS_VULKAN
+			case AstralCanvas::Backend_Vulkan:
+			{
+				AstralCanvasVk_EndDraw();
+				break;
+			}
+			#endif
+			default:
+				break;
+		}
+
 		glfwPollEvents();
 	}
+
+	//await rendering process shutdown
+	switch (AstralCanvas::GetActiveBackend())
+	{
+		#ifdef ASTRALCANVAS_VULKAN
+		case AstralCanvas::Backend_Vulkan:
+		{
+			AstralCanvasVk_AwaitShutdown();
+			//vkQueueWaitIdle(gpu->DedicatedGraphicsQueue.queue);
+			break;
+		}
+		#endif
+		default:
+			break;
+	}
+
 	if (deinitFunc != NULL)
 	{
 		deinitFunc();

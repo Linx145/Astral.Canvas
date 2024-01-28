@@ -215,5 +215,8 @@ inline VkBlendFactor AstralCanvasVk_FromBlend(AstralCanvas::Blend blend)
             return VK_BLEND_FACTOR_ONE;
         case AstralCanvas::Blend::Blend_Zero:
             return VK_BLEND_FACTOR_ZERO;
+
+        default:
+            return VK_BLEND_FACTOR_ONE;
     }
 }

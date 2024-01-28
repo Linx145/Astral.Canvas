@@ -26,3 +26,12 @@ void AstralCanvasVk_SetCurrentSwapchain(AstralVulkanSwapchain swapchain);
 
 VkSemaphore AstralCanvasVk_GetAwaitPresentCompleteSemaphore();
 void AstralCanvasVk_SetAwaitPresentCompleteSemaphore(VkSemaphore semaphore);
+
+VkSemaphore AstralCanvasVk_GetAwaitRenderCompleteSemaphore();
+void AstralCanvasVk_SetAwaitRenderCompleteSemaphore(VkSemaphore semaphore);
+
+VkCommandPool AstralCanvasVk_GetMainCmdPool();
+void AstralCanvasVk_SetMainCmdPool(VkCommandPool commandBuffer);
+
+VkCommandBuffer AstralCanvasVk_GetMainCmdBuffer();
+void AstralCanvasVk_SetMainCmdBuffer(VkCommandBuffer commandBuffer);

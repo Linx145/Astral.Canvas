@@ -32,16 +32,18 @@ namespace AstralCanvas
         collections::hashmap<RenderPipelineBindZone, void *> zoneToPipelineInstance;
         void *layout;
         Shader *shader;
-        collections::Array<VertexDeclaration> vertexDeclarations;
+        collections::Array<VertexDeclaration*> vertexDeclarations;
         CullMode cullMode;
         PrimitiveType primitiveType;
-        BlendState *blendState;
+        BlendState blendState;
         bool depthWrite;
         bool depthTest;
 
         void deinit();
         /// Retrieves or creates an instance of this pipeline for use in the given render program and pass.
         void *GetOrCreateFor(AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse);
-        RenderPipeline(IAllocator *allocator, Shader *pipelineShader, CullMode pipelineCullMode, PrimitiveType pipelinePrimitiveType, BlendState *pipelineBlendState, bool testDepth, bool writeToDepth, collections::Array<VertexDeclaration> pipelineVertexDeclarations);
+
+        RenderPipeline();
+        RenderPipeline(IAllocator *allocator, Shader *pipelineShader, CullMode pipelineCullMode, PrimitiveType pipelinePrimitiveType, BlendState pipelineBlendState, bool testDepth, bool writeToDepth, collections::Array<VertexDeclaration*> pipelineVertexDeclarations);
     };
 }

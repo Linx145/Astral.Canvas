@@ -24,6 +24,10 @@ struct AstralCanvasWindow
 	{
 		glfwDestroyWindow(handle);
 	}
+	inline Maths::Rectangle AsRectangle()
+	{
+		return Maths::Rectangle(0, 0, resolution.X, resolution.Y);
+	}
 };
 
 #ifdef MACOS

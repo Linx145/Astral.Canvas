@@ -157,7 +157,7 @@ namespace AstralCanvas
 
         this->shaderVariables.deinit();
     }
-    i32 AstralCanvas_CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader* result)
+    i32 CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader* result)
     {
         switch (GetActiveBackend())
         {
@@ -210,7 +210,7 @@ namespace AstralCanvas
 
                         VkShaderModuleCreateInfo vertexCreateInfo = {};
                         vertexCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-                        vertexCreateInfo.codeSize = vertexSpirvData.length;
+                        vertexCreateInfo.codeSize = vertexSpirvData.length * 4;
                         vertexCreateInfo.pCode = vertexSpirvData.data;
 
                         VkShaderModule vertexShaderModule;
@@ -222,7 +222,7 @@ namespace AstralCanvas
 
                         VkShaderModuleCreateInfo fragmentCreateInfo = {};
                         fragmentCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-                        fragmentCreateInfo.codeSize = fragmentSpirvData.length;
+                        fragmentCreateInfo.codeSize = fragmentSpirvData.length * 4;
                         fragmentCreateInfo.pCode = fragmentSpirvData.data;
 
                         VkShaderModule fragmentShaderModule;
@@ -239,8 +239,9 @@ namespace AstralCanvas
                         VkDescriptorSetLayoutCreateInfo layoutInfo{};
                         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
                         layoutInfo.flags = 0;
-                        layoutInfo.bindingCount = result->shaderVariables.uniforms.Count;
+                        layoutInfo.bindingCount = (u32)result->shaderVariables.uniforms.Count;
 
+                        result->shaderPipelineLayout = NULL;
                         if (layoutInfo.bindingCount > 0)
                         {
                             collections::Array<VkDescriptorSetLayoutBinding> bindings = collections::Array<VkDescriptorSetLayoutBinding>(&localArena.asAllocator, layoutInfo.bindingCount);
@@ -264,9 +265,9 @@ namespace AstralCanvas
                                 }
                             }
                             layoutInfo.pBindings = bindings.data;
-                        }
 
-                        vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout);
+                            vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout);
+                        }
                     }
                     else
                     {

@@ -68,8 +68,10 @@ void AstralCanvasVk_EndTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvas
     {
         queueToUse->queueMutex.EnterLock();
 
-        //alternatively, wait for queue idle
-        vkWaitForFences(gpu->logicalDevice, 1, &queueToUse->queueFence, true, UINT64_MAX);
+        vkQueueWaitIdle(queueToUse->queue);
+        //alternatively, wait for queue fence
+        //vkWaitForFences(gpu->logicalDevice, 1, &queueToUse->queueFence, true, UINT64_MAX);
+        //vkResetFences(gpu->logicalDevice, 1, &queueToUse->queueFence);
 
         queueToUse->queueMutex.ExitLock();
     }
@@ -77,14 +79,15 @@ void AstralCanvasVk_EndTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvas
     //submit the queue
     queueToUse->queueMutex.EnterLock();
 
-    if (vkQueueSubmit(queueToUse->queue, 1, &submitInfo, queueToUse->queueFence) != VK_SUCCESS)
+    if (vkQueueSubmit(queueToUse->queue, 1, &submitInfo, NULL) != VK_SUCCESS)
     {
         queueToUse->queueMutex.ExitLock();
         THROW_ERR("Failed to submit queue");
     }
     //todo: see if can transfer this to a fence or something
-    vkWaitForFences(gpu->logicalDevice, 1, &queueToUse->queueFence, true, UINT64_MAX);
-    vkResetFences(gpu->logicalDevice, 1, &queueToUse->queueFence);
+    //vkWaitForFences(gpu->logicalDevice, 1, &queueToUse->queueFence, true, UINT64_MAX);
+    //vkResetFences(gpu->logicalDevice, 1, &queueToUse->queueFence);
+    vkQueueWaitIdle(queueToUse->queue);
 
     queueToUse->queueMutex.ExitLock();
 
@@ -96,7 +99,16 @@ void AstralCanvasVk_EndTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvas
     queueToUse->commandPoolMutex.ExitLock();
 }
 
-void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, VkImage imageHandle, u32 mipLevels, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout)
+void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, Texture2D *texture, VkImageAspectFlags aspectFlags, VkImageLayout newLayout)
+{
+    if (texture->imageLayout == (u32)newLayout)
+    {
+        return;
+    }
+    AstralCanvasVk_TransitionImageLayout(gpu, (VkImage)texture->imageHandle, texture->mipLevels, aspectFlags, (VkImageLayout)texture->imageLayout, newLayout);
+    texture->imageLayout = newLayout;
+}
+void AstralCanvasVk_TransitionImageLayout(AstralVulkanGPU *gpu, VkImage imageHandle, u32 mipLevels, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
     VkImageMemoryBarrier memBarrier = {};
     memBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -227,9 +239,20 @@ void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, VkImage imageH
         AstralCanvasVk_EndTransientCommandBuffer(gpu, cmdQueue, cmdBuffer);
     }
 }
+void AstralCanvasVk_CopyBufferToBuffer(AstralVulkanGPU *gpu, VkBuffer from, VkBuffer to, usize copySize)
+{
+    VkCommandBuffer transientCmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, true);
+
+    VkBufferCopy bufferCopy{};
+    bufferCopy.size = copySize;
+
+    vkCmdCopyBuffer(transientCmdBuffer, from, to, 1, &bufferCopy);
+
+    AstralCanvasVk_EndTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, transientCmdBuffer);
+}
 void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, VkImage imageHandle, u32 width, u32 height)
 {
-    VkCommandBuffer transientCmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, &gpu->DedicatedGraphicsQueue, true);
+    VkCommandBuffer transientCmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, true);
 
     VkBufferImageCopy bufferImageCopy = {};
     
@@ -257,7 +280,7 @@ void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, VkIma
         &bufferImageCopy
         );
 
-    AstralCanvasVk_EndTransientCommandBuffer(gpu, &gpu->DedicatedGraphicsQueue, transientCmdBuffer);
+    AstralCanvasVk_EndTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, transientCmdBuffer);
 }
 
 /*VkFramebuffer AstralCanvasVk_GetOrCreateRenderTarget(AstralVulkanGPU *gpu, RenderTarget *renderTarget, RenderProgram *forProgram)

@@ -4,6 +4,7 @@
 #include "allocators.hpp"
 #include "Maths/All.h"
 #include "string.hpp"
+#include "Graphics/Graphics.hpp"
 
 using namespace collections;
 using namespace Maths;
@@ -18,6 +19,7 @@ struct AstralCanvasApplication
 	IAllocator* allocator;
 	double memoryForBuffersMiB;
 	double memoryForImagesMiB;
+	AstralCanvas::Graphics graphicsDevice;
 
 	string appName;
 	string engineName;
@@ -31,7 +33,7 @@ struct AstralCanvasApplication
 	static AstralCanvasApplication* init(IAllocator* ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion);
 	bool AddWindow(i32 width, i32 height, i32 fps, bool resizeable = true);
 	bool FinalizeGraphicsBackend();
-	void Run(AstralCanvas_Update updateFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc);
+	void Run(AstralCanvas_Update updateFunc, AstralCanvas_Update drawFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc);
 };
 
 AstralCanvasApplication* AstralCanvas_GetAppInstance();
