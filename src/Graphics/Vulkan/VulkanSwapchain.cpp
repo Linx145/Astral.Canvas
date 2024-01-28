@@ -16,8 +16,9 @@ VkSurfaceFormatKHR AstralCanvasVk_FindSurfaceWith(VkColorSpaceKHR colorSpace, Vk
     return toSearch.data[0];
 }
 
-AstralVulkanSwapchain AstralCanvasVk_CreateSwapchain(IAllocator *allocator, AstralVulkanGPU *gpu, AstralCanvasWindow *window)
+bool AstralCanvasVk_CreateSwapchain(IAllocator *allocator, AstralVulkanGPU *gpu, AstralCanvasWindow *window, AstralVulkanSwapchain* result)
 {
+    result = NULL;
     IAllocator cAllocator = GetCAllocator();
     AstralVkSwapchainSupportDetails details = AstralCanvasVk_QuerySwapchainSupport(gpu->physicalDevice, (VkSurfaceKHR)window->windowSurfaceHandle,  &cAllocator);
 
@@ -40,9 +41,14 @@ AstralVulkanSwapchain AstralCanvasVk_CreateSwapchain(IAllocator *allocator, Astr
 
     details.deinit();
 
-    AstralCanvasVk_SwapchainRecreate(&swapchain, gpu);
+    if (!AstralCanvasVk_SwapchainRecreate(&swapchain, gpu))
+    {
+        return false;
+    }
 
-    return swapchain;
+    *result = swapchain;
+
+    return true;
 }
 void AstralCanvasVk_DestroySwapchain(AstralVulkanSwapchain *swapchain)
 {
@@ -56,7 +62,7 @@ void AstralCanvasVk_DestroySwapchain(AstralVulkanSwapchain *swapchain)
     vkDestroySwapchainKHR(swapchain->gpu->logicalDevice, swapchain->handle, NULL);
 }
 
-void AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVulkanGPU *gpu)
+bool AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVulkanGPU *gpu)
 {
     u32 width = 0;
     u32 height = 0;
@@ -113,17 +119,18 @@ void AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
     swapchain->oldHandle = swapchain->handle;
     if (vkCreateSwapchainKHR(swapchain->gpu->logicalDevice, &createInfo, NULL, &swapchain->handle) != VK_SUCCESS)
     {
-        THROW_ERR("Failed to create swapchain");
-        return;
+        return false;
     }
 
     //get swapchain images
     //recreate framebuffers
-    vkGetSwapchainImagesKHR(swapchain->gpu->logicalDevice, swapchain->handle, &swapchain->imageCount, NULL);
-
+    if (vkGetSwapchainImagesKHR(swapchain->gpu->logicalDevice, swapchain->handle, &swapchain->imageCount, NULL)!= VK_SUCCESS)
+    {
+        return false;
+    }
     //VkImage *images = (VkImage*)malloc(sizeof(VkImage) * swapchain->imageCount);
     swapchain->imageHandles = collections::Array<void *>(swapchain->allocator, sizeof(VkImage) * swapchain->imageCount);
-    vkGetSwapchainImagesKHR(swapchain->gpu->logicalDevice, swapchain->handle, &swapchain->imageCount, (VkImage*)swapchain->imageHandles.data);
+    vkGetSwapchainImagesKHR(swapchain->gpu->logicalDevice, swapchain->handle, &swapchain->imageCount, (VkImage *)swapchain->imageHandles.data);
 
     printf("Got image handles for swapchain\n");
 
@@ -133,6 +140,8 @@ void AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
     AstralCanvasVk_SwapchainRecreateRendertargets(swapchain);
 
     details.deinit();
+
+    return true;
 }
 
 void AstralCanvasVk_SwapchainRecreateRendertargets(AstralVulkanSwapchain* swapchain)
@@ -150,4 +159,26 @@ void AstralCanvasVk_SwapchainRecreateRendertargets(AstralVulkanSwapchain* swapch
     }
 
     //free(depthBufferData);
+}
+
+bool AstralCanvasVk_SwapchainSwapBuffers(AstralVulkanGPU *gpu, AstralVulkanSwapchain* swapchain, VkSemaphore semaphore, VkFence fence)
+{
+    VkResult result = vkAcquireNextImageKHR(swapchain->gpu->logicalDevice, swapchain->handle, 1000000000, semaphore, fence, &swapchain->currentImageIndex);
+
+    if (result != VK_SUCCESS)
+    {
+        if (result == VK_ERROR_OUT_OF_DATE_KHR)
+        {
+            AstralCanvasVk_DestroySwapchain(swapchain);
+            AstralCanvasVk_SwapchainRecreate(swapchain, gpu);
+
+            return true;
+        }
+        else
+        {
+            THROW_ERR("Failed to acquire next swapchain image");
+            return false;
+        }
+    }
+    return false;
 }

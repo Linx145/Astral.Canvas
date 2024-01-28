@@ -7,6 +7,7 @@ VkInstance                              AstralCanvasVk_instance = NULL;
 AstralVulkanGPU                         AstralCanvasVk_GPU = {};
 VmaAllocator                            AstralCanvasVk_vma = NULL;
 AstralVulkanSwapchain                   AstralCanvasVk_swapchain = {};
+VkSemaphore                             AstralCanvasVk_AwaitPresentCompleteSemaphore = NULL;
 
 VkDebugUtilsMessengerEXT AstralCanvasVk_GetDebugMessenger()
 {
@@ -69,4 +70,13 @@ AstralVulkanSwapchain *AstralCanvasVk_GetCurrentSwapchain()
 void AstralCanvasVk_SetCurrentSwapchain(AstralVulkanSwapchain swapchain)
 {
     AstralCanvasVk_swapchain = swapchain;
+}
+
+VkSemaphore AstralCanvasVk_GetAwaitPresentCompleteSemaphore()
+{
+    return AstralCanvasVk_AwaitPresentCompleteSemaphore;
+}
+void AstralCanvasVk_SetAwaitPresentCompleteSemaphore(VkSemaphore semaphore)
+{
+    AstralCanvasVk_AwaitPresentCompleteSemaphore = semaphore;
 }

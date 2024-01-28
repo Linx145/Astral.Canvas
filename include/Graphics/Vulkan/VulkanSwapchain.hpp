@@ -27,10 +27,11 @@ struct AstralVulkanSwapchain
     collections::Array<void *> imageHandles;
 };
 
-AstralVulkanSwapchain AstralCanvasVk_CreateSwapchain(IAllocator *allocator, AstralVulkanGPU *gpu, AstralCanvasWindow *window);
+bool AstralCanvasVk_CreateSwapchain(IAllocator *allocator, AstralVulkanGPU *gpu, AstralCanvasWindow *window, AstralVulkanSwapchain *swapchain);
 void AstralCanvasVk_DestroySwapchain(AstralVulkanSwapchain *swapchain);
 
-void AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain *swapchain, AstralVulkanGPU *gpu);
+bool AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain *swapchain, AstralVulkanGPU *gpu);
 void AstralCanvasVk_SwapchainRecreateRendertargets(AstralVulkanSwapchain* swapchain);
-
 VkSurfaceFormatKHR AstralCanvasVk_FindSurfaceWith(VkColorSpaceKHR colorSpace, VkFormat format, collections::Array<VkSurfaceFormatKHR> toSearch);
+
+bool AstralCanvasVk_SwapchainSwapBuffers(AstralVulkanGPU *gpu, AstralVulkanSwapchain* swapchain, VkSemaphore semaphore, VkFence fence);

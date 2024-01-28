@@ -79,9 +79,23 @@ bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validat
 	AstralCanvasVk_SetCurrentVulkanAllocator(vulkanAllocator);
 	printf("Created memory allocator\n");
 
-	AstralVulkanSwapchain swapchain = AstralCanvasVk_CreateSwapchain(allocator, AstralCanvasVk_GetCurrentGPU(), window);
+	AstralVulkanSwapchain swapchain;
+	if (!AstralCanvasVk_CreateSwapchain(allocator, AstralCanvasVk_GetCurrentGPU(), window, &swapchain))
+	{
+		return false;
+	}
 	AstralCanvasVk_SetCurrentSwapchain(swapchain);
 	printf("Created swapchain\n");
+
+	VkSemaphoreCreateInfo semaphoreCreateInfo;
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	semaphoreCreateInfo.flags = 0;
+	semaphoreCreateInfo.pNext = NULL;
+
+	VkSemaphore awaitPresentCompleteSemaphore;
+	vkCreateSemaphore(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &semaphoreCreateInfo, NULL, &awaitPresentCompleteSemaphore);
+
+	AstralCanvasVk_SetAwaitPresentCompleteSemaphore(awaitPresentCompleteSemaphore);
 }
 
 bool AstralCanvasVk_CreateInstance(IAllocator* allocator, Array<const char*> validationLayersToUse, const char* appName, const char* engineName, u32 applicationVersion, u32 engineVersion, u32 vulkanVersion)
@@ -190,7 +204,6 @@ void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvasWindow* wind
 	if (swapchain != NULL)
 	{
 		AstralCanvasVk_DestroySwapchain(swapchain);
-		printf("Destroyed swapchain\n");
 	}
 
 	VmaAllocator vma = AstralCanvasVk_GetCurrentVulkanAllocator();
@@ -220,4 +233,19 @@ void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvasWindow* wind
 	{
 		vkDestroyInstance(instance, NULL);
 	}
+}
+
+void AstralCanvasVk_BeginDraw()
+{
+
+}
+void AstralCanvasVk_EndDraw()
+{
+	//submit to GPU
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkPipelineStageFlags waitFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	submitInfo.pWaitDstStageMask = &waitFlags;
+	submitInfo.waitSemaphoreCount = 1;
 }

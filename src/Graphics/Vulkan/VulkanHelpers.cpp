@@ -77,13 +77,14 @@ void AstralCanvasVk_EndTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvas
     //submit the queue
     queueToUse->queueMutex.EnterLock();
 
-    if (vkQueueSubmit(queueToUse->queue, 1, &submitInfo, NULL) != VK_SUCCESS)
+    if (vkQueueSubmit(queueToUse->queue, 1, &submitInfo, queueToUse->queueFence) != VK_SUCCESS)
     {
         queueToUse->queueMutex.ExitLock();
         THROW_ERR("Failed to submit queue");
     }
     //todo: see if can transfer this to a fence or something
-    vkQueueWaitIdle(queueToUse->queue);
+    vkWaitForFences(gpu->logicalDevice, 1, &queueToUse->queueFence, true, UINT64_MAX);
+    vkResetFences(gpu->logicalDevice, 1, &queueToUse->queueFence);
 
     queueToUse->queueMutex.ExitLock();
 

@@ -22,4 +22,7 @@ bool AstralCanvasVk_CreateInstance(IAllocator* allocator, collections::Array<con
 bool AstralCanvasVk_CreateDebugMessenger();
 
 void AstralCanvasVk_Deinitialize(IAllocator *allocator, AstralCanvasWindow *window);
+
+void AstralCanvasVk_BeginDraw();
+void AstralCanvasVk_EndDraw();
 #endif
