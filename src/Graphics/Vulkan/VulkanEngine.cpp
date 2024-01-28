@@ -4,7 +4,6 @@
 
 using namespace collections;
 
-
 VkBool32 AstralCanvasVk_ErrorCallback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 	VkDebugUtilsMessageTypeFlagsEXT messageTypes,
@@ -191,6 +190,7 @@ void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvasWindow* wind
 	if (swapchain != NULL)
 	{
 		AstralCanvasVk_DestroySwapchain(swapchain);
+		printf("Destroyed swapchain\n");
 	}
 
 	VmaAllocator vma = AstralCanvasVk_GetCurrentVulkanAllocator();

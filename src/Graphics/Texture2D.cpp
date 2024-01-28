@@ -11,6 +11,10 @@ namespace AstralCanvas
 {
     void Texture2D::Construct()
     {
+        if (this->constructed)
+        {
+            return;
+        }
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
@@ -57,38 +61,51 @@ namespace AstralCanvas
                     }
                 }
                 image = (VkImage)this->imageHandle;
+                VkImageAspectFlags imageAspect = VK_IMAGE_ASPECT_COLOR_BIT;
+                if (imageFormat == ImageFormat_Depth16 || imageFormat == ImageFormat_Depth32)
+                {
+                    imageAspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+                }
+                else if (imageFormat > ImageFormat_DepthNone)
+                {
+                    imageAspect = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+                }
 
-                if (this->bytes != NULL && (this->width * this->height > 0) && this->ownsHandle)
+                bool transitionToAttachmentOptimal = true;
+                if ((this->width * this->height > 0) && this->ownsHandle)
                 {
                     //VmaAllocation
                     this->allocatedMemory = AstralCanvasVk_AllocateMemoryForImage(image, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-                    if (!this->usedForRenderTarget)
+                    //for non-rendertarget textures
+                    if (this->bytes != NULL && !this->usedForRenderTarget)
                     {
+                        transitionToAttachmentOptimal = false;
                         VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, this->width * this->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
-                        AstralCanvasMemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), true);
+                        AstralCanvas::MemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), true);
 
                         memcpy(stagingMemory.vkAllocationInfo.pMappedData, this->bytes, (usize)(this->width * this->height * 4));
 
-                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
                         AstralCanvasVk_CopyBufferToImage(gpu, stagingBuffer, (VkImage)this->imageHandle, this->width, this->height);
 
-                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
                         vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
 
                         vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
                     }
                 }
-                else
+
+                if (transitionToAttachmentOptimal)
                 {
                     if (this->imageFormat >= ImageFormat_DepthNone)
                     {
-                        AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+                        AstralCanvasVk_TransitionTextureLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
                     }
-                    else AstralCanvasVk_TransitionTextureLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                    else AstralCanvasVk_TransitionTextureLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
                 }
 
                 VkImageViewCreateInfo viewCreateInfo = {};
@@ -97,12 +114,7 @@ namespace AstralCanvas
                 viewCreateInfo.format = AstralCanvasVk_FromImageFormat(this->imageFormat);
                 viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-                if (this->imageFormat >= ImageFormat_DepthNone)
-                {
-                    viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                }
-                else 
-                    viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                viewCreateInfo.subresourceRange.aspectMask = imageAspect;
                 viewCreateInfo.subresourceRange.baseMipLevel = 0;
                 viewCreateInfo.subresourceRange.levelCount = this->mipLevels;
                 viewCreateInfo.subresourceRange.baseArrayLayer = 0;
@@ -118,7 +130,6 @@ namespace AstralCanvas
                     THROW_ERR("Failed to create image view");
                 }
 
-                this->constructed = true;
                 break;
             }
             #endif
@@ -126,6 +137,7 @@ namespace AstralCanvas
                 THROW_ERR("Unrecognised backend when attempting to create a texture");
                 break;
         }
+        this->constructed = true;
     }
     void Texture2D::deinit()
     {
@@ -139,16 +151,14 @@ namespace AstralCanvas
             case Backend_Vulkan:
             {
                 AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
-                if (!this->isDisposed && this->constructed)
+
+                vkDestroyImageView(gpu->logicalDevice, (VkImageView)this->imageView, NULL);
+                if (this->ownsHandle)
                 {
-                    vkDestroyImageView(gpu->logicalDevice, (VkImageView)this->imageView, NULL);
-                    if (this->ownsHandle)
-                    {
-                        vkDestroyImage(gpu->logicalDevice, (VkImage)this->imageHandle, NULL);
-                        vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->allocatedMemory.vkAllocation);
-                    }
-                    this->isDisposed = true;
+                    vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->allocatedMemory.vkAllocation);
+                    vkDestroyImage(gpu->logicalDevice, (VkImage)this->imageHandle, NULL);
                 }
+                
                 break;
             }
             #endif
@@ -158,17 +168,19 @@ namespace AstralCanvas
         }
         this->isDisposed = true;
     }
-    Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat)
+    Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget)
     {
         Texture2D result = {};
         result.width = width;
         result.height = height;
         result.imageHandle = handle;
         result.ownsHandle = false;
-        result.usedForRenderTarget = false;
+        result.usedForRenderTarget = usedForRenderTarget;
         result.mipLevels = 1;
         result.imageFormat = imageFormat;
         result.bytes = NULL;
+        result.constructed = false;
+        result.isDisposed = false;
 
         result.Construct();
         return result;
@@ -183,6 +195,8 @@ namespace AstralCanvas
         result.imageFormat = imageFormat;
         result.mipLevels = 1;
         result.usedForRenderTarget = usedForRenderTarget;
+        result.constructed = false;
+        result.isDisposed = false;
 
         result.Construct();
         return result;

@@ -49,7 +49,8 @@ bool AstralCanvasApplication::FinalizeGraphicsBackend()
 	collections::Array<const char *> validationLayersToUse = collections::Array<const char *>();
 	#endif
 
-	collections::Array<const char *> requiredExtensions = collections::Array<const char *>();
+	collections::Array<const char *> requiredExtensions = collections::Array<const char *>(allocator, 1);
+	requiredExtensions.data[0] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 
 	AstralCanvasVk_Initialize(this->allocator, validationLayersToUse, requiredExtensions, &windows.ptr[0]);
 	//AstralCanvasWgpu_Initialize(this->allocator, &this->windows.ptr[0], Array<AstralCanvas_GraphicsFeatures>(), Array<AstralCanvas_GraphicsFeatures>());

@@ -168,7 +168,7 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* alloca
 	{
 		return false;
 	}
-	bool encounteredErrorCreatingCommandPools;
+	bool encounteredErrorCreatingCommandPools = false;
 
 	for (usize i = 0; i < gpu->queueInfo.queueCreationResults.count; i++)
 	{
@@ -188,12 +188,12 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* alloca
 			encounteredErrorCreatingCommandPools = true;
 		}
 
-		VkFence fence;
+		VkFence queueFence;
 		VkFenceCreateInfo fenceCreateInfo = {};
-		fenceCreateInfo.flags = 0;
+		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-		if (vkCreateFence(gpu->logicalDevice, &fenceCreateInfo, NULL, &fence))
+		if (vkCreateFence(gpu->logicalDevice, &fenceCreateInfo, NULL, &queueFence))
 		{
 			encounteredErrorCreatingCommandPools = true;
 		}
@@ -201,17 +201,17 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* alloca
 		{
 			case AstralVulkanQueue_Compute:
 			{
-				gpu->DedicatedComputeQueue = AstralCanvasVkCommandQueue(gpu->logicalDevice, queue, fence, commandPool);
+				gpu->DedicatedComputeQueue = AstralCanvasVkCommandQueue(gpu->logicalDevice, queue, queueFence, commandPool);
 				break;
 			}
 			case AstralVulkanQueue_Transfer:
 			{
-				gpu->DedicatedTransferQueue = AstralCanvasVkCommandQueue(gpu->logicalDevice, queue, fence, commandPool);
+				gpu->DedicatedTransferQueue = AstralCanvasVkCommandQueue(gpu->logicalDevice, queue, queueFence, commandPool);
 				break;
 			}
 			default:
 			{
-				gpu->DedicatedGraphicsQueue = AstralCanvasVkCommandQueue(gpu->logicalDevice, queue, fence, commandPool);
+				gpu->DedicatedGraphicsQueue = AstralCanvasVkCommandQueue(gpu->logicalDevice, queue, queueFence, commandPool);
 				break;
 			}
 		}

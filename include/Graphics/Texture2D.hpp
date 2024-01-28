@@ -36,11 +36,11 @@ namespace AstralCanvas
         /// The view into the image in the graphics API.
         void *imageView;
         /// The allocated VRAM for the image
-        AstralCanvasMemoryAllocation allocatedMemory;
+        AstralCanvas::MemoryAllocation allocatedMemory;
 
         void deinit();
         void Construct();
     };
-    Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat);
+    Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget);
     Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, SamplerState *samplerState, bool usedForRenderTarget);
 }

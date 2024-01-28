@@ -1,5 +1,6 @@
 #include "Graphics/Vulkan/VulkanSwapchain.hpp"
 #include "Maths/Util.hpp"
+#include "ErrorHandling.hpp"
 
 using namespace AstralCanvas;
 
@@ -35,6 +36,7 @@ AstralVulkanSwapchain AstralCanvasVk_CreateSwapchain(IAllocator *allocator, Astr
     swapchain.depthFormat = ImageFormat_Depth32;
     swapchain.imageExtents.width = 0;
     swapchain.imageExtents.height = 0;
+    swapchain.oldHandle = NULL;
 
     details.deinit();
 
@@ -56,7 +58,8 @@ void AstralCanvasVk_DestroySwapchain(AstralVulkanSwapchain *swapchain)
 
 void AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVulkanGPU *gpu)
 {
-    u32 width, height = 0;
+    u32 width = 0;
+    u32 height = 0;
 
     while (width == 0 || height == 0)
     {
@@ -83,6 +86,7 @@ void AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
             extents.height = Maths::Clamp(details.capabilities.minImageExtent.height, details.capabilities.maxImageExtent.height, height);
         }
     }
+    swapchain->imageExtents = extents;
 
     vkDeviceWaitIdle(swapchain->gpu->logicalDevice);
 
@@ -104,9 +108,14 @@ void AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
     createInfo.presentMode = swapchain->presentMode;
     createInfo.clipped = true;
     createInfo.oldSwapchain = swapchain->oldHandle;
+    createInfo.imageExtent = swapchain->imageExtents;
 
     swapchain->oldHandle = swapchain->handle;
-    vkCreateSwapchainKHR(swapchain->gpu->logicalDevice, &createInfo, NULL, &swapchain->handle);
+    if (vkCreateSwapchainKHR(swapchain->gpu->logicalDevice, &createInfo, NULL, &swapchain->handle) != VK_SUCCESS)
+    {
+        THROW_ERR("Failed to create swapchain");
+        return;
+    }
 
     //get swapchain images
     //recreate framebuffers
@@ -115,7 +124,9 @@ void AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
     //VkImage *images = (VkImage*)malloc(sizeof(VkImage) * swapchain->imageCount);
     swapchain->imageHandles = collections::Array<void *>(swapchain->allocator, sizeof(VkImage) * swapchain->imageCount);
     vkGetSwapchainImagesKHR(swapchain->gpu->logicalDevice, swapchain->handle, &swapchain->imageCount, (VkImage*)swapchain->imageHandles.data);
-    
+
+    printf("Got image handles for swapchain\n");
+
     //now that we have swapchain images, we store them into textures, which are in turn
     //stored into rendertarget
     swapchain->renderTargets = collections::Array<RenderTarget>(swapchain->allocator, swapchain->imageCount);
@@ -126,13 +137,17 @@ void AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
 
 void AstralCanvasVk_SwapchainRecreateRendertargets(AstralVulkanSwapchain* swapchain)
 {
+    //u8 *depthBufferData = (u8 *)calloc(swapchain->imageExtents.width * swapchain->imageExtents.height, 4);
+
     for (usize i = 0; i < swapchain->renderTargets.length; i++)
     {
         swapchain->renderTargets.data[i].deinit();
 
-        Texture2D backingTexture = CreateTextureFromHandle(swapchain->imageHandles.data[i], swapchain->imageExtents.width, swapchain->imageExtents.height, ImageFormat_B8G8R8A8Unorm);
-        Texture2D backingDepthbuffer = CreateTextureFromData(NULL, swapchain->imageExtents.width, swapchain->imageExtents.height, swapchain->depthFormat, NULL, false);
+        Texture2D backingTexture = CreateTextureFromHandle(swapchain->imageHandles.data[i], swapchain->imageExtents.width, swapchain->imageExtents.height, swapchain->imageFormat, true);
+        Texture2D backingDepthbuffer = CreateTextureFromData(NULL, swapchain->imageExtents.width, swapchain->imageExtents.height, swapchain->depthFormat, NULL, true);
 
         swapchain->renderTargets.data[i] = RenderTarget(backingTexture, backingDepthbuffer, true);
     }
+
+    //free(depthBufferData);
 }

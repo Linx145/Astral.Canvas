@@ -5,17 +5,20 @@
 #include "Graphics/Vulkan/vk_mem_alloc.h"
 #endif
 
-union AstralCanvasMemoryAllocation
+namespace AstralCanvas
 {
-    #ifdef ASTRALCANVAS_VULKAN
-    struct
+    union MemoryAllocation
     {
-        VmaAllocation vkAllocation;
-        VmaAllocationInfo vkAllocationInfo;
+        #ifdef ASTRALCANVAS_VULKAN
+        struct
+        {
+            VmaAllocation vkAllocation;
+            VmaAllocationInfo vkAllocationInfo;
+        };
+        #endif
+        struct
+        {
+            i32 unused;
+        };
     };
-    #endif
-    struct
-    {
-        i32 unused;
-    };
-};
+}

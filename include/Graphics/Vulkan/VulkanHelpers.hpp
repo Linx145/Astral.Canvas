@@ -18,7 +18,7 @@ void AstralCanvasVk_EndTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvas
 void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, VkImage imageHandle, u32 width, u32 height);
 void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, VkImage imageHandle, u32 mipLevels, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-inline AstralCanvasMemoryAllocation AstralCanvasVk_AllocateMemoryForImage(VkImage image, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlagBits memoryProperties)
+inline AstralCanvas::MemoryAllocation AstralCanvasVk_AllocateMemoryForImage(VkImage image, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlagBits memoryProperties)
 {
     VmaAllocator vma = AstralCanvasVk_GetCurrentVulkanAllocator();
 
@@ -26,16 +26,18 @@ inline AstralCanvasMemoryAllocation AstralCanvasVk_AllocateMemoryForImage(VkImag
     allocationCreateInfo.usage = memoryUsage;
     allocationCreateInfo.requiredFlags = memoryProperties;
 
-    AstralCanvasMemoryAllocation memoryAllocated;
+    AstralCanvas::MemoryAllocation memoryAllocated;
 
     if (vmaAllocateMemoryForImage(vma, image, &allocationCreateInfo, &memoryAllocated.vkAllocation, &memoryAllocated.vkAllocationInfo) != VK_SUCCESS)
     {
         THROW_ERR("Failed to create memory for image");
     }
 
+    vmaBindImageMemory(vma, memoryAllocated.vkAllocation, image);
+
     return memoryAllocated;
 }
-inline AstralCanvasMemoryAllocation AstralCanvasVk_AllocateMemoryForBuffer(VkBuffer buffer, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlagBits memoryProperties, bool createMapped = true)
+inline AstralCanvas::MemoryAllocation AstralCanvasVk_AllocateMemoryForBuffer(VkBuffer buffer, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlagBits memoryProperties, bool createMapped = true)
 {
     VmaAllocator vma = AstralCanvasVk_GetCurrentVulkanAllocator();
     
@@ -47,12 +49,14 @@ inline AstralCanvasMemoryAllocation AstralCanvasVk_AllocateMemoryForBuffer(VkBuf
     }
     allocationCreateInfo.requiredFlags = memoryProperties;
     
-    AstralCanvasMemoryAllocation memoryAllocated;
+    AstralCanvas::MemoryAllocation memoryAllocated;
 
     if (vmaAllocateMemoryForBuffer(vma, buffer, &allocationCreateInfo, &memoryAllocated.vkAllocation, &memoryAllocated.vkAllocationInfo) != VK_SUCCESS)
     {
         THROW_ERR("Failed to create memory for buffer");
     }
+
+    vmaBindBufferMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), memoryAllocated.vkAllocation, buffer);
 
     return memoryAllocated;
 }

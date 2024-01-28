@@ -10,7 +10,7 @@ namespace AstralCanvas
 {
     void RenderTarget::deinit()
     {
-        if (this->isDisposed || !this->constructed)
+        if (this->isDisposed)
         {
             return;
         }
@@ -19,7 +19,10 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_VULKAN
             case Backend_Vulkan:
             {
-                vkDestroyFramebuffer(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkFramebuffer)this->renderTargetHandle, NULL);
+                if (this->renderTargetHandle != NULL)
+                {
+                    vkDestroyFramebuffer(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkFramebuffer)this->renderTargetHandle, NULL);
+                }
                 this->backendTexture.deinit();
                 this->depthBuffer.deinit();
                 break;
@@ -82,19 +85,24 @@ namespace AstralCanvas
         this->width = thisBackendTexture.width;
         this->height = thisBackendTexture.height;
         this->constructed = false;
+        this->isDisposed = false;
         this->hasBeenUsedBefore = false;
         this->isBackbuffer = isBackbuffer;
+        this->renderTargetHandle = NULL;
     }
     RenderTarget::RenderTarget(u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat)
     {
         this->width = width;
         this->height = height;
+        this->constructed = false;
+        this->isDisposed = false;
+        this->renderTargetHandle = NULL;
         u8 *bytes = (u8*)calloc(width * height, 4);
-        this->backendTexture = CreateTextureFromData(bytes, width, height, imageFormat, SamplerGetPointClamp(), false);
+        this->backendTexture = CreateTextureFromData(bytes, width, height, imageFormat, SamplerGetPointClamp(), true);
         
         if (depthFormat != ImageFormat_DepthNone && depthFormat != ImageFormat_Undefined)
         {
-            this->depthBuffer = CreateTextureFromData(bytes, width, height, depthFormat, SamplerGetPointClamp(), false);
+            this->depthBuffer = CreateTextureFromData(NULL, width, height, depthFormat, SamplerGetPointClamp(), true);
         }
         else
         {
