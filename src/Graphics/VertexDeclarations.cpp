@@ -40,7 +40,7 @@ namespace AstralCanvas
             VertexInput_PerVertex);
 
         vertexPositionColorDecl.elements.Add({VertexElement_Vector3, 0});
-        vertexPositionColorDecl.elements.Add({VertexElement_Vector4, 12});
+        vertexPositionColorDecl.elements.Add({VertexElement_Vector4, 16});
 
         return &vertexPositionColorDecl;
     }
@@ -56,8 +56,8 @@ namespace AstralCanvas
             VertexInput_PerVertex);
 
         vertexPositionColorTextureDecl.elements.Add({VertexElement_Vector3, 0});
-        vertexPositionColorTextureDecl.elements.Add({VertexElement_Vector4, 12});
-        vertexPositionColorTextureDecl.elements.Add({VertexElement_Vector2, 28});
+        vertexPositionColorTextureDecl.elements.Add({VertexElement_Vector4, 16});
+        vertexPositionColorTextureDecl.elements.Add({VertexElement_Vector2, 32});
 
         return &vertexPositionColorTextureDecl;
     }
@@ -73,8 +73,8 @@ namespace AstralCanvas
             VertexInput_PerVertex);
 
         vertexPositionTextureColorDecl.elements.Add({VertexElement_Vector3, 0});
-        vertexPositionTextureColorDecl.elements.Add({VertexElement_Vector2, 12});
-        vertexPositionTextureColorDecl.elements.Add({VertexElement_Vector4, 20});
+        vertexPositionTextureColorDecl.elements.Add({VertexElement_Vector2, 16});
+        vertexPositionTextureColorDecl.elements.Add({VertexElement_Vector4, 24});
 
         return &vertexPositionTextureColorDecl;
     }
@@ -90,8 +90,8 @@ namespace AstralCanvas
             VertexInput_PerVertex);
 
         vertexPositionNormalTextureDecl.elements.Add({VertexElement_Vector3, 0});
-        vertexPositionNormalTextureDecl.elements.Add({VertexElement_Vector3, 12});
-        vertexPositionNormalTextureDecl.elements.Add({VertexElement_Vector2, 24});
+        vertexPositionNormalTextureDecl.elements.Add({VertexElement_Vector3, 16});
+        vertexPositionNormalTextureDecl.elements.Add({VertexElement_Vector2, 32});
 
         return &vertexPositionNormalTextureDecl;
     }

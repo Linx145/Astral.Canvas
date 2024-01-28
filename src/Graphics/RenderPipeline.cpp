@@ -54,7 +54,6 @@ namespace AstralCanvas
 
                 IAllocator cAllocator = GetCAllocator();
                 ArenaAllocator arena = ArenaAllocator(&cAllocator);
-
                 const i32 dynamicStateCount = 2;
                 collections::Array<VkDynamicState> dynamicStates = collections::Array<VkDynamicState>(&arena.asAllocator, dynamicStateCount);
                 dynamicStates.data[0] = VK_DYNAMIC_STATE_VIEWPORT;
@@ -69,6 +68,9 @@ namespace AstralCanvas
 
                 usize vertexDeclCount = pipeline->vertexDeclarations.length;
                 VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+                vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+                vertexInputInfo.vertexAttributeDescriptionCount = 0;
+                vertexInputInfo.vertexBindingDescriptionCount = 0;
 
                 if (vertexDeclCount > 0)
                 {
@@ -100,7 +102,6 @@ namespace AstralCanvas
                         }
                     }
 
-                    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
                     vertexInputInfo.vertexBindingDescriptionCount = vertexDeclCount;
                     vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data;
                     vertexInputInfo.vertexAttributeDescriptionCount = attribCount;
@@ -149,7 +150,7 @@ namespace AstralCanvas
                 multisamplingInfo.sampleShadingEnable = false;
                 multisamplingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
                 multisamplingInfo.minSampleShading = 1.0f;
-                multisamplingInfo.pSampleMask = nullptr;
+                multisamplingInfo.pSampleMask = NULL;
                 multisamplingInfo.alphaToCoverageEnable = false;
                 multisamplingInfo.alphaToOneEnable = false;
 

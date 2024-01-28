@@ -34,16 +34,22 @@ inline VkFormat AstralCanvasVk_FromVertexElementFormat(AstralCanvas::VertexEleme
     {
         case AstralCanvas::VertexElementFormat::VertexElement_Float:
             return VK_FORMAT_R32_SFLOAT;
+
         case AstralCanvas::VertexElementFormat::VertexElement_Vector2:
             return VK_FORMAT_R32G32_SFLOAT;
+
         case AstralCanvas::VertexElementFormat::VertexElement_Vector3:
             return VK_FORMAT_R32G32B32_SFLOAT;
+
         case AstralCanvas::VertexElementFormat::VertexElement_Vector4:
             return VK_FORMAT_R32G32B32A32_SFLOAT;
+
         case AstralCanvas::VertexElementFormat::VertexElement_Int:
             return VK_FORMAT_R32_SINT;
+
         case AstralCanvas::VertexElementFormat::VertexElement_Color:
             return VK_FORMAT_R8G8B8A8_UNORM;
+
         case AstralCanvas::VertexElementFormat::VertexElement_Uint:
             return VK_FORMAT_R32_UINT;
     }

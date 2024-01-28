@@ -8,6 +8,7 @@ namespace AstralCanvas
     struct VertexBuffer
     {
         void *handle;
+        bool canRead;
         VertexDeclaration *vertexType;
         usize vertexCount;
 
@@ -16,9 +17,10 @@ namespace AstralCanvas
         bool constructed;
 
         VertexBuffer();
-        VertexBuffer(VertexDeclaration *thisVertexType, usize vertexCount);
+        VertexBuffer(VertexDeclaration *thisVertexType, usize vertexCount, bool canRead = false);
 
-        void SetData(u8* verticesByteData, usize lengthOfBytes);
+        void SetData(void* verticesData, usize count);
+        void *GetData(IAllocator *allocator, usize* dataLength);
         void Construct();
         void deinit();
     };

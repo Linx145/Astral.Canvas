@@ -43,7 +43,7 @@ namespace Maths
         Vec4(float x, float y, float z, float w)
         {
 #ifdef USE_SSE
-            asM128 = _mm_set_ps(x, y, z, w);
+            asM128 = _mm_set_ps(w, z, y, x);
 #else
             X = x;
             Y = y;
@@ -54,7 +54,7 @@ namespace Maths
         Vec4(Vec2 vec2, float z, float w)
         {
 #ifdef USE_SSE
-            asM128 = _mm_set_ps(vec2.X, vec2.Y, z, w);
+            asM128 = _mm_set_ps(w, z, vec2.Y, vec2.X);
 #else
             X = vec2.X;
             Y = vec2.Y;
@@ -65,7 +65,7 @@ namespace Maths
         Vec4(Vec3 vec3, float w)
         {
 #ifdef USE_SSE
-            asM128 = _mm_set_ps(vec3.X, vec3.Y, vec3.Z, w);
+            asM128 = _mm_set_ps(w, vec3.Z, vec3.Y, vec3.X);
 #else
             X = vec3.X;
             Y = vec3.Y;

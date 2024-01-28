@@ -44,7 +44,7 @@ inline AstralCanvas::MemoryAllocation AstralCanvasVk_AllocateMemoryForBuffer(VkB
 {
     VmaAllocator vma = AstralCanvasVk_GetCurrentVulkanAllocator();
     
-    VmaAllocationCreateInfo allocationCreateInfo = {};
+    VmaAllocationCreateInfo allocationCreateInfo{};
     allocationCreateInfo.usage = memoryUsage;
     if (createMapped)
     {

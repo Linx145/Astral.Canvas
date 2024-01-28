@@ -245,6 +245,8 @@ void AstralCanvasVk_CopyBufferToBuffer(AstralVulkanGPU *gpu, VkBuffer from, VkBu
 
     VkBufferCopy bufferCopy{};
     bufferCopy.size = copySize;
+    bufferCopy.dstOffset = 0;
+    bufferCopy.srcOffset = 0;
 
     vkCmdCopyBuffer(transientCmdBuffer, from, to, 1, &bufferCopy);
 

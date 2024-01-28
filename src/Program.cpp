@@ -34,7 +34,7 @@ void Initialize()
 		&shader,
 		AstralCanvas::CullMode_CullNone,
 		AstralCanvas::PrimitiveType_TriangleList,
-		DISABLE_BLEND,
+		OPAQUE_BLEND,
 		false,
 		false,
 		vertexDeclsUsed
@@ -44,13 +44,14 @@ void Initialize()
 	vb = AstralCanvas::VertexBuffer(AstralCanvas::GetVertexPositionColorDecl(), 3);
 
 	AstralCanvas::VertexPositionColor vertices[3];
-	vertices[0].color = COLOR_RED.ToVector4();
 	vertices[0].position = Maths::Vec3(0.0f, -1.0f, 0.0f);
-	vertices[1].color = COLOR_GREEN.ToVector4();
+	vertices[0].color = COLOR_RED.ToVector4();
 	vertices[1].position = Maths::Vec3(1.0f, 1.0f, 0.0f);
-	vertices[2].color = COLOR_BLUE.ToVector4();
+	vertices[1].color = COLOR_GREEN.ToVector4();
 	vertices[2].position = Maths::Vec3(-1.0f, 1.0f, 0.0f);
-	vb.SetData((u8*)vertices, sizeof(AstralCanvas::VertexPositionColor) * 3);
+	vertices[2].color = COLOR_BLUE.ToVector4();
+
+	vb.SetData(vertices, 3);
 
 	ib = AstralCanvas::IndexBuffer(AstralCanvas::IndexBufferSize_U16, 3);
 	u16 indices[3];
@@ -67,6 +68,14 @@ void Initialize()
 	renderProgram.Construct();
 
 	fileContents.deinit();
+
+	// usize dataLength = 0;
+	// AstralCanvas::VertexPositionColor *readResults = (AstralCanvas::VertexPositionColor*)vb.GetData(&cAllocator, &dataLength);
+	// for (usize i = 0; i < 3; i++)
+	// {
+	// 	printf("xyzw: %f, %f, %f, %f\n", readResults[i].color.X, readResults[i].color.Y, readResults[i].color.Z, readResults[i].color.W);
+	// }
+	// free(readResults);
 }
 void Deinitialize()
 {
