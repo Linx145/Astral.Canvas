@@ -1,6 +1,7 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Linx145/Astral.Canvas/master/AstralCanvasLogo.png" />
+  <img src="https://raw.githubusercontent.com/Linx145/Astral.Canvas/master/AstralCanvasLogo.png" width="50"/>
 </p>
+
 # Astral.Canvas
 Astral Canvas is a collection of libraries and frameworks for writing graphical apps using C++ and Vulkan, with a C interface and Metal support coming soon. It can be seen as a port/further development of [Somnium.Framework](https://github.com/Linx145/Somnium/tree/master), and will succeed it in the near future. It uses GLFW as a backend for windowing and input.
 
