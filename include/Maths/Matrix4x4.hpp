@@ -124,20 +124,20 @@ namespace Maths
 		inline static Matrix4x4 CreateTranslation(float X, float Y, float Z)
 		{
 			float m[16] = {
-					1.0f, 0.0f, 0.0f, X,
-					0.0f, 1.0f, 0.0f, Y,
-					0.0f, 0.0f, 1.0f, Z,
-					0.0f, 0.0f, 0.0f, 1.0f
+					1.0f, 0.0f, 0.0f, 0.0f,
+					0.0f, 1.0f, 0.0f, 0.0f,
+					0.0f, 0.0f, 1.0f, 0.0f,
+					X, Y, Z, 1.0f
 			};
-			return Matrix4x4(&m[0]);
+			return Matrix4x4(m);
 		}
 		inline static Matrix4x4 CreateTranslation(Vec3 pos)
 		{
 			float m[16] = {
-					1.0f, 0.0f, 0.0f, pos.X,
-					0.0f, 1.0f, 0.0f, pos.Y,
-					0.0f, 0.0f, 1.0f, pos.Z,
-					0.0f, 0.0f, 0.0f, 1.0f
+					1.0f, 0.0f, 0.0f, 0.0f,
+					0.0f, 1.0f, 0.0f, 0.0f,
+					0.0f, 0.0f, 1.0f, 0.0f,
+					pos.X, pos.Y, pos.Z, 1.0f
 			};
 			return Matrix4x4(&m[0]);
 		}

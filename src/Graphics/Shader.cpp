@@ -184,6 +184,7 @@ namespace AstralCanvas
                             case ShaderResourceType_Uniform:
                             {
                                 newMutableState.ub = UniformBuffer(resource->size);
+                                newMutableState.ownsUniformBuffer = true;
                                 break;
                             }
                             case ShaderResourceType_Texture:
@@ -199,7 +200,6 @@ namespace AstralCanvas
                                 break;
                             }
                         }
-                        printf("Created new mutable state\n");
                         shaderVariables.uniforms.ptr[i].stagingData.Add(newMutableState);
                     }
                 }
@@ -266,7 +266,6 @@ namespace AstralCanvas
                             {
                                 VkDescriptorImageInfo imageInfo{};
                                 imageInfo.sampler = NULL;
-                                //printf("\nimage layout: %u\n\n", toMutate->textures.data[i]->imageLayout);
                                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //(VkImageLayout)toMutate->textures.data[i]->imageLayout;
                                 imageInfo.imageView = (VkImageView)toMutate->textures.data[i]->imageView;
                                 ((VkDescriptorImageInfo*)toMutate->imageInfos)[i] = imageInfo;
@@ -442,7 +441,6 @@ namespace AstralCanvas
                         }
 
                         result->shaderPipelineLayout = NULL;
-                        printf("Layout binding count: %u\n", layoutInfo.bindingCount);
                         if (layoutInfo.bindingCount > 0)
                         {
                             collections::Array<VkDescriptorSetLayoutBinding> bindings = collections::Array<VkDescriptorSetLayoutBinding>(&localArena.asAllocator, layoutInfo.bindingCount);

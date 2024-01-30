@@ -97,6 +97,11 @@ void AstralCanvasApplication::Run(AstralCanvas_Update updateFunc, AstralCanvas_U
 
 		drawFunc(1.0f / 60.0f);
 
+		graphicsDevice.currentRenderPass = 0;
+		graphicsDevice.currentRenderPipeline = NULL;
+		graphicsDevice.currentRenderProgram = NULL;
+		graphicsDevice.currentRenderTarget = NULL;
+
 		switch (AstralCanvas::GetActiveBackend())
 		{
 			#ifdef ASTRALCANVAS_VULKAN

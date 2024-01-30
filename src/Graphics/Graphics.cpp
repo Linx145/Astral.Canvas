@@ -278,12 +278,12 @@ namespace AstralCanvas
     {
         if (this->currentRenderPipeline != NULL && this->currentRenderProgram != NULL)
         {
+            SendUpdatedUniforms();
             switch (GetActiveBackend())
             {
                 #ifdef ASTRALCANVAS_VULKAN
                 case Backend_Vulkan:
                 {
-                    SendUpdatedUniforms();
                     VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
 
                     vkCmdDrawIndexed(cmdBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
@@ -293,7 +293,7 @@ namespace AstralCanvas
                 default:
                     break;
             }
-            this->currentRenderPipeline = NULL;
+            //this->currentRenderPipeline = NULL;
         }
     }
 }
