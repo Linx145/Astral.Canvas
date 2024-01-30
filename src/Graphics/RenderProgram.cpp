@@ -226,7 +226,7 @@ namespace AstralCanvas
             }
             #endif
             default:
-                THROW_ERR("Unimplemented backend");
+                THROW_ERR("Unimplemented backend: RenderProgram Construct");
                 break;
         }
     }
@@ -249,7 +249,7 @@ namespace AstralCanvas
             }
             #endif
             default:
-                THROW_ERR("Unimplemented backend");
+                THROW_ERR("Unimplemented backend: RenderProgram deinit");
                 break;
         }
     }

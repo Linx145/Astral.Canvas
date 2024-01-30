@@ -2,6 +2,8 @@
 #include "Graphics/CurrentBackend.hpp"
 #include "ErrorHandling.hpp"
 
+#include "Graphics/stb_image.h"
+
 #ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 #include "Graphics/Vulkan/VulkanHelpers.hpp"
@@ -30,13 +32,13 @@ namespace AstralCanvas
                     createInfo.extent.width = this->width;
                     createInfo.extent.height = this->height;
                     createInfo.extent.depth = 1;
-
+                    
                     createInfo.mipLevels = this->mipLevels;
                     createInfo.arrayLayers = 1;
                     createInfo.format = AstralCanvasVk_FromImageFormat(this->imageFormat);
                     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
                     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                    if (createInfo.format >= ImageFormat_DepthNone)
+                    if (this->imageFormat >= ImageFormat_DepthNone)
                     {
                         createInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
                     }
@@ -59,6 +61,7 @@ namespace AstralCanvas
                     {
                         THROW_ERR("Failed to create image");
                     }
+                    this->imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 }
                 image = (VkImage)this->imageHandle;
                 VkImageAspectFlags imageAspect = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -97,7 +100,7 @@ namespace AstralCanvas
 
                         vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
 
-                        this->imageLayout = (u32)VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        this->imageLayout = (u64)VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     }
                 }
 
@@ -105,13 +108,13 @@ namespace AstralCanvas
                 {
                     if (this->imageFormat >= ImageFormat_DepthNone)
                     {
-                        AstralCanvasVk_TransitionImageLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-                        this->imageLayout = (u32)VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+                        AstralCanvasVk_TransitionImageLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+                        this->imageLayout = (u64)VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
                     }
                     else 
                     {
                         AstralCanvasVk_TransitionImageLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-                        this->imageLayout = (u32)VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                        this->imageLayout = (u64)VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                     }
                 }
 
@@ -174,6 +177,33 @@ namespace AstralCanvas
                 break;
         }
         this->isDisposed = true;
+    }
+    Texture2D CreateTextureFromFile(const char *fileName)
+    {
+        Texture2D result = {};
+        result.width = 0;
+        result.height = 0;
+        result.imageHandle = NULL;
+        result.ownsHandle = true;
+        result.usedForRenderTarget = false;
+        result.mipLevels = 1;
+        result.imageFormat = ImageFormat_R8G8B8A8Unorm;
+        result.bytes = NULL;
+        result.constructed = false;
+        result.isDisposed = false;
+
+        i32 channelsInFile = 0;
+        i32 width;
+        i32 height;
+        result.bytes = stbi_load(fileName, &width, &height, &channelsInFile, 4);
+
+        result.width = width;
+        result.height = height;
+
+        result.Construct();
+        free(result.bytes);
+        result.bytes = NULL;
+        return result;
     }
     Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget)
     {

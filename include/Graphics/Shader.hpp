@@ -6,17 +6,30 @@
 #include "Graphics/Enums.hpp"
 #include "Json.hpp"
 
+#define MAX_UNIFORMS_IN_SHADER 16
+
+#ifdef ASTRALCANVAS_VULKAN
+#include "vulkan/vulkan.h"
+#endif
+
 namespace AstralCanvas
 {
     struct Shader
     {
+        IAllocator *allocator;
         ShaderType shaderType;
         ShaderModule shaderModule1;
         ShaderModule shaderModule2;
-        PipelineLayout shaderPipelineLayout;
-        //PipelineLayout shaderPipelineLayout1;
-        //PipelineLayout shaderPipelineLayout2;
         ShaderVariables shaderVariables;
+        PipelineLayout shaderPipelineLayout;
+        bool uniformsHasBeenSet;
+
+        usize descriptorForThisDrawCall;
+        collections::vector<void *> descriptorSets;
+
+        i32 GetVariableBinding(const char* variableName);
+        void CheckDescriptorSetAvailability();
+        void SyncUniformsWithGPU();
 
         Shader();
         Shader(IAllocator *allocator, ShaderType type);

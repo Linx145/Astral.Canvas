@@ -109,6 +109,7 @@ namespace AstralCanvas
                 info.renderArea.extent.height = renderTarget->height;
 
                 vkCmdBeginRenderPass(cmdBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
+                break;
             }
             #endif
             default:
@@ -127,6 +128,7 @@ namespace AstralCanvas
                     VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
 
                     vkCmdEndRenderPass(cmdBuffer);
+                    break;
                 }
                 #endif
                 default:
@@ -166,6 +168,7 @@ namespace AstralCanvas
                     clip.offset.x = this->ClipArea.X;
                     clip.offset.y = this->ClipArea.Y;
                     vkCmdSetScissor(cmdBuffer, 0, 1, &clip);
+                    break;
                 }
                 #endif
                 default:
@@ -173,6 +176,102 @@ namespace AstralCanvas
             }
             this->currentRenderPipeline = pipeline;
         }
+    }
+    void Graphics::SetShaderVariable(const char* variableName, void* ptr, usize size)
+    {
+        if (currentRenderPipeline != NULL)
+        {
+            currentRenderPipeline->shader->CheckDescriptorSetAvailability();
+            ShaderVariables *variables = &currentRenderPipeline->shader->shaderVariables;
+            for (usize i = 0; i < variables->uniforms.capacity; i++)
+            {
+                if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+                {
+                    break;
+                }
+                if (variables->uniforms.ptr[i].variableName == variableName)
+                {
+                    currentRenderPipeline->shader->uniformsHasBeenSet = true;
+                    variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].mutated = true;
+                    variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].ub.SetData(ptr, size);
+                    break;
+                }
+            }
+        }
+    }
+    void Graphics::SetShaderVariableTexture(const char* variableName, Texture2D *texture)
+    {
+        if (currentRenderPipeline != NULL)
+        {
+            currentRenderPipeline->shader->CheckDescriptorSetAvailability();
+            ShaderVariables *variables = &currentRenderPipeline->shader->shaderVariables;
+            for (usize i = 0; i < variables->uniforms.capacity; i++)
+            {
+                if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+                {
+                    break;
+                }
+                if (variables->uniforms.ptr[i].variableName == variableName)
+                {
+                    currentRenderPipeline->shader->uniformsHasBeenSet = true;
+                    variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].mutated = true;
+                    variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].textures.data[0] = texture;
+                    break;
+                }
+            }
+        }
+    }
+    void Graphics::SetShaderVariableSampler(const char* variableName, SamplerState *sampler)
+    {
+        if (currentRenderPipeline != NULL)
+        {
+            currentRenderPipeline->shader->CheckDescriptorSetAvailability();
+            ShaderVariables *variables = &currentRenderPipeline->shader->shaderVariables;
+            for (usize i = 0; i < variables->uniforms.capacity; i++)
+            {
+                if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+                {
+                    break;
+                }
+                
+                if (variables->uniforms.ptr[i].variableName == variableName)
+                {
+                    currentRenderPipeline->shader->uniformsHasBeenSet = true;
+                    variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].mutated = true;
+                    variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].samplers.data[0] = sampler;
+                    break;
+                }
+            }
+        }
+    }
+    void Graphics::SendUpdatedUniforms()
+    {
+        if (currentRenderPipeline->shader->uniformsHasBeenSet)
+        {
+            currentRenderPipeline->shader->uniformsHasBeenSet = false;
+
+            currentRenderPipeline->shader->SyncUniformsWithGPU();
+            switch (GetActiveBackend())
+            {
+                #ifdef ASTRALCANVAS_VULKAN
+                case Backend_Vulkan:
+                {
+                    vkCmdBindDescriptorSets(
+                        AstralCanvasVk_GetMainCmdBuffer(), 
+                        VK_PIPELINE_BIND_POINT_GRAPHICS, 
+                        (VkPipelineLayout)currentRenderPipeline->layout, 
+                        0, 1, //descriptor set count
+                        (VkDescriptorSet*)&currentRenderPipeline->shader->descriptorSets.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall],
+                        0, NULL); //dynamic offsets count
+                    break;
+                }
+                #endif
+                default:
+                    break;
+            }
+            currentRenderPipeline->shader->descriptorForThisDrawCall += 1;
+        }
+
     }
 
     void Graphics::DrawIndexedPrimitives(u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance)
@@ -184,9 +283,11 @@ namespace AstralCanvas
                 #ifdef ASTRALCANVAS_VULKAN
                 case Backend_Vulkan:
                 {
+                    SendUpdatedUniforms();
                     VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
 
                     vkCmdDrawIndexed(cmdBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+                    break;
                 }
                 #endif
                 default:

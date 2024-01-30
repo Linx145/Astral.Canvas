@@ -11,6 +11,8 @@
 #include "string.hpp"
 #include "ErrorHandling.hpp"
 
+#define ASTRALVULKAN_MAX_DESCRIPTOR_SETS 1024
+
 VkBool32 AstralCanvasVk_ErrorCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
 bool AstralCanvasVk_Initialize(IAllocator* allocator, collections::Array<const char*> validationLayersToUse, collections::Array<const char*> requiredExtensions, AstralCanvasWindow* window);

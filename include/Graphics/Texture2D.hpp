@@ -38,11 +38,12 @@ namespace AstralCanvas
         /// The allocated VRAM for the image
         AstralCanvas::MemoryAllocation allocatedMemory;
         /// The internal layout of the image. Will be modified at render time!
-        u32 imageLayout;
+        u64 imageLayout;
 
         void deinit();
         void Construct();
     };
     Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget);
     Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, SamplerState *samplerState, bool usedForRenderTarget);
+    Texture2D CreateTextureFromFile(const char *fileName);
 }

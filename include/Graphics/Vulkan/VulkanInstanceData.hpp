@@ -35,3 +35,6 @@ void AstralCanvasVk_SetMainCmdPool(VkCommandPool commandBuffer);
 
 VkCommandBuffer AstralCanvasVk_GetMainCmdBuffer();
 void AstralCanvasVk_SetMainCmdBuffer(VkCommandBuffer commandBuffer);
+
+VkDescriptorPool AstralCanvasVk_GetDescriptorPool();
+void AstralCanvasVk_SetDescriptorPool(VkDescriptorPool pool);

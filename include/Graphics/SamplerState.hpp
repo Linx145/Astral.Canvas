@@ -7,8 +7,6 @@ namespace AstralCanvas
 struct SamplerState
 {
     GraphicsBackend backend;
-    /// Whether the sampler state handle has been created
-    bool constructed;
     /// The handle of the sampler in the graphics API. Corresponds to a sampler state in the current graphics backend
     void *handle;
 
@@ -23,6 +21,7 @@ struct SamplerState
 
     SamplerState();
     SamplerState(SampleMode thisSampleMode, RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel);
+    void Construct();
 
     void deinit();
 };
@@ -42,4 +41,6 @@ struct SamplerState
     SamplerState *SamplerGetLinearClamp();
     SamplerState *SamplerGetPointWrap();
     SamplerState *SamplerGetLinearWrap();
+
+    void DestroyDefaultSamplerStates();
 }

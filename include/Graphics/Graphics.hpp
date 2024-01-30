@@ -6,6 +6,7 @@
 #include "Graphics/VertexBuffer.hpp"
 #include "Graphics/IndexBuffer.hpp"
 #include "Graphics/RenderTarget.hpp"
+#include "Graphics/SamplerState.hpp"
 
 namespace AstralCanvas
 {
@@ -27,6 +28,12 @@ namespace AstralCanvas
         void StartRenderProgram(RenderProgram *program, const Color clearColor);
         void EndRenderProgram();
         void UseRenderPipeline(RenderPipeline *pipeline);
+
+        void SetShaderVariable(const char* variableName, void* ptr, usize size);
+        void SetShaderVariableTexture(const char* variableName, Texture2D *texture);
+        void SetShaderVariableSampler(const char* variableName, SamplerState *sampler);
+
+        void SendUpdatedUniforms();
 
         void DrawIndexedPrimitives(u32 indexCount, u32 instanceCount, u32 firstIndex = 0, u32 vertexOffset = 0, u32 firstInstance = 0);
     };

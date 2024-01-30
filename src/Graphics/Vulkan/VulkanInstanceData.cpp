@@ -11,6 +11,7 @@ VkSemaphore                             AstralCanvasVk_AwaitPresentCompleteSemap
 VkSemaphore                             AstralCanvasVk_AwaitRenderCompleteSemaphore = NULL;
 VkCommandPool                           AstralCanvasVk_MainCommandPool = NULL;
 VkCommandBuffer                         AstralCanvasVk_MainCommandBuffer = NULL;
+VkDescriptorPool                        AstralCanvasVk_DescriptorPool = NULL;
 
 VkDebugUtilsMessengerEXT AstralCanvasVk_GetDebugMessenger()
 {
@@ -109,4 +110,13 @@ VkCommandBuffer AstralCanvasVk_GetMainCmdBuffer()
 void AstralCanvasVk_SetMainCmdBuffer(VkCommandBuffer commandBuffer)
 {
     AstralCanvasVk_MainCommandBuffer = commandBuffer;
+}
+
+VkDescriptorPool AstralCanvasVk_GetDescriptorPool()
+{
+    return AstralCanvasVk_DescriptorPool;
+}
+void AstralCanvasVk_SetDescriptorPool(VkDescriptorPool pool)
+{
+    AstralCanvasVk_DescriptorPool = pool;
 }

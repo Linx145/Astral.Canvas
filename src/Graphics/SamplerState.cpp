@@ -18,7 +18,6 @@ namespace AstralCanvas
     SamplerState::SamplerState()
     {
         this->backend = Backend_Vulkan;
-        this->constructed = false;
         this->handle = NULL;
         this->sampleMode = SampleMode_Point;
         this->repeatMode = RepeatMode_Repeat;
@@ -33,12 +32,15 @@ namespace AstralCanvas
         this->anisotropic = isAnisotropic;
         this->anisotropyLevel = thisAnisotropyLevel;
         this->handle = NULL;
-        this->constructed = false;
 
-        switch (this->backend)
+        this->Construct();
+    }
+    void SamplerState::Construct()
+    {
+        switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
-            AstralCanvas_Vulkan:
+            case Backend_Vulkan:
             {
                 AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
                 VkSamplerCreateInfo createInfo = {};
@@ -68,34 +70,35 @@ namespace AstralCanvas
                 if (vkCreateSampler(gpu->logicalDevice, &createInfo, NULL, &sampler) != VK_SUCCESS)
                 {
                     THROW_ERR("Failed to create sampler");
-                    this->constructed = true;
                 }
+                this->handle = sampler;
                 break;
             }
             #endif
             default:
             {
-                THROW_ERR("Unimplemented backend");
+                THROW_ERR("Unimplemented backend: SamplerState Create");
                 break;
             }
         }
     }
     void SamplerState::deinit()
     {
-        if (this->constructed)
+        if (handle == NULL)
         {
-            switch (this->backend)
+            return;
+        }
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
             {
-                #ifdef ASTRALCANVAS_VULKAN
-                AstralCanvas_Vulkan:
-                {
-                    vkDestroySampler(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkSampler)this->handle, NULL);
-                    break;
-                }
-                #endif
-                default:
-                    THROW_ERR("Unimplemented backend");
+                vkDestroySampler(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkSampler)this->handle, NULL);
+                break;
             }
+            #endif
+            default:
+                THROW_ERR("Unimplemented backend: SamplerState deinit");
         }
     }
 
@@ -133,5 +136,25 @@ namespace AstralCanvas
             AstralCanvas_SamplerState_LinearWrap = SamplerState(SampleMode_Linear, RepeatMode_Repeat, false, 0.0f);
         }
         return &AstralCanvas_SamplerState_LinearWrap;
+    }
+
+    void DestroyDefaultSamplerStates()
+    {
+        if (AstralCanvas_SamplerState_PointClamp.handle != NULL)
+        {
+            AstralCanvas_SamplerState_PointClamp.deinit();
+        }
+        if (AstralCanvas_SamplerState_LinearClamp.handle != NULL)
+        {
+            AstralCanvas_SamplerState_LinearClamp.deinit();
+        }
+        if (AstralCanvas_SamplerState_PointWrap.handle != NULL)
+        {
+            AstralCanvas_SamplerState_PointWrap.deinit();
+        }
+        if (AstralCanvas_SamplerState_LinearWrap.handle != NULL)
+        {
+            AstralCanvas_SamplerState_LinearWrap.deinit();
+        }
     }
 }

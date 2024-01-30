@@ -1,6 +1,7 @@
 #include <Graphics/Vulkan/VulkanEngine.hpp>
 #include <Graphics/Vulkan/VulkanInstanceData.hpp>
 #include "Graphics/Vulkan/vk_mem_alloc.h"
+#include "Graphics/SamplerState.hpp"
 
 using namespace collections;
 
@@ -106,11 +107,11 @@ bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validat
 
 	//main rendering command pool (Non transient)
 	VkCommandPool mainCmdPool;
-	VkCommandPoolCreateInfo poolCreateInfo{};
-	poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	poolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	poolCreateInfo.queueFamilyIndex = AstralCanvasVk_GetCurrentGPU()->queueInfo.dedicatedGraphicsQueueIndex;
-	vkCreateCommandPool(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &poolCreateInfo, NULL, &mainCmdPool);
+	VkCommandPoolCreateInfo cmdPoolCreateInfo{};
+	cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	cmdPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	cmdPoolCreateInfo.queueFamilyIndex = AstralCanvasVk_GetCurrentGPU()->queueInfo.dedicatedGraphicsQueueIndex;
+	vkCreateCommandPool(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &cmdPoolCreateInfo, NULL, &mainCmdPool);
 
 	AstralCanvasVk_SetMainCmdPool(mainCmdPool);
 
@@ -124,6 +125,27 @@ bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validat
 	vkAllocateCommandBuffers(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &cmdBufferInfo, &mainCmdBuffer);
 
 	AstralCanvasVk_SetMainCmdBuffer(mainCmdBuffer);
+
+	u32 maxUniformDescriptors = ASTRALVULKAN_MAX_DESCRIPTOR_SETS;
+	VkDescriptorPoolSize poolSizes[3];
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	poolSizes[0].descriptorCount = maxUniformDescriptors;
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_SAMPLER;
+	poolSizes[1].descriptorCount = maxUniformDescriptors;
+	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[2].descriptorCount = maxUniformDescriptors;
+
+	VkDescriptorPoolCreateInfo poolCreateInfo{};
+	poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolCreateInfo.maxSets = 1;
+	poolCreateInfo.pPoolSizes = poolSizes;
+	poolCreateInfo.poolSizeCount = 3;
+	poolCreateInfo.maxSets = maxUniformDescriptors;
+
+	VkDescriptorPool mainPool;
+	vkCreateDescriptorPool(gpu.logicalDevice, &poolCreateInfo, NULL, &mainPool);
+
+	AstralCanvasVk_SetDescriptorPool(mainPool);
 }
 
 bool AstralCanvasVk_CreateInstance(IAllocator* allocator, Array<const char*> validationLayersToUse, const char* appName, const char* engineName, u32 applicationVersion, u32 engineVersion, u32 vulkanVersion)
@@ -232,9 +254,15 @@ void AstralCanvasVk_AwaitShutdown()
 }
 void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvasWindow* window)
 {
-
 	AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+	AstralCanvas::DestroyDefaultSamplerStates();
 	//vkWaitForFences(gpu->logicalDevice, 1, &gpu->DedicatedGraphicsQueue.queueFence, true, UINT64_MAX);
+
+	VkDescriptorPool mainDescriptorPool = AstralCanvasVk_GetDescriptorPool();
+	if (mainDescriptorPool != NULL)
+	{
+		vkDestroyDescriptorPool(gpu->logicalDevice, mainDescriptorPool, NULL);
+	}
 
 	VkCommandPool mainCommandPool = AstralCanvasVk_GetMainCmdPool();
 	if (mainCommandPool != NULL)

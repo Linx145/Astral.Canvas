@@ -258,7 +258,7 @@ namespace AstralCanvas
             }
             #endif
             default:
-                THROW_ERR("Unimplemented backend");
+                THROW_ERR("Unimplemented backend: RenderPipeline GetOrCreateFor");
                 break;
         }
         return NULL;
@@ -287,7 +287,7 @@ namespace AstralCanvas
             }
             #endif
             default:
-                THROW_ERR("Unimplemented backend");
+                THROW_ERR("Unimplemented backend: RenderPipeline deinit");
                 break;
         }
     }

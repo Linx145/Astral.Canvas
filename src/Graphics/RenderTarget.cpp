@@ -29,7 +29,7 @@ namespace AstralCanvas
             }
             #endif
             default:
-                THROW_ERR("Unimplemented backend");
+                THROW_ERR("Unimplemented backend: RenderTarget deinit");
                 break;
         }
         this->isDisposed = true;
@@ -73,7 +73,7 @@ namespace AstralCanvas
             }
             #endif
             default:
-                THROW_ERR("Unimplemented backend");
+                THROW_ERR("Unimplemented backend: RenderTarget Construct");
                 break;
         }
         this->constructed = true;
