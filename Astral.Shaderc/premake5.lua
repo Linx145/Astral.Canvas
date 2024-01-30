@@ -14,12 +14,19 @@ project "Astral.Shaderc"
 
     files { 
         "*.cpp", 
-        "*.h", 
-        "../Astral.Reflect/include/*.hpp",
-        "../Astral.Json/Json.cpp",
-        "../Astral.Json/Json.hpp"
+        "../Astral.Json/Json.cpp"
     }
-    links { "dependencies/shaderc_combined.lib", "dependencies/spirv-cross-c-shared.lib", "Astral.Reflect" }
+
+    links { "%{VULKAN_SDK}/Lib/shaderc_combined.lib", "%{VULKAN_SDK}/Lib/spirv-cross-c-shared.lib", "Astral.Reflect" }
+
+    filter "system:windows"
+        links "dependencies/win-x64/native/spirv-cross.dll"
+
+    filter "system:macosx"
+        links "dependencies/osx-x64/native/libspirv-cross.dylib"
+
+    filter "system:linux"
+        links "dependencies/linux-x64/native/libspirv-cross.so"
 
     filter "configurations:Debug"
         defines { "DEBUG" }

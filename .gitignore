@@ -9,6 +9,10 @@
 *.user
 *.userosscache
 *.sln.docstates
+Astral.Shaderc/dependencies/**.lib
+Astral.Shaderc/dependencies/**.dylib
+Astral.Shaderc/dependencies/**.so
+Astral.Shaderc/dependencies/**.dll
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
