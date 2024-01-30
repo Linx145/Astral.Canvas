@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Linx145/Astral.Canvas/master/AstralCanvasLogo.png" width="50"/>
+  <img src="https://raw.githubusercontent.com/Linx145/Astral.Canvas/master/AstralCanvasLogo.png" width="256"/>
 </p>
 
 # Astral.Canvas
