@@ -1,5 +1,5 @@
 #pragma once
-#include "GLFW/glfw3.h"
+#include "Input/InputState.hpp"
 #include "Maths/All.h"
 #include "Linxc.h"
 #include "option.hpp"
@@ -15,11 +15,11 @@ struct AstralCanvasWindow
 	GLFWwindow* handle;
 	Maths::Point2 resolution;
 	Maths::Point2 position;
-	
+	AstralCanvas::InputState windowInputState;
+
 	void *windowSurfaceHandle;
 
 	AstralCanvasWindow();
-	static option<AstralCanvasWindow> init(i32 width, i32 height, i32 fps, bool resizeable = true);
 	inline void deinit()
 	{
 		glfwDestroyWindow(handle);
@@ -29,6 +29,8 @@ struct AstralCanvasWindow
 		return Maths::Rectangle(0, 0, resolution.X, resolution.Y);
 	}
 };
+
+bool AstralCanvasWindow_Init(IAllocator *allocator, AstralCanvasWindow * result, i32 width, i32 height, i32 fps, bool resizeable);
 
 #ifdef MACOS
 CAMetalLayer AstralCanvasWindow_GetMetalLayer(AstralCanvasWindow* window);

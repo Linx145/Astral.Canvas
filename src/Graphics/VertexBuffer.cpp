@@ -14,7 +14,6 @@ namespace AstralCanvas
         this->memoryAllocation.unused = 0;
         this->vertexCount = 0;
         this->vertexType = NULL;
-        this->constructed = false;
     }
     VertexBuffer::VertexBuffer(VertexDeclaration *thisVertexType, usize vertexCount, bool canRead)
     {
@@ -23,16 +22,11 @@ namespace AstralCanvas
         this->vertexCount = vertexCount;
         this->handle = NULL;
         this->memoryAllocation.unused = 0;
-        this->constructed = false;
 
         this->Construct();
     }
     void VertexBuffer::Construct()
     {
-        if (this->constructed)
-        {
-            return;
-        }
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
@@ -51,14 +45,9 @@ namespace AstralCanvas
             default:
                 break;
         }
-        this->constructed = true;
     }
     void VertexBuffer::SetData(void* verticesData, usize count)
     {
-        if (!this->constructed)
-        {
-            return;
-        }
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
@@ -85,59 +74,53 @@ namespace AstralCanvas
     }
     void *VertexBuffer::GetData(IAllocator *allocator, usize* dataLength)
     {
-        if (constructed)
+        switch (GetActiveBackend())
         {
-            switch (GetActiveBackend())
+        #ifdef ASTRALCANVAS_VULKAN
+        case Backend_Vulkan:
+        {
+            usize lengthOfBytes = this->vertexCount * this->vertexType->size;
+            AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+            VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, lengthOfBytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+            MemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_GPU_TO_CPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+
+            AstralCanvasVk_CopyBufferToBuffer(gpu, (VkBuffer)this->handle, stagingBuffer, lengthOfBytes);
+
+            void *result = allocator->Allocate(lengthOfBytes);
+            memcpy(result, stagingMemory.vkAllocationInfo.pMappedData, lengthOfBytes);
+
+            vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
+            vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
+
+            if (dataLength != NULL)
             {
-            #ifdef ASTRALCANVAS_VULKAN
-            case Backend_Vulkan:
-            {
-                usize lengthOfBytes = this->vertexCount * this->vertexType->size;
-                AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
-                VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, lengthOfBytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-                MemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_GPU_TO_CPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
-
-                AstralCanvasVk_CopyBufferToBuffer(gpu, (VkBuffer)this->handle, stagingBuffer, lengthOfBytes);
-
-                void *result = allocator->Allocate(lengthOfBytes);
-                memcpy(result, stagingMemory.vkAllocationInfo.pMappedData, lengthOfBytes);
-
-                vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
-                vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
-
-                if (dataLength != NULL)
-                {
-                    *dataLength = lengthOfBytes;
-                }
-                return result;
+                *dataLength = lengthOfBytes;
             }
-            #endif
-            default:
-                break;
-            }
+            return result;
+        }
+        #endif
+        default:
+            break;
         }
     }
     void VertexBuffer::deinit()
     {
-        if (constructed)
+        switch (GetActiveBackend())
         {
-            switch (GetActiveBackend())
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
             {
-                #ifdef ASTRALCANVAS_VULKAN
-                case Backend_Vulkan:
-                {
-                    AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+                AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
 
-                    vkDestroyBuffer(gpu->logicalDevice, (VkBuffer)this->handle, NULL);
+                vkDestroyBuffer(gpu->logicalDevice, (VkBuffer)this->handle, NULL);
 
-                    vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->memoryAllocation.vkAllocation);
-
-                    break;
-                }
-                #endif
-                default:
-                    break;
+                vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->memoryAllocation.vkAllocation);
+                printf("Freed vertex buffer memory\n");
+                break;
             }
+            #endif
+            default:
+                break;
         }
     }
 }

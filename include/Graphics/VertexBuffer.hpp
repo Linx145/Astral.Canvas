@@ -14,8 +14,6 @@ namespace AstralCanvas
 
         MemoryAllocation memoryAllocation;
 
-        bool constructed;
-
         VertexBuffer();
         VertexBuffer(VertexDeclaration *thisVertexType, usize vertexCount, bool canRead = false);
 

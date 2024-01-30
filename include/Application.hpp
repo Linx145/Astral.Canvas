@@ -29,8 +29,10 @@ struct AstralCanvasApplication
 	AstralCanvas_Init onInitialize;
 	AstralCanvas_Update onUpdate;
 
+	float framesPerSecond;
+
 	AstralCanvasApplication();
-	static AstralCanvasApplication* init(IAllocator* ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion);
+	static AstralCanvasApplication* init(IAllocator* ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
 	bool AddWindow(i32 width, i32 height, i32 fps, bool resizeable = true);
 	bool FinalizeGraphicsBackend();
 	void Run(AstralCanvas_Update updateFunc, AstralCanvas_Update drawFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc);

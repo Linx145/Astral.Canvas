@@ -85,6 +85,7 @@ namespace AstralCanvas
                 vkDestroyBuffer(gpu->logicalDevice, (VkBuffer)this->handle, NULL);
 
                 vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->memoryAllocation.vkAllocation);
+                printf("Freed index buffer memory\n");
                 break;
             }
             #endif

@@ -65,7 +65,10 @@ namespace AstralCanvas
                 if (handle != NULL)
                     vkDestroyBuffer(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkBuffer)this->handle, NULL);
                 if (this->memoryAllocation.vkAllocation != NULL)
+                {
                     vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->memoryAllocation.vkAllocation);
+                    printf("Freed uniform buffer memory\n");
+                }
                 break;
             }
             #endif

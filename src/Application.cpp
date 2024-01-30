@@ -14,9 +14,10 @@ AstralCanvasApplication* AstralCanvas_GetAppInstance()
 AstralCanvasApplication::AstralCanvasApplication()
 {
 }
-AstralCanvasApplication* AstralCanvasApplication::init(IAllocator* allocator, string appName, string engineName, u32 appVersion, u32 engineVersion)
+AstralCanvasApplication* AstralCanvasApplication::init(IAllocator* allocator, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond)
 {
 	AstralCanvasApplication result;
+	result.framesPerSecond = framesPerSecond;
 	result.allocator = allocator;
 	result.memoryForBuffersMiB = 4;
 	result.memoryForImagesMiB = 64;
@@ -32,13 +33,14 @@ AstralCanvasApplication* AstralCanvasApplication::init(IAllocator* allocator, st
 }
 bool AstralCanvasApplication::AddWindow(i32 width, i32 height, i32 fps, bool resizeable)
 {
-	option<AstralCanvasWindow> result = AstralCanvasWindow::init(width, height, fps, resizeable);
-	if (result.present)
+	AstralCanvasWindow result;
+	if (AstralCanvasWindow_Init(this->allocator, &result, width, height, fps, resizeable))
 	{
-		windows.Add(result.value);
+		windows.Add(result);
+		glfwSetWindowUserPointer(result.handle, &windows.ptr[windows.count - 1]);
 		return true;
 	}
-	else return false;
+	return false;
 }
 bool AstralCanvasApplication::FinalizeGraphicsBackend()
 {
@@ -67,55 +69,64 @@ void AstralCanvasApplication::Run(AstralCanvas_Update updateFunc, AstralCanvas_U
 	{
 		initFunc();
 	}
+	float startTime = (float)glfwGetTime();
+	float endTime = startTime;
 
 	bool shouldStop = false;
 	while (!shouldStop)
 	{
+		glfwPollEvents();
+
+		float deltaTime = endTime - startTime;
+
 		shouldStop = true;
 		for (usize i = 0; i < windows.count; i++)
 		{
 			if (!glfwWindowShouldClose(windows.ptr[i].handle))
 			{
+				windows.ptr[i].windowInputState.ResetPerFrameInputStates();
 				shouldStop = false;
 			}
 		}
 
-		updateFunc(1.0f / 60.0f);
-
-		switch (AstralCanvas::GetActiveBackend())
+		if (framesPerSecond < 1.0f || deltaTime >= 1.0f / framesPerSecond)
 		{
-			#ifdef ASTRALCANVAS_VULKAN
-			case AstralCanvas::Backend_Vulkan:
+			updateFunc(deltaTime);
+
+			switch (AstralCanvas::GetActiveBackend())
 			{
-				AstralCanvasVk_BeginDraw();
-				break;
+				#ifdef ASTRALCANVAS_VULKAN
+				case AstralCanvas::Backend_Vulkan:
+				{
+					AstralCanvasVk_BeginDraw();
+					break;
+				}
+				#endif
+				default:
+					break;
 			}
-			#endif
-			default:
-				break;
-		}
 
-		drawFunc(1.0f / 60.0f);
+			drawFunc(deltaTime);
 
-		graphicsDevice.currentRenderPass = 0;
-		graphicsDevice.currentRenderPipeline = NULL;
-		graphicsDevice.currentRenderProgram = NULL;
-		graphicsDevice.currentRenderTarget = NULL;
-
-		switch (AstralCanvas::GetActiveBackend())
-		{
-			#ifdef ASTRALCANVAS_VULKAN
-			case AstralCanvas::Backend_Vulkan:
+			graphicsDevice.currentRenderPass = 0;
+			graphicsDevice.currentRenderPipeline = NULL;
+			graphicsDevice.currentRenderProgram = NULL;
+			graphicsDevice.currentRenderTarget = NULL;
+			switch (AstralCanvas::GetActiveBackend())
 			{
-				AstralCanvasVk_EndDraw();
-				break;
+				#ifdef ASTRALCANVAS_VULKAN
+				case AstralCanvas::Backend_Vulkan:
+				{
+					AstralCanvasVk_EndDraw();
+					break;
+				}
+				#endif
+				default:
+					break;
 			}
-			#endif
-			default:
-				break;
+			startTime = endTime;
 		}
-
-		glfwPollEvents();
+		endTime = (float)glfwGetTime();
 	}
 
 	//await rendering process shutdown
