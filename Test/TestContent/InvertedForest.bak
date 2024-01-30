@@ -1,0 +1,1977 @@
+{
+  "Version": 10,
+  "projectPath": "$User/source/repos/HarpyRaidersNew/HarpyRaiders",
+  "currentID": 79,
+  "AssetBatchesNeeded": [
+    "UI",
+    "",
+    "Tilesets/Troposphere",
+    "Materials",
+    "Environment",
+    "Skyboxes",
+    "Shaders",
+    "VFX",
+    "Environment/IslesNatura",
+    "Particles",
+    "Editor"
+  ],
+  "TilesetIDtoGUID": [
+    {
+      "ID": 1,
+      "Path": "Tilesets/Troposphere/ForestTileset.kiln"
+    }
+  ],
+  "FoldersExtents": 1,
+  "Folders": [
+    {
+      "Index": 0,
+      "Name": "Inverted Trees",
+      "Folders": []
+    }
+  ],
+  "Entities": [
+    {
+      "Name": "MainCamera",
+      "canLookup": true,
+      "Prefab": "MainCamera.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [0,0]
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "GroundLayer",
+      "Prefab": "TileLayer.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Tiles.TileLayer",
+          "allChunks": [
+            {
+              "position": [0,0],
+              "data": "1,0,0,1,1,122,10,0,0,1,1,143,1,1,132,10,0,0,12,0,0,1,1,130,11,0,0,1,0,0,1,1,123,22,0,0,11,0,0,1,1,142,12,0,0,1,0,0,1,1,125,7,0,0,1,1,144,1,1,135,13,0,0,6,0,0,1,1,144,1,1,138,16,0,0,1,0,0,1,1,123,3,0,0,1,1,127,18,0,0,4,0,0,1,1,142,19,0,0,1,0,0,1,1,124,1,0,0,1,1,137,20,0,0,24,0,0,1,0,0,1,1,126,22,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,"
+            },
+            {
+              "position": [-1,0],
+              "data": "24,0,0,24,0,0,1,0,0,1,1,122,22,0,0,24,0,0,1,0,0,1,1,124,22,0,0,24,0,0,1,0,0,1,1,123,22,0,0,24,0,0,1,0,0,1,1,125,22,0,0,24,0,0,1,0,0,1,1,124,22,0,0,24,0,0,1,0,0,1,1,122,22,0,0,24,0,0,1,0,0,1,1,124,22,0,0,24,0,0,1,0,0,1,1,125,22,0,0,24,0,0,1,0,0,1,1,124,22,0,0,24,0,0,1,0,0,1,1,125,22,0,0,24,0,0,1,0,0,1,1,122,17,0,0,1,1,128,4,0,0,18,0,0,1,1,144,5,0,0,1,0,0,1,1,125,16,0,0,1,1,131,5,0,0,24,0,0,1,0,0,1,1,123,15,0,0,1,1,144,6,0,0,16,0,0,1,1,137,7,0,0,1,0,0,1,1,122,13,0,0,1,1,143,8,0,0,15,0,0,1,1,128,8,0,0,1,0,0,1,1,124,12,0,0,1,1,144,9,0,0,13,0,0,1,1,144,1,1,133,9,0,0,"
+            },
+            {
+              "position": [-2,-1],
+              "data": "24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,"
+            },
+            {
+              "position": [4,-5],
+              "data": "24,0,0,2,0,0,1,1,126,21,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,"
+            },
+            {
+              "position": [4,-4],
+              "data": "24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,170,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,"
+            },
+            {
+              "position": [5,-4],
+              "data": "24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,"
+            },
+            {
+              "position": [6,-4],
+              "data": "24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,18,0,0,1,1,171,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,"
+            },
+            {
+              "position": [7,-4],
+              "data": "24,0,0,18,0,0,1,1,172,5,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,"
+            },
+            {
+              "position": [3,-5],
+              "data": "24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,1,0,0,1,1,147,22,0,0,24,0,0,2,0,0,1,1,122,1,0,0,1,1,159,19,0,0,24,0,0,2,0,0,1,1,123,2,0,0,1,1,164,1,1,158,17,0,0,24,0,0,2,0,0,1,1,122,21,0,0,6,0,0,1,1,163,1,1,148,16,0,0,2,0,0,1,1,125,21,0,0,8,0,0,1,1,163,1,1,157,14,0,0,2,0,0,1,1,124,21,0,0,24,0,0,2,0,0,1,1,123,6,0,0,1,1,131,14,0,0,24,0,0,2,0,0,1,1,124,5,0,0,1,1,144,15,0,0,7,0,0,1,1,137,16,0,0,2,0,0,1,1,123,3,0,0,1,1,144,17,0,0,5,0,0,1,1,143,1,1,132,17,0,0,2,0,0,1,1,125,1,0,0,1,1,127,19,0,0,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "GlobalLighting",
+      "Prefab": "GlobalLighting.blueprint",
+      "subPrefabName": "main",
+      "components": []
+    },
+    {
+      "Name": "Darkness",
+      "UUID": "89a7aa95-061e-4675-8eea-f8160da23baf",
+      "Prefab": "Environment/VoidTile.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [0,0],
+          "localDepth": 0.1
+        },
+        {
+          "_ComponentName": "Somnium.Tiles.VoidTile",
+          "filledAreas": [[7,3,1,1],[4,3,1,6],[5,3,1,3],[6,3,1,2],[1,3,3,8],[1,11,2,1],[-10,3,11,9],[-10,12,1,7],[-9,12,3,6],[-6,12,1,5],[-5,12,1,4],[-4,12,2,3],[-2,12,1,2],[-1,12,1,1],[-36,19,25,1],[-35,20,2,1],[-25,20,3,1],[-42,3,32,15],[-39,18,29,1],[-56,2,26,1],[-55,3,4,1],[-53,4,2,2],[-54,4,1,1],[-51,3,3,4],[-48,3,1,7],[-47,3,1,9],[-46,3,1,11],[-45,3,1,12],[-44,3,1,13],[-43,3,1,14],[113,-116,14,1],[114,-115,12,1],[117,-114,8,1],[118,-113,6,1],[119,-112,4,1]
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "EarlyDayBG",
+      "Prefab": "Skyboxes/EarlyDayBG.blueprint",
+      "subPrefabName": "main",
+      "components": []
+    },
+    {
+      "Name": "NaturaGrassTuft",
+      "UUID": "40a4c4a5-8fba-4a58-bb16-e116cbdd2892",
+      "Prefab": "Environment/IslesNatura/NaturaGrassTuft.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [0,0]
+        },
+        {
+          "_ComponentName": "Somnium.Grass.GrassType",
+          "grassChunks": {
+            "-1 0": [[-8.96875,1.124999,0],[-6.1273246,0.96567893,0],[-7.8812094,0.93497086,0],[-7.038031,1.0229707,0],[-6.464369,1.090352,0],[-8.328125,0.99999905,0],[-5.625,1.03125,0],[-4.796875,1.03125,0],[-4.265625,1.078125,0],[-3.765625,1.062499,0],[-2.6875,1.078125,0],[-1.8125,1.03125,0],[-9.734375,0.953125,0],[-10.9375,1.046875,0],[-11.984375,1.03125,0],[-0.71875,1.046875,0],[-14.429688,0.9023447,0],[-15.171875,1.000001,0],[-15.69922,0.9414053,0]
+            ],
+            "0 0": [[2.03125,1.0468731,0],[2.921875,1.062499,0],[3.796875,0.9843731,0],[4.921875,0.95312405,0],[5.359375,1.062499,0],[5.90625,1.015624,0],[6.9375,1.124999,0],[7.84375,1.031249,0],[9.296875,1.124999,0],[10.140625,0.9843731,0]
+            ],
+            "-2 0": [[-16.226562,0.9023447,0],[-25.02147,1.0141563,0,1],[-24.191391,0.9897442,0],[-18.11229,0.9897442,0],[-22.091782,1.0629864,0],[-21.23729,1.1606426,0,1],[-20.529282,0.9897442,0],[-20.016586,0.9897442,0,1],[-19.284164,0.9897442,0],[-23.263657,0.94091606,0],[-18.429672,0.9897442,0]
+            ],
+            "-2 -1": [[-24.313461,-0.108888626,0,1],[-25.338852,-0.108888626,0,1],[-25.729477,-0.108888626,0,1],[-26.559555,-0.108888626,0,1],[-27.584946,-0.108888626,0,1],[-28.732407,-0.108888626,0,1],[-29.83104,-0.108888626,0],[-30.514633,-0.108888626,0],[-31.51561,-0.108888626,0]
+            ],
+            "-3 -1": [[-32.83397,-0.108888626,0,1],[-33.590805,-0.108888626,0],[-44.25975,-0.0600605,0],[-45.187485,-0.0600605,0,1],[-46.457016,-0.011232376,0],[-47.287094,-0.011232376,0],[-42.379868,-0.0600605,0,1],[-43.52733,-0.0600605,0],[-39.62108,-0.011234283,0,1],[-40.939438,-0.011234283,0,1]
+            ],
+            "-3 0": [[-37.570297,0.013181686,0],[-40.268066,0.068359375,0],[-38.518066,0.14648438,0,1],[-37.09619,0.16210842,0]
+            ],
+            "-4 0": [[-48.166,0.013181686,0,1],[-53.976547,0.03759575,0,1],[-57.272446,0.013181686,0]
+            ],
+            "-4 -1": [[-49.679672,-0.035648346,0,1],[-48.800766,-0.08447456,0,1],[-54.95311,-0.08447456,0,1],[-56.198227,-0.08447456,0],[-58.468735,-0.08447456,0,1],[-50.87596,-0.035648346,0],[-52.8535,-0.08447456,0],[-52.31639,-0.035648346,0],[-51.632797,-0.035648346,0]
+            ],
+            "6 -8": [[111.137085,-117.9834,0,1],[110.16052,-118.12988,0]
+            ],
+            "7 -8": [[112.162476,-117.86133,0,1],[112.74841,-118.081055,0],[113.50525,-117.958984,0,1],[114.35974,-117.9834,0],[115.09216,-117.9834,0],[115.849,-117.9834,0,1],[116.65466,-117.9834,0],[117.36267,-118.00781,0,1],[118.02185,-118.00781,0],[124.93103,-118.081055,0],[127.47009,-118.00781,0,1],[126.640015,-117.9834,0,1],[125.90759,-118.05664,0],[125.29724,-117.9834,0,1],[124.003296,-118.03223,0,1],[123.19763,-117.9834,0,1],[121.9281,-118.081055,0,1],[121.19568,-118.081055,0],[120.12146,-118.081055,0],[119.12048,-118.05664,0,1]
+            ],
+            "8 -8": [[128.03162,-118.05664,0],[128.76404,-118.1543,0,1],[129.49646,-118.05664,0,1]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "Name": "NaturaWhiteFlowers",
+      "UUID": "e07bdf0f-40e7-4122-93f9-4e878f5683b0",
+      "Prefab": "Environment/IslesNatura/NaturaWhiteFlowers.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [0,0]
+        },
+        {
+          "_ComponentName": "Somnium.Grass.GrassType",
+          "grassChunks": {
+            "-1 0": [[-6,1.109374,-0.05,2],[-7.546875,1.09375,-0.05,1],[-4.9375,1.09375,-0.05],[-4.296875,1.109374,-0.05,2],[-6.75,0.8125,0.05],[-6.484375,0.8125,0.05,2],[-5.40625,0.875,0.05]
+            ],
+            "0 0": [[3.296875,1.093751,-0.05,1],[4.28125,1.015625,-0.05,2],[5.15625,1.046876,-0.05],[7,1.046876,-0.05,2],[3.625,0.796875,0.05,1],[4.625,0.875,0.05,2]
+            ],
+            "-4 -1": [[-52.804672,-0.08447456,-0.05],[-50.338852,-0.011232376,-0.05]
+            ],
+            "-4 0": [[-51.876938,0.11083794,-0.05,1],[-50.68065,0.086423874,-0.05],[-51.315414,0.086423874,-0.05],[-48.776352,0.23290825,-0.05],[-54.440414,0.135252,-0.05]
+            ],
+            "-3 0": [[-47.604477,0.03759575,-0.05,2],[-46.65233,0.062007904,-0.05,1],[-45.45604,0.15966415,-0.05],[-44.406235,0.013181686,-0.05,1],[-34.22557,0.135252,-0.05,1],[-33.541977,0.135252,-0.05,1],[-32.516586,0.06200981,-0.05,1]
+            ],
+            "-3 -1": [[-32.95604,-0.13330269,-0.05,1],[-40.5244,-0.30420303,0.05,1],[-39.889633,-0.15771675,0.05],[-38.571274,-0.13330269,0.05,2],[-41.96483,-0.08447456,0.05,1]
+            ],
+            "-2 -1": [[-31.857407,-0.03564644,-0.05],[-28.341782,-0.10889053,-0.05]
+            ],
+            "-2 0": [[-30.880844,0.3305645,-0.05],[-30.246078,0.03759575,-0.05],[-29.367172,0.11083794,-0.05,2],[-28.781235,0.15966606,-0.05,2],[-21.945297,0.94091606,0.05],[-20.993149,0.9653282,0.05,2],[-20.260727,0.81884575,0.05]
+            ],
+            "7 -8": [[117.65564,-118.12988,-0.1],[118.43689,-118.10547,-0.1,2],[118.90076,-118.10547,-0.1,2],[119.51111,-118.081055,-0.1,2],[120.24353,-118.081055,-0.1],[120.95154,-118.00781,-0.1],[116.14197,-118.10547,-0.1,1],[115.31189,-118.081055,-0.1,2],[122.41638,-117.93457,-0.1,1]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GroundLayer2",
+      "Prefab": "TileLayer.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localDepth": 0.1
+        },
+        {
+          "_ComponentName": "Somnium.Tiles.TileLayer",
+          "allChunks": [
+            {
+              "position": [-1,0],
+              "data": "1,1,122,19,0,0,1,1,130,3,0,0,24,0,0,1,1,124,23,0,0,20,0,0,1,1,158,3,0,0,1,1,124,23,0,0,24,0,0,1,1,125,19,0,0,1,1,162,1,1,157,2,0,0,24,0,0,1,1,126,23,0,0,21,0,0,1,1,129,2,0,0,20,0,0,1,1,144,3,0,0,1,1,46,19,0,0,1,1,134,3,0,0,20,0,0,1,1,155,3,0,0,24,0,0,20,0,0,1,1,133,3,0,0,20,0,0,1,1,158,3,0,0,24,0,0,24,0,0,20,0,0,1,1,165,1,1,152,2,0,0,20,0,0,1,1,140,1,1,134,2,0,0,20,0,0,1,1,129,3,0,0,19,0,0,1,1,143,4,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,"
+            },
+            {
+              "position": [-2,0],
+              "data": "24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,1,1,125,1,0,0,1,1,159,21,0,0,24,0,0,1,1,123,2,0,0,1,1,163,1,1,160,19,0,0,24,0,0,1,1,122,4,0,0,1,1,164,1,1,155,17,0,0,24,0,0,1,1,122,5,0,0,1,1,161,1,1,158,16,0,0,24,0,0,1,1,125,23,0,0,7,0,0,1,1,163,1,1,149,15,0,0,1,1,122,9,0,0,1,1,167,1,1,150,12,0,0,12,0,0,1,1,164,1,1,151,10,0,0,1,1,123,13,0,0,1,1,165,1,1,153,8,0,0,15,0,0,1,1,166,1,1,152,7,0,0,1,1,122,15,0,0,1,1,162,1,1,153,6,0,0,17,0,0,1,1,165,1,1,157,5,0,0,1,1,168,23,0,0,24,0,0,1,1,169,17,0,0,1,1,165,1,1,158,4,0,0,24,0,0,1,1,168,23,0,0,19,0,0,1,1,162,1,1,152,3,0,0,1,1,168,19,0,0,1,1,162,1,1,158,2,0,0,24,0,0,1,1,124,23,0,0,20,0,0,1,1,145,1,1,132,2,0,0,"
+            },
+            {
+              "position": [-2,-1],
+              "data": "24,0,0,24,0,0,24,0,0,24,0,0,23,0,0,1,1,147,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,23,0,0,1,1,47,24,0,0,22,0,0,1,1,45,1,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,"
+            },
+            {
+              "position": [-1,-1],
+              "data": "24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,23,0,0,1,1,45,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "ForestBush",
+      "Prefab": "Environment/IslesNatura/ForestBush.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-7,0],
+          "localDepth": 1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBush",
+      "Prefab": "Environment/IslesNatura/ForestBush.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [0.46680903,0.15966511],
+          "localDepth": 1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBush",
+      "Prefab": "Environment/IslesNatura/ForestBush.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-11.081044,0.7456031],
+          "localDepth": 1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBush",
+      "Prefab": "Environment/IslesNatura/ForestBush.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-53.854485,-0.40185666],
+          "localDepth": 1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBush",
+      "Prefab": "Environment/IslesNatura/ForestBush.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-51.266594,-0.91455364],
+          "localDepth": 1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBush",
+      "Prefab": "Environment/IslesNatura/ForestBush.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-48.263664,-0.40185666],
+          "localDepth": 1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushLargeDark",
+      "Prefab": "Environment/IslesNatura/ForestBushLargeDark.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-51.53515,-1.622561],
+          "localDepth": 1.1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushLargeDark",
+      "Prefab": "Environment/IslesNatura/ForestBushLargeDark.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-9.298819,0.1596632],
+          "localDepth": 1.1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushLargeDark",
+      "Prefab": "Environment/IslesNatura/ForestBushLargeDark.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-1.8464274,0.4404266],
+          "localDepth": 1.1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushLargeDark",
+      "Prefab": "Environment/IslesNatura/ForestBushLargeDark.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [3.95191,1.3864696],
+          "localDepth": 1.1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushLarge",
+      "Prefab": "Environment/IslesNatura/ForestBushLarge.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-14.17553,0.13524961],
+          "localDepth": 1.1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushLarge",
+      "Prefab": "Environment/IslesNatura/ForestBushLarge.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-28.701897,-1.2380409],
+          "localDepth": 1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBush",
+      "Prefab": "Environment/IslesNatura/ForestBush.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-33.371086,-0.71924275],
+          "localDepth": 1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushDark",
+      "Prefab": "Environment/IslesNatura/ForestBushDark.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-31.69262,-0.87183],
+          "localDepth": 1.1
+        }
+      ]
+    },
+    {
+      "Name": "GlobalWind",
+      "Prefab": "Skyboxes/GlobalWind.blueprint",
+      "subPrefabName": "main",
+      "components": []
+    },
+    {
+      "Name": "ScreenSpaceWind",
+      "Prefab": "Particles/ScreenSpaceWind.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [0,0]
+        }
+      ]
+    },
+    {
+      "Name": "FIDirtChunk1",
+      "Prefab": "Environment/IslesNatura/FIDirtChunk1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-0.29687524,2.6718755],
+          "localDepth": -0.1
+        }
+      ]
+    },
+    {
+      "Name": "FIDirtChunk2",
+      "Prefab": "Environment/IslesNatura/FIDirtChunk2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-4.1875,2.7656243],
+          "localDepth": -0.1
+        }
+      ]
+    },
+    {
+      "Name": "FIDirtChunk2",
+      "Prefab": "Environment/IslesNatura/FIDirtChunk2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [4.632812,3.0703118],
+          "localDepth": -0.1
+        }
+      ]
+    },
+    {
+      "Name": "FIDirtChunk3",
+      "Prefab": "Environment/IslesNatura/FIDirtChunk3.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-12.574215,3.1093743],
+          "localDepth": -0.1
+        }
+      ]
+    },
+    {
+      "Name": "FIDirtChunk2",
+      "Prefab": "Environment/IslesNatura/FIDirtChunk2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-15.992184,2.8359385],
+          "localDepth": -0.1
+        }
+      ]
+    },
+    {
+      "Name": "FIDirtChunk2",
+      "Prefab": "Environment/IslesNatura/FIDirtChunk2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-52.124992,1.7812524],
+          "localDepth": -0.1
+        }
+      ]
+    },
+    {
+      "Name": "FIDirtChunk3",
+      "Prefab": "Environment/IslesNatura/FIDirtChunk3.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-46.16796,1.7617207],
+          "localDepth": -0.1
+        }
+      ]
+    },
+    {
+      "Name": "FIDirtChunk1",
+      "Prefab": "Environment/IslesNatura/FIDirtChunk1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-30.67968,1.5664039],
+          "localDepth": -0.1
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushLargeDark",
+      "Prefab": "Environment/IslesNatura/ForestBushLargeDark.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-28.277332,2.6601539],
+          "localDepth": -0.1
+        },
+        {
+          "_ComponentName": "Somnium.SpriteRenderer",
+          "textureColor": [
+            100,
+            0,
+            0,
+            255
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushDark",
+      "Prefab": "Environment/IslesNatura/ForestBushDark.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-24.117178,2.9335904],
+          "localDepth": -0.1
+        },
+        {
+          "_ComponentName": "Somnium.SpriteRenderer",
+          "textureColor": [
+            0,
+            0,
+            0,
+            255
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "NaturaSatelliteIsland1",
+      "Prefab": "Environment/IslesNatura/NaturaSatelliteIsland1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-16.961529,-8.987253],
+          "localDepth": 20
+        },
+        {
+          "_ComponentName": "Somnium.Graphics.RenderLayerData",
+          "layer": "Background1"
+        }
+      ]
+    },
+    {
+      "Name": "NaturaSatelliteIsland2",
+      "Prefab": "Environment/IslesNatura/NaturaSatelliteIsland2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-49.375854,-1.018631],
+          "localDepth": 10
+        },
+        {
+          "_ComponentName": "Somnium.Graphics.RenderLayerData",
+          "layer": "Background1"
+        }
+      ]
+    },
+    {
+      "Name": "LinearFog",
+      "Prefab": "LinearFog.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Graphics.LinearFog",
+          "nearFogColor": [
+            92,
+            223,
+            189,
+            255
+          ],
+          "nearDistance": 35,
+          "farFogColor": [
+            92,
+            223,
+            189,
+            255
+          ],
+          "farDistance": 90
+        }
+      ]
+    },
+    {
+      "Name": "NaturaSatelliteIsland3",
+      "Prefab": "Environment/IslesNatura/NaturaSatelliteIsland3.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-39.35329,-10.376041],
+          "localDepth": 25
+        },
+        {
+          "_ComponentName": "Somnium.Graphics.RenderLayerData",
+          "layer": "Background1"
+        }
+      ]
+    },
+    {
+      "Name": "NaturaSatelliteIsland2",
+      "Prefab": "Environment/IslesNatura/NaturaSatelliteIsland2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-5.166586,-2.6041162],
+          "localDepth": 12
+        },
+        {
+          "_ComponentName": "Somnium.Graphics.RenderLayerData",
+          "layer": "Background1"
+        }
+      ]
+    },
+    {
+      "Name": "InvertedTreeWLeaves3",
+      "Folder": 0,
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves3.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [28.54685,-50],
+          "localDepth": 1.5
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "DirectionalLight",
+      "Prefab": "DirectionalLight.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [9.856443,-5.9921875]
+        },
+        {
+          "_ComponentName": "Somnium.Graphics.Lighting.DirectionalLight3D",
+          "direction": [0,0.7,1],
+          "color": [
+            255,
+            236,
+            200,
+            255
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "Name": "InvertedTreeWLeaves1",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-4.0043564,-93],
+          "localDepth": 20
+        },
+        {
+          "_ComponentName": "Somnium.Graphics.RenderLayerData",
+          "layer": "Background1"
+        }
+      ],
+      "children": [
+        {
+          "Name": "InverterTreeLeaves",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves2",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves2",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves3",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves3",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves4",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves4",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves5",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves5",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves6",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves6",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves7",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves7",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves8",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves8",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves9",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves9",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves10",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves10",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves11",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves11",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves12",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves12",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves13",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves13",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "InvertedTreeWLeaves3",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves3.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [20.68283,-55],
+          "localScale": [-1,-1],
+          "localDepth": 20
+        },
+        {
+          "_ComponentName": "Somnium.Graphics.RenderLayerData",
+          "layer": "Background1"
+        }
+      ],
+      "children": [
+        {
+          "Name": "InverterTreeLeaves",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves3.blueprint",
+          "subPrefabName": "InverterTreeLeaves",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves2",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves3.blueprint",
+          "subPrefabName": "InverterTreeLeaves2",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves3",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves3.blueprint",
+          "subPrefabName": "InverterTreeLeaves3",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves4",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves3.blueprint",
+          "subPrefabName": "InverterTreeLeaves4",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves5",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves3.blueprint",
+          "subPrefabName": "InverterTreeLeaves5",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "InvertedTreeWLeaves1",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [15.31579,-105],
+          "localScale": [-1,-1],
+          "localDepth": 35
+        },
+        {
+          "_ComponentName": "Somnium.Graphics.RenderLayerData",
+          "layer": "Background1"
+        }
+      ],
+      "children": [
+        {
+          "Name": "InverterTreeLeaves",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves2",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves2",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves3",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves3",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves4",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves4",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves5",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves5",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves6",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves6",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves7",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves7",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves8",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves8",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves9",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves9",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves10",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves10",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves11",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves11",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves12",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves12",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves13",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves13",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "InvertedTreeWLeaves1",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [20.66031,-127],
+          "localDepth": 20
+        },
+        {
+          "_ComponentName": "Somnium.Graphics.RenderLayerData",
+          "layer": "Background1"
+        }
+      ],
+      "children": [
+        {
+          "Name": "InverterTreeLeaves",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves2",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves2",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves3",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves3",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves4",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves4",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves5",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves5",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves6",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves6",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves7",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves7",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves8",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves8",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves9",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves9",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves10",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves10",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves11",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves11",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves12",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves12",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves13",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves13",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "InvertedTreeWLeaves1",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [-34.139442,-77],
+          "localDepth": 15
+        },
+        {
+          "_ComponentName": "Somnium.Graphics.RenderLayerData",
+          "layer": "Background1"
+        }
+      ],
+      "children": [
+        {
+          "Name": "InverterTreeLeaves",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves2",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves2",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves3",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves3",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves4",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves4",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves5",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves5",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves6",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves6",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves7",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves7",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves8",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves8",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves9",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves9",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves10",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves10",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves11",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves11",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves12",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves12",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        },
+        {
+          "Name": "InverterTreeLeaves13",
+          "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+          "subPrefabName": "InverterTreeLeaves13",
+          "components": [
+            {
+              "_ComponentName": "Somnium.Graphics.RenderLayerData",
+              "layer": "Background1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [21,-3]
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [19,-3]
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [18,-3]
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [25,-7]
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [26,-8]
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [27,-7]
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [31,-2],
+          "localDepth": 0.5
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [33,-2],
+          "localDepth": 0.5
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [34,-2],
+          "localDepth": 0.5
+        }
+      ]
+    },
+    {
+      "Name": "MushroomSide2",
+      "Prefab": "Environment/IslesNatura/MushroomSide2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [30,-13],
+          "localDepth": 0.5
+        }
+      ]
+    },
+    {
+      "Name": "Mushroom2",
+      "Prefab": "Environment/IslesNatura/Mushroom2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [28.40625,-20.265625],
+          "localDepth": 0.5
+        }
+      ]
+    },
+    {
+      "Name": "InvertedTreeWLeaves2",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [56.264175,-75.047],
+          "localScale": [1,-1],
+          "localDepth": 2
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "InvertedTreeWLeaves2",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [29,-110],
+          "localDepth": 2
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "InverterTreeLeaves",
+      "Prefab": "Environment/IslesNatura/InverterTreeLeaves.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [28.179567,-47.361473],
+          "localDepth": 0.5
+        }
+      ]
+    },
+    {
+      "Name": "InverterTreeLeaves",
+      "Prefab": "Environment/IslesNatura/InverterTreeLeaves.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [30.642637,-43.716892],
+          "localDepth": 0.6
+        }
+      ]
+    },
+    {
+      "Name": "MushroomSide1",
+      "Prefab": "Environment/IslesNatura/MushroomSide1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [27,-28],
+          "localScale": [-1,1],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "MushroomSide1",
+      "Prefab": "Environment/IslesNatura/MushroomSide1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [29,-34],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [48,-10],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [49,-10],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [51,-11],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [53.5,-11.5],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "SmallTreeSide",
+      "Prefab": "Environment/IslesNatura/SmallTreeSide.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [52,-32],
+          "localScale": [-1,1],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "InvertedTreeWLeaves3",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves3.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [85,-85],
+          "localDepth": 2
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "InvertedTreeWLeaves1",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [105.683426,-98],
+          "localDepth": 2,
+          "localScale": [0.8,-0.9]
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "InvertedTreeWLeaves2",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [136.4014,-140],
+          "localScale": [1.2,-1.2],
+          "localDepth": 2
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "InvertedTreeWLeaves2",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [56.6,-136.8],
+          "localScale": [1.2,-1.1],
+          "localDepth": 1.9
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [17.303818,-43.624054],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [16.053623,-42.74156],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [18.77464,-42.52094],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [20.269974,-41.908096],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [23.26064,-45.045845],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [24.952082,-45.658688],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [32.257153,-47.399155],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [33,-46],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "NaturaFernPlatform",
+      "Prefab": "Environment/IslesNatura/NaturaFernPlatform.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [35,-47],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "SmallTreeSide",
+      "Prefab": "Environment/IslesNatura/SmallTreeSide.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [32.70477,-57.459904],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "SmallTreeSide",
+      "UUID": "bcb5f89b-7e3d-4df0-8f89-e9035d603f7f",
+      "Prefab": "Environment/IslesNatura/SmallTreeSide.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localPosition": [42.820538,-65.81717],
+          "localScale": [-1,1],
+          "localDepth": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "InvertedTreeWLeaves1",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localDepth": 2,
+          "localPosition": [84.76419,-156]
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "InvertedTreeWLeaves1",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves1.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localDepth": 2,
+          "localPosition": [105.25,-166],
+          "localScale": [-1.1,-1]
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "BGLayer1",
+      "Prefab": "TileLayer.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localDepth": 3
+        },
+        {
+          "_ComponentName": "Somnium.Tiles.TileLayer",
+          "allChunks": [
+            {
+              "position": [4,-4],
+              "data": "24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,"
+            },
+            {
+              "position": [5,-4],
+              "data": "16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,"
+            },
+            {
+              "position": [6,-4],
+              "data": "24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,"
+            },
+            {
+              "position": [7,-4],
+              "data": "24,0,0,24,0,0,16,0,0,1,1,173,7,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,24,0,0,"
+            }
+          ],
+          "generateTileCollisions": false,
+          "overrideColor": [
+            180,
+            200,
+            220,
+            255
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "InvertedTreeWLeaves2",
+      "Prefab": "Environment/IslesNatura/InvertedTreeWLeaves2.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localDepth": 2,
+          "localPosition": [229.92065,-135],
+          "localScale": [1.2,-1.2]
+        }
+      ],
+      "children": []
+    },
+    {
+      "Name": "ForestBushLarge",
+      "Prefab": "Environment/IslesNatura/ForestBushLarge.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localDepth": 0.5,
+          "localPosition": [119,-119]
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushDark",
+      "Prefab": "Environment/IslesNatura/ForestBushDark.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localDepth": 0.6,
+          "localPosition": [116,-118.5]
+        }
+      ]
+    },
+    {
+      "Name": "ForestBushDark",
+      "Prefab": "Environment/IslesNatura/ForestBushDark.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localDepth": 0.6,
+          "localPosition": [121,-119]
+        }
+      ]
+    },
+    {
+      "Name": "ForestBush",
+      "Prefab": "Environment/IslesNatura/ForestBush.blueprint",
+      "subPrefabName": "main",
+      "components": [
+        {
+          "_ComponentName": "Somnium.Transform",
+          "localDepth": 0.5,
+          "localPosition": [123.85681,-118.76465]
+        }
+      ]
+    }
+  ]
+}
