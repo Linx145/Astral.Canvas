@@ -8,7 +8,7 @@ project "AstralCanvasTest"
     targetdir "bin/%{cfg.buildcfg}"
     includedirs {
         "include", 
-        "../../dependencies/glfw/include", 
+        "../dependencies/glfw/include", 
         "../Astral.Core",
         "../include",
         "../Astral.Json"
