@@ -149,7 +149,7 @@ void Draw(float time)
 	//CreateRotationZ(Degree2Radian * 90.0f)
 	Maths::Matrix4x4 projMatrix = Maths::Matrix4x4::CreateOrthographic(40.0f, 22.5f, 0.0f, 1.0f);
 
-	AstralCanvasApplication* app = AstralCanvas_GetAppInstance();
+	AstralCanvas::Application* app = AstralCanvas::GetAppInstance();
 	app->graphicsDevice.StartRenderProgram(&renderProgram, COLOR_BLACK);
 
 	app->graphicsDevice.UseRenderPipeline(&pipeline);
@@ -178,7 +178,7 @@ i32 main(i32 argc, const char** argv)
 
 	string appName = string(&cAllocator, "test");
 	string engineName = string(&cAllocator, "AstralGametech");
-	AstralCanvasApplication* appPtr = AstralCanvasApplication::init(&cAllocator, appName, engineName, 0, 0, 0.0f);
+	AstralCanvas::Application* appPtr = AstralCanvas::ApplicationInit(&cAllocator, appName, engineName, 0, 0, 0.0f);
 	appPtr->AddWindow(1920, 1080, -1, true);
 	appPtr->Run(&Update, &Draw, &Initialize, &Deinitialize);
 

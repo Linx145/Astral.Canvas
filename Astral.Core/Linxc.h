@@ -10,6 +10,7 @@
 #define IsAttribute
 #define uselang(language)
 #define enduselang
+#define exportC extern "C"
 
 #ifdef __GNUC__
 #define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))

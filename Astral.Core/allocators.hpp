@@ -52,4 +52,20 @@ inline IAllocator GetCAllocator()
 {
     return IAllocator(NULL, &CAllocator_Allocate, &CAllocator_Free);
 }
+
+IAllocator *GetDefaultAllocator();
+void SetDefaultAllocator(IAllocator allocator);
+#endif
+
+#ifdef ASTRALCORE_DEFAULT_ALLOC_IMPL
+IAllocator defaultAllocator;
+
+IAllocator *GetDefaultAllocator()
+{
+    return &defaultAllocator;
+}
+void SetDefaultAllocator(IAllocator allocator)
+{
+    defaultAllocator = allocator;
+}
 #endif

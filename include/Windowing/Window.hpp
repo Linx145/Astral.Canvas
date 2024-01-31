@@ -9,29 +9,31 @@
 #include <QuartzCore/CAMetalLayer.h>
 #endif
 
-struct AstralCanvasWindow
+namespace AstralCanvas
 {
-	static bool windowLibraryInitialized;
-	GLFWwindow* handle;
-	Maths::Point2 resolution;
-	Maths::Point2 position;
-	AstralCanvas::InputState windowInputState;
-
-	void *windowSurfaceHandle;
-
-	AstralCanvasWindow();
-	inline void deinit()
+	struct Window
 	{
-		glfwDestroyWindow(handle);
-	}
-	inline Maths::Rectangle AsRectangle()
-	{
-		return Maths::Rectangle(0, 0, resolution.X, resolution.Y);
-	}
-};
+		GLFWwindow* handle;
+		Maths::Point2 resolution;
+		Maths::Point2 position;
+		InputState windowInputState;
 
-bool AstralCanvasWindow_Init(IAllocator *allocator, AstralCanvasWindow * result, i32 width, i32 height, i32 fps, bool resizeable);
+		void *windowSurfaceHandle;
 
-#ifdef MACOS
-CAMetalLayer AstralCanvasWindow_GetMetalLayer(AstralCanvasWindow* window);
-#endif
+		Window();
+		inline void deinit()
+		{
+			glfwDestroyWindow(handle);
+		}
+		inline Maths::Rectangle AsRectangle()
+		{
+			return Maths::Rectangle(0, 0, resolution.X, resolution.Y);
+		}
+	};
+
+	bool WindowInit(IAllocator *allocator, Window * result, i32 width, i32 height, i32 fps, bool resizeable);
+
+	#ifdef MACOS
+	CAMetalLayer WindowGetMetalLayer(Window* window);
+	#endif
+}

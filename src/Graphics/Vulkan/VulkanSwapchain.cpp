@@ -16,7 +16,7 @@ VkSurfaceFormatKHR AstralCanvasVk_FindSurfaceWith(VkColorSpaceKHR colorSpace, Vk
     return toSearch.data[0];
 }
 
-bool AstralCanvasVk_CreateSwapchain(IAllocator *allocator, AstralVulkanGPU *gpu, AstralCanvasWindow *window, AstralVulkanSwapchain* result)
+bool AstralCanvasVk_CreateSwapchain(IAllocator *allocator, AstralVulkanGPU *gpu, AstralCanvas::Window *window, AstralVulkanSwapchain* result)
 {
     IAllocator cAllocator = GetCAllocator();
     AstralVkSwapchainSupportDetails details = AstralCanvasVk_QuerySwapchainSupport(gpu->physicalDevice, (VkSurfaceKHR)window->windowSurfaceHandle,  &cAllocator);

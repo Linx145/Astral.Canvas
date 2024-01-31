@@ -15,7 +15,7 @@
 
 VkBool32 AstralCanvasVk_ErrorCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
-bool AstralCanvasVk_Initialize(IAllocator* allocator, collections::Array<const char*> validationLayersToUse, collections::Array<const char*> requiredExtensions, AstralCanvasWindow* window);
+bool AstralCanvasVk_Initialize(IAllocator* allocator, collections::Array<const char*> validationLayersToUse, collections::Array<const char*> requiredExtensions, AstralCanvas::Window* window);
 
 collections::vector<const char*> AstralCanvasVk_GetDefaultInstanceExtensions(IAllocator *allocator);
 
@@ -24,7 +24,7 @@ bool AstralCanvasVk_CreateInstance(IAllocator* allocator, collections::Array<con
 bool AstralCanvasVk_CreateDebugMessenger();
 
 void AstralCanvasVk_AwaitShutdown();
-void AstralCanvasVk_Deinitialize(IAllocator *allocator, AstralCanvasWindow *window);
+void AstralCanvasVk_Deinitialize(IAllocator *allocator, AstralCanvas::Window *window);
 
 void AstralCanvasVk_BeginDraw();
 void AstralCanvasVk_EndDraw();

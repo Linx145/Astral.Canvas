@@ -39,7 +39,7 @@ collections::vector<const char*> AstralCanvasVk_GetDefaultInstanceExtensions(IAl
 	return result;
 }
 
-bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validationLayersToUse, Array<const char*> requiredExtensions, AstralCanvasWindow* window)
+bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validationLayersToUse, Array<const char*> requiredExtensions, AstralCanvas::Window* window)
 {
 	if (!AstralCanvasVk_CreateInstance(allocator, validationLayersToUse, "", "", 0, 0))
 	{
@@ -252,7 +252,7 @@ void AstralCanvasVk_AwaitShutdown()
 {
 	vkQueueWaitIdle(AstralCanvasVk_GetCurrentGPU()->DedicatedGraphicsQueue.queue);
 }
-void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvasWindow* window)
+void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvas::Window* window)
 {
 	AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
 	AstralCanvas::DestroyDefaultSamplerStates();

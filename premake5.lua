@@ -59,3 +59,5 @@ workspace "AstralCanvas"
     include("Astral.Shaderc")
 
     include("Test")
+
+    include("BindingsGenerator")

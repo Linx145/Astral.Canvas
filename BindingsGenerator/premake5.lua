@@ -1,5 +1,5 @@
-project "Astral.Reflect"
-    kind "StaticLib"
+project "AstralCanvasBindingsGenerator"
+    kind "ConsoleApp"
     language "C++"
     rtti "Off"
     exceptionhandling "Off"
@@ -8,12 +8,12 @@ project "Astral.Reflect"
     includedirs {
         "include",
         "../Astral.Core",
-        "../Astral.Json"
+        "../Astral.Reflect/include"
     }
     files { 
-        "src/*.cpp", 
-        "../Astral.Json/Json.cpp",
+        "*.cpp"
     }
+    links "Astral.Reflect"
 
     filter "configurations:Debug"
         defines { "DEBUG" }

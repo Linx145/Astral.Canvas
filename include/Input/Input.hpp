@@ -4,9 +4,9 @@
 
 namespace AstralCanvas
 {
-    inline AstralCanvasWindow *Input_GetWindow()
+    inline AstralCanvas::Window *Input_GetWindow()
     {
-        return &AstralCanvas_GetAppInstance()->windows.ptr[0];
+        return &AstralCanvas::GetAppInstance()->windows.ptr[0];
     }
     inline bool Input_IsKeyDown(Keys key)
     {

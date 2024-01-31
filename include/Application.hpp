@@ -6,36 +6,35 @@
 #include "string.hpp"
 #include "Graphics/Graphics.hpp"
 
-using namespace collections;
-using namespace Maths;
-
 def_delegate(AstralCanvas_Update, void, float);
 def_delegate(AstralCanvas_Init, void);
 def_delegate(AstralCanvas_Deinit, void);
 
-struct AstralCanvasApplication
+namespace AstralCanvas
 {
-	vector<AstralCanvasWindow> windows;
-	IAllocator* allocator;
-	double memoryForBuffersMiB;
-	double memoryForImagesMiB;
-	AstralCanvas::Graphics graphicsDevice;
+	struct Application
+	{
+		collections::vector<Window> windows;
+		IAllocator* allocator;
+		AstralCanvas::Graphics graphicsDevice;
 
-	string appName;
-	string engineName;
-	u32 appVersion;
-	u32 engineVersion;
+		string appName;
+		string engineName;
+		u32 appVersion;
+		u32 engineVersion;
 
-	AstralCanvas_Init onInitialize;
-	AstralCanvas_Update onUpdate;
+		AstralCanvas_Init onInitialize;
+		AstralCanvas_Update onUpdate;
 
-	float framesPerSecond;
+		float framesPerSecond;
 
-	AstralCanvasApplication();
-	static AstralCanvasApplication* init(IAllocator* ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
-	bool AddWindow(i32 width, i32 height, i32 fps, bool resizeable = true);
-	bool FinalizeGraphicsBackend();
-	void Run(AstralCanvas_Update updateFunc, AstralCanvas_Update drawFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc);
-};
+		Application();
+		Application* init(IAllocator* ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
+		bool AddWindow(i32 width, i32 height, i32 fps, bool resizeable = true);
+		bool FinalizeGraphicsBackend();
+		void Run(AstralCanvas_Update updateFunc, AstralCanvas_Update drawFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc);
+	};
 
-AstralCanvasApplication* AstralCanvas_GetAppInstance();
+	Application* ApplicationInit(IAllocator* ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
+	Application* GetAppInstance();
+}

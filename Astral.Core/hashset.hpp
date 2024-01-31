@@ -99,7 +99,7 @@ namespace collections
             {
                 buckets[index].initialized = true;
                 buckets[index].keyHash = hash;
-                buckets[index].entries = collections::vector<T>();
+                buckets[index].entries = collections::vector<T>(allocator);
 
                 filledBuckets++;
             }

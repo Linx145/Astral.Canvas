@@ -58,7 +58,7 @@ void AstralCanvasWgpu_HandleRequestedDevice(WGPURequestDeviceStatus status, WGPU
     }
 }
 
-void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvasWindow* window, Array<AstralCanvas_GraphicsFeatures> requiredFeatures, Array<AstralCanvas_GraphicsFeatures> optionalFeatures)
+void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvas::Window* window, Array<AstralCanvas_GraphicsFeatures> requiredFeatures, Array<AstralCanvas_GraphicsFeatures> optionalFeatures)
 {
     IAllocator cAllocator = GetCAllocator();
 
@@ -74,7 +74,7 @@ void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvasWindow* wind
 
 #ifdef MACOS
     {
-        CAMetalLayer metalLayer = AstralCanvasWindow_GetMetalLayer(window);
+        CAMetalLayer metalLayer = AstralCanvas::WindowGetMetalLayer(window);
 
         WGPUChainedStruct fromMetalLayerType;
         fromMetalLayerType.next = NULL;
@@ -227,7 +227,7 @@ void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvasWindow* wind
     AstralCanvasWgpu_ResizeWindow(window);
 }
 
-void AstralCanvasWgpu_ResizeWindow(AstralCanvasWindow *window)
+void AstralCanvasWgpu_ResizeWindow(AstralCanvas::Window *window)
 {
     engineInstance.config.device = engineInstance.device;
     engineInstance.config.usage = WGPUTextureUsage_RenderAttachment;
