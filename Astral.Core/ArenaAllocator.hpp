@@ -1,6 +1,6 @@
 #pragma once
-#include <vector.hpp>
-#include <allocators.hpp>
+#include "vector.hpp"
+#include "allocators.hpp"
 
 struct ArenaAllocator
 {
@@ -8,13 +8,13 @@ struct ArenaAllocator
     IAllocator* baseAllocator;
     IAllocator asAllocator;
 
-    inline ArenaAllocator::ArenaAllocator()
+    inline ArenaAllocator()
     {
         ptrs = collections::vector<void *>();
         baseAllocator = NULL;
         asAllocator = IAllocator();
     }
-    inline ArenaAllocator::ArenaAllocator(IAllocator *base);
+    inline ArenaAllocator(IAllocator *base);
 
     inline void deinit()
     {

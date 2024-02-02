@@ -1,4 +1,6 @@
 #pragma once
+
+#ifdef ASTRALCANVAS_VULKAN
 #include "vulkan/vulkan.h"
 #include "Graphics/Enums.hpp"
 
@@ -226,3 +228,4 @@ inline VkBlendFactor AstralCanvasVk_FromBlend(AstralCanvas::Blend blend)
             return VK_BLEND_FACTOR_ONE;
     }
 }
+#endif

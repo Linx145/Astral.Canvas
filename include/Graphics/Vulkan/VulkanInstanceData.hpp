@@ -1,4 +1,5 @@
 #pragma once
+#ifdef ASTRALCANVAS_VULKAN
 #include <Graphics/Vulkan/VulkanGPU.hpp>
 #include <Graphics/Vulkan/VulkanSwapchain.hpp>
 #include "Graphics/Vulkan/vk_mem_alloc.h"
@@ -38,3 +39,4 @@ void AstralCanvasVk_SetMainCmdBuffer(VkCommandBuffer commandBuffer);
 
 VkDescriptorPool AstralCanvasVk_GetDescriptorPool();
 void AstralCanvasVk_SetDescriptorPool(VkDescriptorPool pool);
+#endif

@@ -1,4 +1,5 @@
 #pragma once
+#ifdef ASTRALCANVAS_VULKAN
 #include "Windowing/Window.hpp"
 #include "VulkanSwapchainSupportDetails.hpp"
 #include "Graphics/RenderTarget.hpp"
@@ -36,3 +37,4 @@ void AstralCanvasVk_SwapchainRecreateRendertargets(AstralVulkanSwapchain* swapch
 VkSurfaceFormatKHR AstralCanvasVk_FindSurfaceWith(VkColorSpaceKHR colorSpace, VkFormat format, collections::Array<VkSurfaceFormatKHR> toSearch);
 
 bool AstralCanvasVk_SwapchainSwapBuffers(AstralVulkanGPU *gpu, AstralVulkanSwapchain* swapchain, VkSemaphore semaphore, VkFence fence);
+#endif

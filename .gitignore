@@ -9,6 +9,12 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.xcodeproj
+*.xcworkspace
+Makefile
+.vscode
+*.make
+*.DS_STORE
 Astral.Shaderc/dependencies/**.lib
 Astral.Shaderc/dependencies/**.dylib
 Astral.Shaderc/dependencies/**.so

@@ -1,7 +1,9 @@
 #include "Application.hpp"
 #include "Graphics/WGPU/WgpuEngine.hpp"
 #include "Graphics/Vulkan/VulkanEngine.hpp"
+#include "Graphics/Metal/MetalEngine.h"
 #include "Graphics/CurrentBackend.hpp"
+#include "ErrorHandling.hpp"
 #include "array.hpp"
 using namespace collections;
 
@@ -44,22 +46,40 @@ namespace AstralCanvas
 	}
 	bool Application::FinalizeGraphicsBackend()
 	{
-		#if DEBUG
-		collections::Array<const char *> validationLayersToUse = collections::Array<const char *>(this->allocator, 1);
-		validationLayersToUse.data[0] = "VK_LAYER_KHRONOS_validation";
-		#endif
-		#if NDEBUG
-		collections::Array<const char *> validationLayersToUse = collections::Array<const char *>();
-		#endif
-
-		collections::Array<const char *> requiredExtensions = collections::Array<const char *>(allocator, 1);
-		requiredExtensions.data[0] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-
-		AstralCanvasVk_Initialize(this->allocator, validationLayersToUse, requiredExtensions, &windows.ptr[0]);
-		//AstralCanvasWgpu_Initialize(this->allocator, &this->windows.ptr[0], Array<AstralCanvas_GraphicsFeatures>(), Array<AstralCanvas_GraphicsFeatures>());
-		this->graphicsDevice = AstralCanvas::Graphics();
-		this->graphicsDevice.ClipArea = this->windows.ptr[0].AsRectangle();
-		this->graphicsDevice.Viewport = this->windows.ptr[0].AsRectangle();
+        switch (GetActiveBackend())
+        {
+#ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+#if DEBUG
+                collections::Array<const char *> validationLayersToUse = collections::Array<const char *>(this->allocator, 1);
+                validationLayersToUse.data[0] = "VK_LAYER_KHRONOS_validation";
+#endif
+#if NDEBUG
+                collections::Array<const char *> validationLayersToUse = collections::Array<const char *>();
+#endif
+                
+                collections::Array<const char *> requiredExtensions = collections::Array<const char *>(allocator, 1);
+                requiredExtensions.data[0] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+                
+                AstralCanvasVk_Initialize(this->allocator, validationLayersToUse, requiredExtensions, &windows.ptr[0]);
+                //AstralCanvasWgpu_Initialize(this->allocator, &this->windows.ptr[0], Array<AstralCanvas_GraphicsFeatures>(), Array<AstralCanvas_GraphicsFeatures>());
+                this->graphicsDevice = AstralCanvas::Graphics();
+                this->graphicsDevice.ClipArea = this->windows.ptr[0].AsRectangle();
+                this->graphicsDevice.Viewport = this->windows.ptr[0].AsRectangle();
+                break;
+            }
+#endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_Initialize(this->allocator, &windows.ptr[0]);
+                break;
+            }
+#endif
+            default:
+                THROW_ERR("Unrecognised backend");
+        }
 		return true;
 	}
 	void Application::Run(AstralCanvas_Update updateFunc, AstralCanvas_Update drawFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc)
@@ -148,7 +168,23 @@ namespace AstralCanvas
 		{
 			deinitFunc();
 		}
-		AstralCanvasVk_Deinitialize(allocator, &windows.ptr[0]);
-		//AstralCanvasWgpu_Deinit();
+        switch (AstralCanvas::GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case AstralCanvas::Backend_Vulkan:
+            {
+                AstralCanvasVk_Deinitialize(allocator, &windows.ptr[0]);
+                break;
+            }
+            #endif
+#ifdef ASTRALCANVAS_METAL
+            case AstralCanvas::Backend_Metal:
+            {
+                break;
+            }
+#endif
+            default:
+                break;
+        }
 	}
 }

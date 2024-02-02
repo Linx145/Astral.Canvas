@@ -1,3 +1,4 @@
+#ifdef ASTRALCANVAS_VULKAN
 #include <Graphics/Vulkan/VulkanEngine.hpp>
 #include <Graphics/Vulkan/VulkanInstanceData.hpp>
 #include "Graphics/Vulkan/vk_mem_alloc.h"
@@ -412,3 +413,4 @@ void AstralCanvasVk_EndDraw()
 		THROW_ERR("Error presenting queue");
 	}
 }
+#endif

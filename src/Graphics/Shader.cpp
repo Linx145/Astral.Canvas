@@ -10,6 +10,10 @@
 #include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 #endif
 
+#ifdef MACOS
+#include "Graphics/Metal/MetalImplementations.h"
+#endif
+
 using namespace SomnialJson;
 
 namespace AstralCanvas
@@ -144,7 +148,7 @@ namespace AstralCanvas
             }
             if (this->shaderVariables.uniforms.ptr[i].variableName == variableName)
             {
-                return i;
+                return (i32)i;
             }
         }
         return -1;
@@ -206,6 +210,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                
+                break;
+            }
+#endif
             default:
                 break;
         }
@@ -317,6 +328,7 @@ namespace AstralCanvas
     }
     void Shader::deinit()
     {
+        this->shaderVariables.deinit();
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
@@ -324,7 +336,6 @@ namespace AstralCanvas
             {
                 VkDevice logicalDevice = AstralCanvasVk_GetCurrentGPU()->logicalDevice;
 
-                this->shaderVariables.deinit();
                 if (this->shaderPipelineLayout != NULL)
                 {
                     vkDestroyDescriptorSetLayout(logicalDevice, (VkDescriptorSetLayout)this->shaderPipelineLayout, NULL);
@@ -340,6 +351,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_DestroyShaderProgram(this->shaderModule1, this->shaderModule2);
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: Shader deinit");
                 break;
@@ -349,21 +367,22 @@ namespace AstralCanvas
     }
     i32 CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader* result)
     {
+        *result = AstralCanvas::Shader(allocator, shaderType);
+        ArenaAllocator localArena = ArenaAllocator(allocator);
+        
+        JsonElement root;
+        usize parseJsonResult = ParseJsonDocument(&localArena.asAllocator, jsonString, &root);
+        if (parseJsonResult != 0)
+        {
+            localArena.deinit();
+            return (i32)parseJsonResult;
+        }
+        
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
             case Backend_Vulkan:
             {
-                *result = AstralCanvas::Shader(allocator, shaderType);
-                ArenaAllocator localArena = ArenaAllocator(allocator);
-                
-                JsonElement root;
-                usize parseJsonResult = ParseJsonDocument(&localArena.asAllocator, jsonString, &root);
-                if (parseJsonResult != 0)
-                {
-                    localArena.deinit();
-                    return (i32)parseJsonResult;
-                }
 
                 JsonElement *computeElement = root.GetProperty("compute");
 
@@ -478,10 +497,46 @@ namespace AstralCanvas
                 return 0;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                JsonElement *computeElement = root.GetProperty("compute");
+
+                if (computeElement != NULL)
+                {
+                    ParseShaderVariables(computeElement, &result->shaderVariables, InputAccessedBy_Compute);
+                }
+                else
+                {
+                    JsonElement *vertexElement = root.GetProperty("vertex");
+                    JsonElement *fragmentElement = root.GetProperty("fragment");
+
+                    if (vertexElement != NULL && fragmentElement != NULL)
+                    {
+                        ParseShaderVariables(vertexElement, &result->shaderVariables, InputAccessedBy_Vertex);
+                        ParseShaderVariables(fragmentElement, &result->shaderVariables, InputAccessedBy_Fragment);
+                        
+                        JsonElement *vertexMetal = vertexElement->GetProperty("mtl");
+                        JsonElement *fragmentMetal = fragmentElement->GetProperty("mtl");
+                        
+                        string vertexMetalString = vertexMetal->GetString(&localArena.asAllocator);
+                        string fragmentMetalString = fragmentMetal->GetString(&localArena.asAllocator);
+                        
+                        if (!AstralCanvasMetal_CreateShaderProgram(vertexMetalString, fragmentMetalString, &result->shaderModule1, &result->shaderModule2))
+                        {
+                            THROW_ERR("Failed to create metal shader program!");
+                        }
+                        
+                    }
+                }
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: Shader CreateShaderFromString");
                 break;
         }
+        localArena.deinit();
         return -1;
     }
 }

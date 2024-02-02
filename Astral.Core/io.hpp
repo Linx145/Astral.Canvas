@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Linxc.h>
-#include <string.hpp>
-#include <array.hpp>
+#include "Linxc.h"
+#include "string.hpp"
+#include "array.hpp"
 #include <stdio.h>
-#include <vector.hpp>
-#include <allocators.hpp>
+#include "vector.hpp"
+#include "allocators.hpp"
 
 #include <sys/stat.h>   // For stat().
 
@@ -24,8 +24,8 @@ namespace io
     {
         string result = string(allocator);
 
-        FILE *fs;
-        if (fopen_s(&fs, path, "r") == 0)
+        FILE *fs = fopen(path, "r");
+        if (fs != NULL)
         {
             usize size = 0;
             while (fgetc(fs) != EOF)

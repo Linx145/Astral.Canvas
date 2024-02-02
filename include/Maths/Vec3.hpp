@@ -1,5 +1,5 @@
 #pragma once
-#include <Maths/Vec2.hpp>
+#include "Maths/Vec2.hpp"
 #include <math.h>
 
 namespace Maths

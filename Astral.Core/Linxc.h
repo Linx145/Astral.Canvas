@@ -5,7 +5,6 @@
 #endif
 
 #define def_delegate(name, returns, ...) typedef returns (*name)(__VA_ARGS__)
-#define trait struct
 #define impl_trait(name)
 #define IsAttribute
 #define uselang(language)

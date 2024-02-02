@@ -1,7 +1,6 @@
 #pragma once
 
-#ifndef ASTRAL_VK_H
-#define ASTRAL_VK_H
+#ifdef ASTRALCANVAS_VULKAN
 #include <Linxc.h>
 #include <vulkan/vulkan.h>
 #include <Windowing/Window.hpp>

@@ -1,3 +1,4 @@
+#ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanSwapchain.hpp"
 #include "Maths/Util.hpp"
 #include "ErrorHandling.hpp"
@@ -181,3 +182,4 @@ bool AstralCanvasVk_SwapchainSwapBuffers(AstralVulkanGPU *gpu, AstralVulkanSwapc
     }
     return false;
 }
+#endif

@@ -1,7 +1,7 @@
 #pragma once
 #include <math.h>
-#include <Maths/Vec3.hpp>
-#include <Maths/simd.h>
+#include "Maths/Vec3.hpp"
+#include "Maths/simd.h"
 
 namespace Maths
 {

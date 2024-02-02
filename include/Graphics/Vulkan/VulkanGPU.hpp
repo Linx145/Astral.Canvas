@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef ASTRALCANVAS_VULKAN
 #include <Linxc.h>
 #include <vulkan/vulkan.h>
 #include <Graphics/Vulkan/VulkanQueueProperties.hpp>
@@ -97,3 +98,4 @@ void AstralCanvasVk_ReleaseGPU(AstralVulkanGPU *gpu);
 bool AstralCanvasVk_GPUExtensionsSupported(AstralVulkanGPU *gpu);
 u32 AstralCanvasVk_GetGPUScore(AstralVulkanGPU* gpu, VkSurfaceKHR windowSurface);
 bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* allocator);
+#endif

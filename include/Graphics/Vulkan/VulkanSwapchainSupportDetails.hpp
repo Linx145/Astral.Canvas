@@ -1,5 +1,5 @@
 #pragma once
-
+#ifdef ASTRALCANVAS_VULKAN
 #include <Linxc.h>
 #include <vulkan/vulkan.h>
 
@@ -19,3 +19,4 @@ struct AstralVkSwapchainSupportDetails
 };
 
 AstralVkSwapchainSupportDetails AstralCanvasVk_QuerySwapchainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR windowSurface, IAllocator *allocator);
+#endif

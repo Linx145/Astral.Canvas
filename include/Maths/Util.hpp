@@ -1,7 +1,7 @@
 #pragma once
-#include <math.h>
-#include <Maths/Vec2.hpp>
-#include <Linxc.h>
+#include "math.h"
+#include "Maths/Vec2.hpp"
+#include "Linxc.h"
 
 #define PI 3.1415927f
 #define DOUBLEPI 3.14159265358979323846

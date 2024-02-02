@@ -1,8 +1,8 @@
 #pragma once
-#include <Linxc.h>
-#include <stdbool.h>
-#include <string.hpp>
-#include <hashmap.hpp>
+#include "Linxc.h"
+#include "stdbool.h>
+#include <string.hpp"
+#include "hashmap.hpp"
 
 typedef struct LinxcToken LinxcToken;
 typedef struct LinxcTokenizer LinxcTokenizer;

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <Linxc.h>
-#include <string.hpp>
-#include <array.hpp>
-#include <option.hpp>
+#include "Linxc.h"
+#include "string.hpp"
+#include "array.hpp"
+#include "option.hpp"
+#include <math.h>
 
 namespace path
 {
@@ -76,7 +77,7 @@ namespace path
         usize actualLastIndex = 0;
         if (lastWindows.present && lastNormalFileSystem.present)
         {
-            actualLastIndex = max(lastWindows.value, lastNormalFileSystem.value);
+            actualLastIndex = fmax(lastWindows.value, lastNormalFileSystem.value);
         }
         else if (lastWindows.present)
         {

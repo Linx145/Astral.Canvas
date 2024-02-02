@@ -1,8 +1,9 @@
 #include "Graphics/Graphics.hpp"
 
+#include "Graphics/CurrentBackend.hpp"
+
 #ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
-#include "Graphics/CurrentBackend.hpp"
 #include "Graphics/Vulkan/VulkanHelpers.hpp"
 #endif
 

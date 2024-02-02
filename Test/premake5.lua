@@ -27,6 +27,9 @@ project "AstralCanvasTest"
         "{COPYFILE}	 \"TestContent/tbh.png\" \"bin/Debug/tbh.png\""
     }
 
+    filter "system:macosx"
+        links { "GLFW", "Cocoa.framework", "IOKit.framework", "Metal.framework", "MetalKit.framework", "QuartzCore.framework" }
+
 
     filter "configurations:Debug"
         defines { "DEBUG" }

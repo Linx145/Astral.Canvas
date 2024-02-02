@@ -1,0 +1,25 @@
+#ifdef ASTRALCANVAS_METAL
+#include "Graphics/Metal/MetalEngine.h"
+#include "Graphics/Metal/MetalInstanceData.h"
+
+#import <Metal/Metal.h>
+#import <QuartzCore/CAMetalLayer.h>
+
+bool AstralCanvasMetal_Initialize(IAllocator *allocator, AstralCanvas::Window* window)
+{
+    id<MTLDevice> gpu = MTLCreateSystemDefaultDevice();
+    AstralCanvasMetal_SetCurrentGPU(gpu);
+    
+    id<MTLCommandQueue> commandQueue = [gpu newCommandQueue];
+    AstralCanvasMetal_SetMainCmdQueue(commandQueue);
+    
+    CAMetalLayer *swapchain = [CAMetalLayer layer];
+    swapchain.device = AstralCanvasMetal_GetCurrentGPU();
+    swapchain.opaque = YES;
+    AstralCanvasMetal_SetSwapchain(swapchain);
+
+    NSWindow *nswindow = glfwGetCocoaWindow(window->handle);
+    nswindow.contentView.layer = swapchain;
+    nswindow.contentView.wantsLayer = YES;
+}
+#endif

@@ -1,6 +1,7 @@
 #include "Graphics/RenderProgram.hpp"
 #include "Graphics/CurrentBackend.hpp"
 #include "ErrorHandling.hpp"
+#include "hashmap.hpp"
 
 #ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
@@ -29,7 +30,24 @@ namespace AstralCanvas
 
         if (imageFormat == ImageFormat_BackbufferFormat)
         {
-            imageFormat = AstralCanvasVk_GetCurrentSwapchain()->imageFormat;
+            switch (GetActiveBackend())
+            {
+#ifdef ASTRALCANVAS_VULKAN
+                case Backend_Vulkan:
+                {
+                    imageFormat = AstralCanvasVk_GetCurrentSwapchain()->imageFormat;
+                    break;
+                }
+#endif
+#ifdef ASTRALCANVAS_METAL
+                case Backend_Metal:
+                {
+                    break;
+                }
+#endif
+                default:
+                    break;
+            }
         }
 
         RenderProgramImageAttachment imageAttachment{
@@ -222,6 +240,12 @@ namespace AstralCanvas
                 free(subpassDescriptions);
                 subpassDescriptionAttachmentRefs.deinit();
 
+                break;
+            }
+            #endif
+            #ifdef ASTRALCANVAS_METAL
+            {
+                
                 break;
             }
             #endif

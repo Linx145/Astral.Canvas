@@ -1,3 +1,4 @@
+#ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanQueueProperties.hpp"
 
 i32 AstralCanvasVk_GetQueue(AstralVulkanQueueProperties *properties, VkPhysicalDevice physicalDevice, AstralVulkanQueue_Type type)
@@ -171,3 +172,4 @@ i32 AstralCanvasVk_GetGraphicsQueue(AstralVulkanQueueProperties *properties, VkP
 
     return properties->dedicatedGraphicsQueueIndex;
 }
+#endif

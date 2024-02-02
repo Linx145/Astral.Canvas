@@ -19,7 +19,7 @@ namespace AstralCanvas
     inline u32 RenderPipelineBindZoneHash(RenderPipelineBindZone zone)
     {
         u32 hash = 7;
-        hash = hash * 31 + (u32)zone.renderProgramHandle;
+        hash = hash * 31 + (u32)(usize)zone.renderProgramHandle;
         hash = hash * 31 + zone.subPassHandle;
         return hash;
     }

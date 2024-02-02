@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string.hpp>
-#include <vector.hpp>
-#include <hashmap.hpp>
-#include <hashset.hpp>
-#include <lexer.hpp>
+#include "string.hpp"
+#include "vector.hpp"
+#include "hashmap.hpp"
+#include "hashset.hpp"
+#include "lexer.hpp"
 
 #define ERR_MSG string
 

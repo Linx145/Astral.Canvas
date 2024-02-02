@@ -1,10 +1,10 @@
 #pragma once
 #include <math.h>
-#include <Maths/Vec4.hpp>
-#include <Maths/simd.h>
-#include <Maths/Util.hpp>
-#include <Maths/Quaternion.hpp>
-#include <option.hpp>
+#include "Maths/Vec4.hpp"
+#include "Maths/simd.h"
+#include "Maths/Util.hpp"
+#include "Maths/Quaternion.hpp"
+#include "option.hpp"
 
 namespace Maths
 {

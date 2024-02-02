@@ -1,3 +1,4 @@
+#ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanGPU.hpp"
 #include <Graphics/Vulkan/VulkanSwapchainSupportDetails.hpp>
 
@@ -237,3 +238,4 @@ void AstralCanvasVk_ReleaseGPU(AstralVulkanGPU *gpu)
 	}
 	gpu->requiredExtensions.deinit();
 }
+#endif

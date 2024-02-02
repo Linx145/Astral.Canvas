@@ -1,7 +1,7 @@
 #pragma once
 #ifndef ASTRALCANVAS_ERRORHANDLING_H
 #define ASTRALCANVAS_ERRORHANDLING_H
-#include <Linxc.h>
+#include "Linxc.h"
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>

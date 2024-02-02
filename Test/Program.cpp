@@ -29,7 +29,7 @@ struct WVP
 	Maths::Matrix4x4 view;
 	Maths::Matrix4x4 projection;
 
-	inline WVP(Matrix4x4 worldMat, Matrix4x4 viewMat, Matrix4x4 projMat)
+	inline WVP(Maths::Matrix4x4 worldMat, Maths::Matrix4x4 viewMat, Maths::Matrix4x4 projMat)
 	{
 		world = worldMat;
 		view = viewMat;
@@ -38,6 +38,9 @@ struct WVP
 };
 void Initialize()
 {
+	#ifdef MACOS
+	return;
+	#endif
 	string filePath = exeLocation.Clone(&cAllocator);
 	filePath.Append("/Triangle.shaderobj");
 	string fileContents = io::ReadFile(&cAllocator, filePath.buffer);
@@ -111,6 +114,9 @@ void Initialize()
 }
 void Deinitialize()
 {
+	#ifdef MACOS
+	return;
+	#endif
 	tbh.deinit();
 
 	ib.deinit();
@@ -146,6 +152,9 @@ void Update(float deltaTime)
 }
 void Draw(float time)
 {
+	#ifdef MACOS
+	return;
+	#endif
 	//CreateRotationZ(Degree2Radian * 90.0f)
 	Maths::Matrix4x4 projMatrix = Maths::Matrix4x4::CreateOrthographic(40.0f, 22.5f, 0.0f, 1.0f);
 
@@ -157,7 +166,7 @@ void Draw(float time)
 	app->graphicsDevice.SetVertexBuffer(&vb, 0);
 	app->graphicsDevice.SetIndexBuffer(&ib);
 
-	WVP matrices = WVP(Matrix4x4::CreateTranslation(x, y, 0.0f), Maths::Matrix4x4::Identity(), projMatrix);
+	WVP matrices = WVP(Maths::Matrix4x4::CreateTranslation(x, y, 0.0f), Maths::Matrix4x4::Identity(), projMatrix);
 	app->graphicsDevice.SetShaderVariable("Matrices", &matrices, sizeof(WVP));
 	app->graphicsDevice.SetShaderVariableSampler("samplerState", AstralCanvas::SamplerGetPointClamp());
 	app->graphicsDevice.SetShaderVariableTexture("inputTexture", &tbh);

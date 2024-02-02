@@ -1,5 +1,5 @@
 #pragma once
-
+#ifdef ASTRALCANVAS_VULKAN
 #include "Linxc.h"
 #include "array.hpp"
 #include "vulkan/vulkan.h"
@@ -61,3 +61,4 @@ i32 AstralCanvasVk_GetQueue(AstralVulkanQueueProperties *properties, VkPhysicalD
 i32 AstralCanvasVk_GetGraphicsQueue(AstralVulkanQueueProperties *properties, VkPhysicalDevice physicalDevice, bool mustPresent);
 i32 AstralCanvasVk_GetTransferQueue(AstralVulkanQueueProperties *properties, VkPhysicalDevice physicalDevice);
 i32 AstralCanvasVk_GetComputeQueue(AstralVulkanQueueProperties *properties, VkPhysicalDevice physicalDevice);
+#ifdef ASTRALCANVAS_VULKAN

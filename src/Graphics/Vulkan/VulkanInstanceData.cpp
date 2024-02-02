@@ -1,3 +1,4 @@
+#ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
 
 VkDebugUtilsMessengerCreateInfoEXT      AstralCanvasVk_debugCreateInfo = {};
@@ -120,3 +121,4 @@ void AstralCanvasVk_SetDescriptorPool(VkDescriptorPool pool)
 {
     AstralCanvasVk_DescriptorPool = pool;
 }
+#endif

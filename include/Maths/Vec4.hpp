@@ -1,8 +1,8 @@
 #pragma once
-#include <Maths/Vec2.hpp>
-#include <Maths/Vec3.hpp>
+#include "Maths/Vec2.hpp"
+#include "Maths/Vec3.hpp"
 #include <math.h>
-#include <Maths/simd.h>
+#include "Maths/simd.h"
 
 namespace Maths
 {

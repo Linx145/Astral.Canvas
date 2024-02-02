@@ -22,7 +22,7 @@ project "GLFW"
         defines { "NDEBUG" }
         optimize "On"
 
-    filter "platforms:Windows"
+    filter "system:windows"
 		systemversion "latest"
 		staticruntime "On"
         defines { "_GLFW_WIN32", "_CRT_SECURE_NO_WARNINGS" }
@@ -37,24 +37,22 @@ project "GLFW"
 			"src/egl_context.c",
 			"src/osmesa_context.c"
 		}
-        system "windows"
 
-    filter "platforms:MacOS"
-        defines { "_GLFW_COCOA" }
+	filter "system:macosx"
+		defines { "_GLFW_COCOA", "GLFW_EXPOSE_NATIVE_COCOA" }
         files {
-			"src/cocoa_init.c",
-			"src/cocoa_joystick.c",
-			"src/cocoa_monitor.c",
+			"src/cocoa_init.m",
+			"src/cocoa_monitor.m",
+			"src/cocoa_window.m",
+			"src/cocoa_joystick.m",
 			"src/cocoa_time.c",
-			"src/cocoa_platform.c",
-			"src/cocoa_window.c",
-			"src/wgl_context.c",
-			"src/egl_context.c",
-			"src/osmesa_context.c"
+			"src/nsgl_context.m",
+			"src/posix_thread.c",
+			"src/osmesa_context.c",
+			"src/egl_context.c"
 		}
-        system "macosx"
 
-    filter "platforms:Linux"
+    filter "system:linux"
         defines { "_GLFW_X11" }
         files {
 			"src/x11_init.c",
@@ -68,4 +66,3 @@ project "GLFW"
 			"src/osmesa_context.c",
 			"src/linux_joystick.c"
 		}
-        system "linux"

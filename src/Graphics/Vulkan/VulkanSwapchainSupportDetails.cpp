@@ -1,3 +1,4 @@
+#ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanSwapchainSupportDetails.hpp"
 
 using namespace collections;
@@ -22,3 +23,4 @@ AstralVkSwapchainSupportDetails AstralCanvasVk_QuerySwapchainSupport(VkPhysicalD
 
     return details;
 }
+#endif

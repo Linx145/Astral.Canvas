@@ -2,7 +2,7 @@
 #ifndef ASTRALCORE_ALLOCATORS
 #define ASTRALCORE_ALLOCATORS
 
-#include <Linxc.h>
+#include "Linxc.h"
 #include <stdlib.h>
 
 def_delegate(allocFunc, void *, void *, usize);

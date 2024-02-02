@@ -1,4 +1,5 @@
 #pragma once
+#ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/SamplerState.hpp"
 #include "Graphics/Texture2D.hpp"
 #include "Graphics/Vulkan/VulkanGPU.hpp"
@@ -63,3 +64,4 @@ inline AstralCanvas::MemoryAllocation AstralCanvasVk_AllocateMemoryForBuffer(VkB
 
     return memoryAllocated;
 }
+#endif

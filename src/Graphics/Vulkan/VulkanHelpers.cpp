@@ -1,3 +1,4 @@
+#ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanHelpers.hpp"
 #include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 #include "Graphics/Vulkan/VulkanGPU.hpp"
@@ -313,3 +314,4 @@ void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, VkIma
     }
     
 }*/
+#endif
