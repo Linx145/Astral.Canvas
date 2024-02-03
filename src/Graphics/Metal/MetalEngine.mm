@@ -46,5 +46,6 @@ void AstralCanvasMetal_EndDraw()
     [mainCmdBuffer presentDrawable:surface];
     [mainCmdBuffer commit];
     [mainCmdBuffer release];
+    [surface release];
 }
 #endif

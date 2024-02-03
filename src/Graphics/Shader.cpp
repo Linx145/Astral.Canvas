@@ -155,12 +155,12 @@ namespace AstralCanvas
     }
     void Shader::CheckDescriptorSetAvailability()
     {
-        switch (GetActiveBackend())
+        if (descriptorForThisDrawCall >= descriptorSets.count)
         {
-            #ifdef ASTRALCANVAS_VULKAN
-            case Backend_Vulkan:
+            switch (GetActiveBackend())
             {
-                if (descriptorForThisDrawCall >= descriptorSets.count)
+    #ifdef ASTRALCANVAS_VULKAN
+                case Backend_Vulkan:
                 {
                     VkDescriptorPool descriptorPool = AstralCanvasVk_GetDescriptorPool();
                     VkDescriptorSet result;
@@ -169,7 +169,7 @@ namespace AstralCanvas
                     allocInfo.descriptorSetCount = 1;
                     allocInfo.descriptorPool = descriptorPool;
                     allocInfo.pSetLayouts = (VkDescriptorSetLayout*)&this->shaderPipelineLayout;
-                
+                    
                     if (vkAllocateDescriptorSets(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &allocInfo, &result) != VK_SUCCESS)
                     {
                         THROW_ERR("Error creating descriptor set!");
@@ -206,22 +206,22 @@ namespace AstralCanvas
                         }
                         shaderVariables.uniforms.ptr[i].stagingData.Add(newMutableState);
                     }
+                    break;
                 }
-                break;
-            }
-            #endif
-#ifdef ASTRALCANVAS_METAL
+    #endif
+    #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
-            {
-                
-                break;
-            }
-#endif
+                {
+                    AstralCanvasMetal_AddUniformDescriptorSets(this);
+                    break;
+                }
+    #endif
             default:
                 break;
+            }
         }
     }
-    void Shader::SyncUniformsWithGPU()
+    void Shader::SyncUniformsWithGPU(void *commandEncoder)
     {
         switch (GetActiveBackend())
         {
@@ -321,6 +321,14 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_SyncUniformsWithGPU(commandEncoder, this);
+                
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: Shader SyncUniformsWithGPU");
                 break;

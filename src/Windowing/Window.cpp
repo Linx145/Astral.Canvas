@@ -100,6 +100,12 @@ namespace AstralCanvas
 		Window *canvas = (Window*)glfwGetWindowUserPointer(window);
 		canvas->windowInputState.mousePosition = Maths::Vec2((float)xPos, (float)yPos);
 	}
+    void WindowSizeChanged(GLFWwindow *window, i32 width, i32 height)
+    {
+        Window *canvas = (Window*)glfwGetWindowUserPointer(window);
+        canvas->resolution.X = width;
+        canvas->resolution.Y = height;
+    }
 
 	bool WindowInit(IAllocator *allocator, Window * result, i32 width, i32 height, i32 fps, bool resizeable)
 	{
@@ -125,6 +131,7 @@ namespace AstralCanvas
 
 			glfwSetWindowIconifyCallback(handle, &WindowMinimized);
 			glfwSetWindowMaximizeCallback(handle, &WindowMaximized);
+            glfwSetWindowSizeCallback(handle, &WindowSizeChanged);
 			glfwSetCharCallback(handle, &OnTextInput);
 			glfwSetKeyCallback(handle, &OnKeyInteracted);
 			glfwSetMouseButtonCallback(handle, &OnMouseInteracted);

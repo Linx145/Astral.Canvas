@@ -9,6 +9,10 @@
 #include "Graphics/Vulkan/VulkanHelpers.hpp"
 #endif
 
+#ifdef ASTRALCANVAS_METAL
+#include "Graphics/Metal/MetalImplementations.h"
+#endif
+
 namespace AstralCanvas
 {
     void Texture2D::Construct()
@@ -143,6 +147,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_CreateTexture(this);
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unrecognised backend when attempting to create a texture");
                 break;
@@ -172,8 +183,15 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_DestroyTexture(this);
+                break;
+            }
+#endif
             default:
-                THROW_ERR("Unrecognised backend when attempting to create a texture");
+                THROW_ERR("Unimplemented backend: Texture2D deinit");
                 break;
         }
         this->isDisposed = true;

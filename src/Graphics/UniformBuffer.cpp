@@ -6,6 +6,10 @@
 #include "Graphics/Vulkan/VulkanHelpers.hpp"
 #endif
 
+#ifdef ASTRALCANVAS_METAL
+#include "Graphics/Metal/MetalImplementations.h"
+#endif
+
 namespace AstralCanvas
 {
     UniformBuffer::UniformBuffer()
@@ -29,7 +33,6 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_VULKAN
             case Backend_Vulkan:
             {
-                
                 VkBufferUsageFlags bufferUsage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
                 this->handle = AstralCanvasVk_CreateResourceBuffer(AstralCanvasVk_GetCurrentGPU(), this->size, bufferUsage);
                 this->memoryAllocation = AstralCanvasVk_AllocateMemoryForBuffer((VkBuffer)this->handle, VMA_MEMORY_USAGE_CPU_TO_GPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
@@ -51,6 +54,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_CreateUniformBuffer(this, ptr, ptrSize);
+                break;
+            }
+#endif
             default:
                 break;
         }
@@ -72,6 +82,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_DestroyUniformBuffer(this);
+                break;
+            }
+#endif
             default:
                 break;
         }

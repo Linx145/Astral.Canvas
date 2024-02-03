@@ -6,6 +6,10 @@
 #include "Graphics/Vulkan/VulkanHelpers.hpp"
 #endif
 
+#ifdef ASTRALCANVAS_METAL
+#include "Graphics/Metal/MetalImplementations.h"
+#endif
+
 #include "ErrorHandling.hpp"
 
 namespace AstralCanvas
@@ -75,6 +79,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_CreateSampler(this);
+                break;
+            }
+#endif
             default:
             {
                 THROW_ERR("Unimplemented backend: SamplerState Create");
@@ -97,6 +108,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_DestroySampler(this);
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: SamplerState deinit");
         }

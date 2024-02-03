@@ -16,6 +16,7 @@ namespace AstralCanvas
         u32 currentRenderPass;
         RenderTarget *currentRenderTarget;
         RenderPipeline *currentRenderPipeline;
+        const IndexBuffer *currentIndexBuffer;
         
         void* currentCommandEncoderInstance;
 

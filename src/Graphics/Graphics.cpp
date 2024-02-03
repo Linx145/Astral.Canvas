@@ -64,13 +64,15 @@ namespace AstralCanvas
 #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
-                AstralCanvasMetal_SetIndexBuffer(this->currentCommandEncoderInstance, indexBuffer);
+                //this is set at draw command time
+                //AstralCanvasMetal_SetIndexBuffer(this->currentCommandEncoderInstance, indexBuffer);
                 break;
             }
 #endif
             default:
                 break;
         }
+        this->currentIndexBuffer = indexBuffer;
     }
     void Graphics::SetRenderTarget(RenderTarget *target)
     {
@@ -295,7 +297,7 @@ namespace AstralCanvas
         {
             currentRenderPipeline->shader->uniformsHasBeenSet = false;
 
-            currentRenderPipeline->shader->SyncUniformsWithGPU();
+            currentRenderPipeline->shader->SyncUniformsWithGPU(this->currentCommandEncoderInstance);
             switch (GetActiveBackend())
             {
                 #ifdef ASTRALCANVAS_VULKAN
@@ -338,7 +340,7 @@ namespace AstralCanvas
 #ifdef ASTRALCANVAS_METAL
                 case Backend_Metal:
                 {
-                    AstralCanvasMetal_DrawIndexedPrimitives(this->currentCommandEncoderInstance, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+                    AstralCanvasMetal_DrawIndexedPrimitives(this->currentCommandEncoderInstance, this->currentIndexBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
                     break;
                 }
 #endif

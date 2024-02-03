@@ -29,7 +29,7 @@ namespace AstralCanvas
 
         i32 GetVariableBinding(const char* variableName);
         void CheckDescriptorSetAvailability();
-        void SyncUniformsWithGPU();
+        void SyncUniformsWithGPU(void *commandEncoder);
 
         Shader();
         Shader(IAllocator *allocator, ShaderType type);

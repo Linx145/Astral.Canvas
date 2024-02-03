@@ -38,8 +38,8 @@ struct WVP
 };
 void Initialize()
 {
-	/*string filePath = exeLocation.Clone(&cAllocator);
-	filePath.Append("/Triangle.shaderobj");
+	string filePath = exeLocation.Clone(&cAllocator);
+	filePath.Append("/Texture.shaderobj");
 	string fileContents = io::ReadFile(&cAllocator, filePath.buffer);
 	filePath.deinit();
 
@@ -70,53 +70,8 @@ void Initialize()
 
 	vb = AstralCanvas::VertexBuffer(AstralCanvas::GetVertexPositionColorTextureDecl(), 4);
 
-	float width = 1.625f;
-	float height = 1.125f;
-
-	AstralCanvas::VertexPositionColorTexture vertices[4];
-	vertices[0].position = Maths::Vec3(-width * 0.5f, -height * 0.5f, 0.0f);
-	vertices[0].color = COLOR_RED.ToVector4();
-	vertices[0].UV = Maths::Vec2(0.0f, 0.0f);
-
-	vertices[1].position = Maths::Vec3(width * 0.5f, -height * 0.5f, 0.0f);
-	vertices[1].color = COLOR_GREEN.ToVector4();
-	vertices[1].UV = Maths::Vec2(1.0f, 0.0f);
-
-	vertices[2].position = Maths::Vec3(width * 0.5f, height * 0.5f, 0.0f);
-	vertices[2].color = COLOR_BLUE.ToVector4();
-	vertices[2].UV = Maths::Vec2(1.0f, 1.0f);
-
-	vertices[3].position = Maths::Vec3(-width * 0.5f, height * 0.5f, 0.0f);
-	vertices[3].color = COLOR_BLUE.ToVector4();
-	vertices[3].UV = Maths::Vec2(0.0f, 1.0f);
-
-	vb.SetData(vertices, 4);
-
-	ib = AstralCanvas::IndexBuffer(AstralCanvas::IndexBufferSize_U16, 6);
-	u16 indices[6];
-	indices[0] = 0;
-	indices[1] = 1;
-	indices[2] = 2;
-	indices[3] = 3;
-	indices[4] = 0;
-	indices[5] = 2;
-	ib.SetData((u8*)indices, sizeof(u16) * 6);*/
-
-	string filePath = exeLocation.Clone(&cAllocator);
-	filePath.Append("/Triangle.shaderobj");
-	string fileContents = io::ReadFile(&cAllocator, filePath.buffer);
-	filePath.deinit();
-
-	if (AstralCanvas::CreateShaderFromString(&resourcesArena.asAllocator, AstralCanvas::ShaderType_VertexFragment, fileContents, &shader) != 0)
-	{
-		printf("Failed to create shader!\n");
-		return;
-	}
-
-	vb = AstralCanvas::VertexBuffer(AstralCanvas::GetVertexPositionColorDecl(), 4);
-
-	float width = 0.5f;
-	float height = 0.5f;
+    float width = 26;//1.625f;
+    float height = 18;//1.125f;
 
 	AstralCanvas::VertexPositionColorTexture vertices[4];
 	vertices[0].position = Maths::Vec3(-width * 0.5f, -height * 0.5f, 0.0f);
@@ -147,20 +102,6 @@ void Initialize()
 	indices[5] = 2;
 	ib.SetData((u8*)indices, sizeof(u16) * 6);
 
-	collections::Array<AstralCanvas::VertexDeclaration*> vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.asAllocator, 1);
-	vertexDeclsUsed.data[0] = AstralCanvas::GetVertexPositionColorTextureDecl();
-
-	pipeline = AstralCanvas::RenderPipeline(
-		&resourcesArena.asAllocator,
-		&shader,
-		AstralCanvas::CullMode_CullNone,
-		AstralCanvas::PrimitiveType_TriangleList,
-		OPAQUE_BLEND,
-		false,
-		false,
-		vertexDeclsUsed
-	); 
-
 	renderProgram = AstralCanvas::RenderProgram(&resourcesArena.asAllocator);
 	i32 color = renderProgram.AddAttachment(AstralCanvas::ImageFormat_BackbufferFormat, true, false, AstralCanvas::RenderPassOutput_ToWindow);
 	//i32 depth = renderProgram.AddAttachment(AstralCanvas::ImageFormat_Depth32, false, true, AstralCanvas::RenderPassOutput_ToWindow);
@@ -170,7 +111,7 @@ void Initialize()
 }
 void Deinitialize()
 {
-	/*tbh.deinit();*/
+	tbh.deinit();
 
 	ib.deinit();
 
@@ -189,19 +130,19 @@ void Update(float deltaTime)
 {
 	if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_D))
 	{
-		x += deltaTime * 5.0f;
+		x += deltaTime * 128.0f;
 	}
 	if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_A))
 	{
-		x -= deltaTime * 5.0f;
+		x -= deltaTime * 128.0f;
 	}
 	if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_W))
 	{
-		y -= deltaTime * 5.0f;
+		y -= deltaTime * 128.0f;
 	}
 	if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_S))
 	{
-		y += deltaTime * 5.0f;
+		y += deltaTime * 128.0f;
 	}
 	//timer += deltaTime;
 	if (timer >= 1.0f)
@@ -213,7 +154,8 @@ void Update(float deltaTime)
 void Draw(float time)
 {
 	//CreateRotationZ(Degree2Radian * 90.0f)
-	//Maths::Matrix4x4 projMatrix = Maths::Matrix4x4::CreateOrthographic(40.0f, 22.5f, 0.0f, 1.0f);
+    Maths::Point2 resolution = AstralCanvas::GetAppInstance()->windows.ptr[0].resolution;
+    Maths::Matrix4x4 projMatrix = Maths::Matrix4x4::CreateOrthographic(resolution.X, resolution.Y, 0.0f, 1.0f);
 
 	AstralCanvas::Application* app = AstralCanvas::GetAppInstance();
 	app->graphicsDevice.StartRenderProgram(&renderProgram, AstralCanvas::Color(128, 128, 128));
@@ -223,16 +165,16 @@ void Draw(float time)
 	app->graphicsDevice.SetVertexBuffer(&vb, 0);
 	app->graphicsDevice.SetIndexBuffer(&ib);
 
-	// WVP matrices = WVP(Maths::Matrix4x4::CreateTranslation(x, y, 0.0f), Maths::Matrix4x4::Identity(), projMatrix);
-	// app->graphicsDevice.SetShaderVariable("Matrices", &matrices, sizeof(WVP));
-	// app->graphicsDevice.SetShaderVariableSampler("samplerState", AstralCanvas::SamplerGetPointClamp());
-	// app->graphicsDevice.SetShaderVariableTexture("inputTexture", &tbh);
+	WVP matrices = WVP(Maths::Matrix4x4::CreateTranslation(x, y, 0.0f) * Maths::Matrix4x4::CreateScale(2.0f, 2.0f, 2.0f), Maths::Matrix4x4::Identity(), projMatrix);
+	app->graphicsDevice.SetShaderVariable("Matrices", &matrices, sizeof(WVP));
+	app->graphicsDevice.SetShaderVariableSampler("samplerState", AstralCanvas::SamplerGetPointClamp());
+	app->graphicsDevice.SetShaderVariableTexture("inputTexture", &tbh);
 
-	app->graphicsDevice.DrawIndexedPrimitives(6, 1);
+    app->graphicsDevice.DrawIndexedPrimitives(6, 1);
 
 	app->graphicsDevice.EndRenderProgram();
 
-	//shader.descriptorForThisDrawCall = 0;
+	shader.descriptorForThisDrawCall = 0;
 }
 
 i32 main(i32 argc, const char** argv)

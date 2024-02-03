@@ -78,6 +78,44 @@ inline AstralCanvas::ImageFormat AstralCanvasMetal_ToImageFormat(MTLPixelFormat 
     }
 }
 
+inline MTLCullMode AstralCanvasMetal_FromCullMode(AstralCanvas::CullMode cullMode)
+{
+    switch (cullMode)
+    {
+        case AstralCanvas::CullMode_CullCounterClockwise:
+            return MTLCullModeBack;
+        case AstralCanvas::CullMode_CullClockwise:
+            return MTLCullModeFront;
+        case AstralCanvas::CullMode_CullNone:
+            return MTLCullModeNone;
+    }
+}
+
+inline MTLSamplerAddressMode AstralCanvasMetal_FromRepeatMode(AstralCanvas::RepeatMode repeatMode)
+{
+    switch (repeatMode)
+    {
+        case AstralCanvas::RepeatMode_ClampToEdgeColor:
+            return MTLSamplerAddressModeClampToEdge;
+        case AstralCanvas::RepeatMode_Repeat:
+            return MTLSamplerAddressModeRepeat;
+        case AstralCanvas::RepeatMode_ClampToSpecificColor:
+            return MTLSamplerAddressModeClampToBorderColor;
+    }
+}
+inline MTLSamplerMinMagFilter AstralCanvasMetal_FromSampleMode(AstralCanvas::SampleMode sampleMode)
+{
+    switch (sampleMode)
+    {
+        case AstralCanvas::SampleMode_Point:
+            return MTLSamplerMinMagFilterNearest;
+        case AstralCanvas::SampleMode_Linear:
+            return MTLSamplerMinMagFilterLinear;
+        case AstralCanvas::SampleMode_Cubic:
+            return MTLSamplerMinMagFilterLinear;
+    }
+}
+
 inline MTLVertexFormat AstralCanvasMetal_FromVertexElementFormat(AstralCanvas::VertexElementFormat format)
 {
     switch (format)

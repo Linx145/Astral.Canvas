@@ -7,6 +7,7 @@
 #include "Graphics/RenderPipeline.hpp"
 #include "Graphics/VertexBuffer.hpp"
 #include "Graphics/IndexBuffer.hpp"
+#include "Graphics/Texture2D.hpp"
 #include "Graphics/Color.hpp"
 #include "Maths/Rectangle.hpp"
 
@@ -29,9 +30,20 @@ void AstralCanvasMetal_CreateVertexBuffer(AstralCanvas::VertexBuffer *vertexBuff
 void AstralCanvasMetal_SetVertexBuffer(void *commandEncoder, const AstralCanvas::VertexBuffer *vertexBuffer, u32 bindingPoint);
 void AstralCanvasMetal_DestroyVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer);
 
+void AstralCanvasMetal_CreateUniformBuffer(AstralCanvas::UniformBuffer *uniformBuffer, void* uniformData, usize count);
+void AstralCanvasMetal_DestroyUniformBuffer(AstralCanvas::UniformBuffer *uniformBuffer);
+
 void AstralCanvasMetal_CreateIndexBuffer(AstralCanvas::IndexBuffer *indexBuffer, void* indicesData, usize count);
-void AstralCanvasMetal_SetIndexBuffer(void *commandEncoder, const AstralCanvas::IndexBuffer *indexBuffer);
+//void AstralCanvasMetal_SetIndexBuffer(void *commandEncoder, const AstralCanvas::IndexBuffer *indexBuffer);
 void AstralCanvasMetal_DestroyIndexBuffer(AstralCanvas::IndexBuffer *indexBuffer);
 
-void AstralCanvasMetal_DrawIndexedPrimitives(void *currentCommandEncoderInstance, u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance);
+void AstralCanvasMetal_DrawIndexedPrimitives(void *currentCommandEncoderInstance, const AstralCanvas::IndexBuffer *indexBuffer, u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance);
+
+void AstralCanvasMetal_CreateTexture(AstralCanvas::Texture2D *texture);
+void AstralCanvasMetal_DestroyTexture(AstralCanvas::Texture2D *texture);
+void AstralCanvasMetal_CreateSampler(AstralCanvas::SamplerState *sampler);
+void AstralCanvasMetal_DestroySampler(AstralCanvas::SamplerState *sampler);
+
+void AstralCanvasMetal_AddUniformDescriptorSets(AstralCanvas::Shader *shader);
+void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::Shader *shader);
 #endif
