@@ -225,11 +225,42 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
     }
     if (spvc_compiler_install_compiler_options(compiler, options) != SPVC_SUCCESS)
     {
+        printf("Error installing MSL compiler options\n");
         return false;
     }
+    spvc_compiler_set_decoration(compiler, 0, SpvDecorationBinding, 1);
+
+    spvc_resources resources;
+    if (spvc_compiler_create_shader_resources(compiler, &resources) != SPVC_SUCCESS)
+    {
+        return false;
+    }
+    const spvc_reflected_resource *allResources;
+    usize uniformCount = 0;
+    spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &allResources, &uniformCount);
+    for (usize i = 0; i < uniformCount; i++)
+    {
+        
+        //need to increase binding by 1 for msl because binding0 is taken up by the vertex buffer/input from vertex stage
+        u32 binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
+        u32 descSet = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
+
+        spvc_msl_resource_binding newBindings;
+        spvc_msl_resource_binding_init(&newBindings);
+        newBindings.binding = binding;
+        newBindings.desc_set = descSet;
+        newBindings.stage = reflectData1 ? SpvExecutionModelVertex : SpvExecutionModelFragment;
+        newBindings.msl_buffer = binding + 1;
+        spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
+        //printf("resource %s, binding %u\n", allResources[i].name, binding + 1);
+        //spvc_compiler_unset_decoration(compiler, allResources[i].id, SpvDecorationBinding);
+        //spvc_compiler_set_decoration(compiler, allResources[i].id, SpvDecorationBinding, binding + 1);
+    }
+
     const char *result;
     if (spvc_compiler_compile(compiler, &result) != SPVC_SUCCESS)
     {
+        printf("Error compiling MSL\n");
         return false;
     }
     *resultString = string(allocator, result);
