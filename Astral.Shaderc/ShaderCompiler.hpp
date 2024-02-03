@@ -65,6 +65,8 @@ struct AstralShadercCompileResult
     AstralShadercShaderVariables shaderVariables1;
     collections::vector<u32> shaderData2;
     AstralShadercShaderVariables shaderVariables2;
+    string shaderData1MSL;
+    string shaderData2MSL;
     string errorMessage;
 
     inline AstralShadercCompileResult(IAllocator *allocator)
@@ -75,6 +77,8 @@ struct AstralShadercCompileResult
         shaderData2 = collections::vector<u32>(allocator);
         shaderVariables1 = AstralShadercShaderVariables(allocator);
         shaderVariables2 = AstralShadercShaderVariables(allocator);
+        shaderData1MSL = string();
+        shaderData2MSL = string();
         errorMessage = string(allocator);
     }
     inline AstralShadercCompileResult(string error)
@@ -86,6 +90,8 @@ struct AstralShadercCompileResult
         shaderData2 = collections::vector<u32>(allocator);
         shaderVariables1 = AstralShadercShaderVariables();
         shaderVariables2 = AstralShadercShaderVariables();
+        shaderData1MSL = string();
+        shaderData2MSL = string();
     }
     inline void deinit()
     {
@@ -184,6 +190,51 @@ struct AstralCanvasShaderCompiler
         tokenizer.deinit();
     }
 };
+
+inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompileResult *compileResult, spvc_context context, bool reflectData1)
+{
+    collections::vector<u32> *dataToReflect;
+    string *resultString;
+    if (reflectData1)
+    {
+        dataToReflect = &compileResult->shaderData1;
+        resultString = &compileResult->shaderData1MSL;
+    }
+    else
+    {
+        dataToReflect = &compileResult->shaderData2;
+        resultString = &compileResult->shaderData2MSL;
+    }
+
+    spvc_parsed_ir parsedIR;
+    if (spvc_context_parse_spirv(context, dataToReflect->ptr, dataToReflect->count, &parsedIR) != SPVC_SUCCESS)
+    {
+        return false;
+    }
+
+    spvc_compiler compiler;
+    if (spvc_context_create_compiler(context, SPVC_BACKEND_MSL, parsedIR, SPVC_CAPTURE_MODE_COPY, &compiler) != SPVC_SUCCESS)
+    {
+        return false;
+    }
+
+    spvc_compiler_options options;
+    if (spvc_compiler_create_compiler_options(compiler, &options) != SPVC_SUCCESS)
+    {
+        return false;
+    }
+    if (spvc_compiler_install_compiler_options(compiler, options) != SPVC_SUCCESS)
+    {
+        return false;
+    }
+    const char *result;
+    if (spvc_compiler_compile(compiler, &result) != SPVC_SUCCESS)
+    {
+        return false;
+    }
+    *resultString = string(allocator, result);
+    return true;
+}
 
 inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralShadercCompileResult *compileResult, spvc_context context, bool reflectData1)
 {
@@ -523,6 +574,29 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
                 }
             }
 
+            //create MSL
+            if (!AstralShaderc_CompileMSL(allocator, &result, context, true))
+            {
+                if (result.isCompute)
+                {
+                    result.errorMessage = string(allocator, "Failed to perform reflection on compute shader");
+                }
+                else 
+                    result.errorMessage = string(allocator, "Failed to perform reflection on vertex shader");
+            }
+            if (fragmentShaderData.buffer != NULL)
+            {
+                if (!AstralShaderc_CompileMSL(allocator, &result, context, false))
+                {
+                    if (result.errorMessage.buffer == NULL)
+                    {
+                        result.errorMessage = string(allocator, "Failed to perform reflection on fragment shader");
+                    }
+                    else
+                        result.errorMessage.Append("\nFailed to perform reflection on fragment shader");
+                }
+            }
+
             spvc_context_destroy(context);
         }
     }
@@ -530,7 +604,7 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
     return result;
 }
 
-inline void AstralShaderc_WriteShaderData(SomnialJson::JsonWriter *writer, collections::vector<u32> spirv, AstralShadercShaderVariables *variables)
+inline void AstralShaderc_WriteShaderData(SomnialJson::JsonWriter *writer, collections::vector<u32> spirv, AstralShadercShaderVariables *variables, string msl)
 {
     if (variables->uniforms.length > 0)
     {
@@ -617,6 +691,12 @@ inline void AstralShaderc_WriteShaderData(SomnialJson::JsonWriter *writer, colle
         writer->WriteUintValue(spirv.ptr[i]);
     }
     writer->WriteEndArray();
+
+    if (msl.buffer != NULL)
+    {
+        writer->WritePropertyName("msl");
+        writer->WriteString(msl.buffer);        
+    }
 }
 inline bool AstralShaderc_WriteToFile(IAllocator *allocator, string filePath, AstralShadercCompileResult *compiledShader)
 {
@@ -636,7 +716,7 @@ inline bool AstralShaderc_WriteToFile(IAllocator *allocator, string filePath, As
         writer.WritePropertyName("compute");
         writer.WriteStartObject();
 
-        AstralShaderc_WriteShaderData(&writer, compiledShader->shaderData1, &compiledShader->shaderVariables1);
+        AstralShaderc_WriteShaderData(&writer, compiledShader->shaderData1, &compiledShader->shaderVariables1, compiledShader->shaderData1MSL);
 
         writer.WriteEndObject();
     }
@@ -645,7 +725,7 @@ inline bool AstralShaderc_WriteToFile(IAllocator *allocator, string filePath, As
         writer.WritePropertyName("vertex");
         writer.WriteStartObject();
 
-        AstralShaderc_WriteShaderData(&writer, compiledShader->shaderData1, &compiledShader->shaderVariables1);
+        AstralShaderc_WriteShaderData(&writer, compiledShader->shaderData1, &compiledShader->shaderVariables1, compiledShader->shaderData1MSL);
 
         writer.WriteEndObject();
         
@@ -653,7 +733,7 @@ inline bool AstralShaderc_WriteToFile(IAllocator *allocator, string filePath, As
         writer.WritePropertyName("fragment");
         writer.WriteStartObject();
 
-        AstralShaderc_WriteShaderData(&writer, compiledShader->shaderData2, &compiledShader->shaderVariables2);
+        AstralShaderc_WriteShaderData(&writer, compiledShader->shaderData2, &compiledShader->shaderVariables2, compiledShader->shaderData2MSL);
 
         writer.WriteEndObject();
     }
