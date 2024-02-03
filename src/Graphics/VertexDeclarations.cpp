@@ -1,4 +1,5 @@
 #include "Graphics/VertexDeclarations.hpp"
+#include "Maths/Matrix4x4.hpp"
 
 namespace AstralCanvas
 {
@@ -6,6 +7,7 @@ namespace AstralCanvas
     VertexDeclaration vertexPositionColorTextureDecl = VertexDeclaration();
     VertexDeclaration vertexPositionTextureColorDecl = VertexDeclaration();
     VertexDeclaration vertexPositionNormalTextureDecl = VertexDeclaration();
+    VertexDeclaration instanceDataMatrixDecl = VertexDeclaration();
 
     IAllocator vertexElementsAllocator = GetCAllocator();
 
@@ -94,5 +96,24 @@ namespace AstralCanvas
         vertexPositionNormalTextureDecl.elements.Add({VertexElement_Vector2, 32});
 
         return &vertexPositionNormalTextureDecl;
+    }
+    VertexDeclaration *GetInstanceDataMatrixDecl()
+    {
+        if (instanceDataMatrixDecl.allocator != NULL)
+        {
+            return &instanceDataMatrixDecl;
+        }
+
+        instanceDataMatrixDecl = VertexDeclaration(
+            &vertexElementsAllocator, 
+            sizeof(Maths::Matrix4x4),
+            VertexInput_PerInstance);
+
+        instanceDataMatrixDecl.elements.Add({VertexElement_Vector4, 0});
+        instanceDataMatrixDecl.elements.Add({VertexElement_Vector4, 16});
+        instanceDataMatrixDecl.elements.Add({VertexElement_Vector4, 32});
+        instanceDataMatrixDecl.elements.Add({VertexElement_Vector4, 48});
+
+        return &instanceDataMatrixDecl;
     }
 }

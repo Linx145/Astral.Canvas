@@ -12,6 +12,10 @@
 #include "string.hpp"
 #include "path.hpp"
 
+#include "stdlib.h"
+
+#define INSTANCE_COUNT 1000
+
 string exeLocation;
 
 IAllocator cAllocator;
@@ -20,6 +24,7 @@ AstralCanvas::RenderProgram renderProgram;
 AstralCanvas::Shader shader;
 AstralCanvas::VertexBuffer vb;
 AstralCanvas::IndexBuffer ib;
+AstralCanvas::InstanceBuffer instanceBuffer;
 AstralCanvas::RenderPipeline pipeline;
 AstralCanvas::Texture2D tbh;
 
@@ -39,7 +44,7 @@ struct WVP
 void Initialize()
 {
 	string filePath = exeLocation.Clone(&cAllocator);
-	filePath.Append("/Texture.shaderobj");
+	filePath.Append(INSTANCE_COUNT > 1 ? "/Instancing.shaderobj" : "/Texture.shaderobj");
 	string fileContents = io::ReadFile(&cAllocator, filePath.buffer);
 	filePath.deinit();
 
@@ -49,8 +54,9 @@ void Initialize()
 		return;
 	}
 
-	collections::Array<AstralCanvas::VertexDeclaration*> vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.asAllocator, 1);
+	collections::Array<AstralCanvas::VertexDeclaration*> vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.asAllocator, 2);
 	vertexDeclsUsed.data[0] = AstralCanvas::GetVertexPositionColorTextureDecl();
+	vertexDeclsUsed.data[1] = AstralCanvas::GetInstanceDataMatrixDecl();
 
 	pipeline = AstralCanvas::RenderPipeline(
 		&resourcesArena.asAllocator,
@@ -102,16 +108,39 @@ void Initialize()
 	indices[5] = 2;
 	ib.SetData((u8*)indices, sizeof(u16) * 6);
 
+	//instancing test
+	if (INSTANCE_COUNT > 1)
+	{
+		srand(time(NULL));
+
+		instanceBuffer = AstralCanvas::InstanceBuffer(AstralCanvas::GetInstanceDataMatrixDecl(), INSTANCE_COUNT);
+		Maths::Matrix4x4 *matrices = (Maths::Matrix4x4*)malloc(sizeof(Maths::Matrix4x4) * INSTANCE_COUNT);
+		for (usize i = 0; i < INSTANCE_COUNT; i++)
+		{
+			float randFloatX = (float)rand() / (float)RAND_MAX;
+			float randFloatY = (float)rand() / (float)RAND_MAX;
+			matrices[i] = Maths::Matrix4x4::CreateTranslation(Maths::Lerp(1024.0f * -0.5f, 1024.0f * 0.5f, randFloatX), Maths::Lerp(768.0f * -0.5f, 768.0f * 0.5f, randFloatY), 0.0f);
+		}
+		instanceBuffer.SetData(matrices, INSTANCE_COUNT);
+		free(matrices);
+	}
+
 	renderProgram = AstralCanvas::RenderProgram(&resourcesArena.asAllocator);
 	i32 color = renderProgram.AddAttachment(AstralCanvas::ImageFormat_BackbufferFormat, true, false, AstralCanvas::RenderPassOutput_ToWindow);
-	//i32 depth = renderProgram.AddAttachment(AstralCanvas::ImageFormat_Depth32, false, true, AstralCanvas::RenderPassOutput_ToWindow);
-	renderProgram.AddRenderPass(&resourcesArena.asAllocator, color, -1);
+	i32 depth = renderProgram.AddAttachment(AstralCanvas::ImageFormat_Depth32, false, true, AstralCanvas::RenderPassOutput_ToWindow);
+	renderProgram.AddRenderPass(&resourcesArena.asAllocator, color, depth);
 
 	renderProgram.Construct();
 }
 void Deinitialize()
 {
 	tbh.deinit();
+
+	//test
+	if (INSTANCE_COUNT > 1)
+	{
+		instanceBuffer.deinit();
+	}
 
 	ib.deinit();
 
@@ -128,6 +157,10 @@ float x = 0.0f;
 float y = 0.0f;
 void Update(float deltaTime)
 {
+	if (INSTANCE_COUNT > 1)
+	{
+		return;
+	}
 	if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_D))
 	{
 		x += deltaTime * 128.0f;
@@ -163,6 +196,7 @@ void Draw(float time)
 	app->graphicsDevice.UseRenderPipeline(&pipeline);
 
 	app->graphicsDevice.SetVertexBuffer(&vb, 0);
+	app->graphicsDevice.SetVertexBuffer(&instanceBuffer, 1);
 	app->graphicsDevice.SetIndexBuffer(&ib);
 
 	WVP matrices = WVP(Maths::Matrix4x4::CreateTranslation(x, y, 0.0f) * Maths::Matrix4x4::CreateScale(2.0f, 2.0f, 2.0f), Maths::Matrix4x4::Identity(), projMatrix);
@@ -170,7 +204,7 @@ void Draw(float time)
 	app->graphicsDevice.SetShaderVariableSampler("samplerState", AstralCanvas::SamplerGetPointClamp());
 	app->graphicsDevice.SetShaderVariableTexture("inputTexture", &tbh);
 
-    app->graphicsDevice.DrawIndexedPrimitives(6, 1);
+    app->graphicsDevice.DrawIndexedPrimitives(6, INSTANCE_COUNT);
 
 	app->graphicsDevice.EndRenderProgram();
 
@@ -185,7 +219,7 @@ i32 main(i32 argc, const char** argv)
 	exeLocation = path::GetDirectory(&resourcesArena.asAllocator, exeLocation);
 
 	string appName = string(&cAllocator, "test");
-	string engineName = string(&cAllocator, "AstralGametech");
+	string engineName = string(&cAllocator, "Astral Gametech");
 	AstralCanvas::Application* appPtr = AstralCanvas::ApplicationInit(&cAllocator, appName, engineName, 0, 0, 60.0f);
 	appPtr->AddWindow(1024, 768, -1, true);
 	appPtr->Run(&Update, &Draw, &Initialize, &Deinitialize);

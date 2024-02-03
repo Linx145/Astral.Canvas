@@ -52,4 +52,5 @@ namespace AstralCanvas
     VertexDeclaration *GetVertexPositionColorTextureDecl();
     VertexDeclaration *GetVertexPositionTextureColorDecl();
     VertexDeclaration *GetVertexPositionNormalTextureDecl();
+    VertexDeclaration *GetInstanceDataMatrixDecl();
 }
