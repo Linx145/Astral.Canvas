@@ -7,6 +7,10 @@
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
 #endif
 
+#ifdef ASTRALCANVAS_METAL
+#include "Graphics/Metal/MetalImplementations.h"
+#endif
+
 namespace AstralCanvas
 {
     IAllocator dynamicProgramCacheAllocator = {};
@@ -21,6 +25,7 @@ namespace AstralCanvas
     }
     RenderProgram::RenderProgram(IAllocator *allocator)
     {
+        this->allocator = allocator;
         this->attachments = collections::vector<RenderProgramImageAttachment>(allocator);
         this->renderPasses = collections::vector<RenderPass>(allocator);
     }
@@ -244,8 +249,12 @@ namespace AstralCanvas
             }
             #endif
             #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
             {
-                
+                if (!AstralCanvasMetal_CreateRenderProgram(this))
+                {
+                    THROW_ERR("Failed to create metal render program!");
+                }
                 break;
             }
             #endif
@@ -272,6 +281,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_DestroyRenderProgram(this);
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: RenderProgram deinit");
                 break;

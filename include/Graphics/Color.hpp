@@ -2,7 +2,7 @@
 #include "Linxc.h"
 #include "Maths/Vec4.hpp"
 
-#define ONE_OVER_255 1.0f / 255.0f;
+#define ONE_OVER_255 1.0f / 255.0f
 namespace AstralCanvas
 {
     struct Color

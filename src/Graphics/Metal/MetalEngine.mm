@@ -22,4 +22,27 @@ bool AstralCanvasMetal_Initialize(IAllocator *allocator, AstralCanvas::Window* w
     nswindow.contentView.layer = swapchain;
     nswindow.contentView.wantsLayer = YES;
 }
+void AstralCanvasMetal_BeginDraw()
+{
+    CAMetalLayer *layer = AstralCanvasMetal_GetSwapchain();
+    
+    id<CAMetalDrawable> currentSwapchainSurface = [layer nextDrawable];
+    //id<MTLTexture> currentSwapchainTexture = currentSwapchainSurface.texture;
+    
+    AstralCanvasMetal_SetCurrentSwapchainTexture(currentSwapchainSurface);
+
+    id<MTLCommandQueue> mainCmdQueue = AstralCanvasMetal_GetMainCmdQueue();
+    id<MTLCommandBuffer> mainCmdBuffer = [mainCmdQueue commandBuffer];
+
+    AstralCanvasMetal_SetMainCmdBuffer(mainCmdBuffer);
+}
+void AstralCanvasMetal_EndDraw()
+{
+    id<MTLCommandBuffer> mainCmdBuffer = AstralCanvasMetal_GetMainCmdBuffer();
+    id<CAMetalDrawable> surface = AstralCanvasMetal_GetCurrentSwapchainTexture();
+    
+    [mainCmdBuffer presentDrawable:surface];
+    [mainCmdBuffer commit];
+    [mainCmdBuffer release];
+}
 #endif

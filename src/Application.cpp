@@ -122,6 +122,13 @@ namespace AstralCanvas
 						break;
 					}
 					#endif
+#ifdef ASTRALCANVAS_METAL
+                    case AstralCanvas::Backend_Metal:
+                    {
+                        AstralCanvasMetal_BeginDraw();
+                        break;
+                    }
+#endif
 					default:
 						break;
 				}
@@ -141,6 +148,13 @@ namespace AstralCanvas
 						break;
 					}
 					#endif
+#ifdef ASTRALCANVAS_METAL
+                    case AstralCanvas::Backend_Metal:
+                    {
+                        AstralCanvasMetal_EndDraw();
+                        break;
+                    }
+#endif
 					default:
 						break;
 				}

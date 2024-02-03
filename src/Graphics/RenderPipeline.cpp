@@ -8,6 +8,10 @@
 #include "Graphics/Vulkan/VulkanEnumConverters.hpp"
 #endif
 
+#ifdef ASTRALCANVAS_METAL
+#include "Graphics/Metal/MetalImplementations.h"
+#endif
+
 namespace AstralCanvas
 {
     RenderPipeline::RenderPipeline()
@@ -257,6 +261,16 @@ namespace AstralCanvas
                 return result;
             }
             #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                void *handle = AstralCanvasMetal_CreateRenderPipeline(this, renderProgram, renderPassToUse);
+                
+                zoneToPipelineInstance.Add(bindZone, handle);
+                
+                return handle;
+            }
+            #endif
             default:
                 THROW_ERR("Unimplemented backend: RenderPipeline GetOrCreateFor");
                 break;
@@ -286,6 +300,23 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                for (usize i = 0; i < this->zoneToPipelineInstance.bucketsCount; i++)
+                {
+                    if (this->zoneToPipelineInstance.buckets[i].initialized)
+                    {
+                        for (usize j = 0; j < this->zoneToPipelineInstance.buckets[i].entries.count; j++)
+                        {
+                            void* mtlPipeline = (void*)this->zoneToPipelineInstance.buckets[i].entries.ptr[j].value;
+                            AstralCanvasMetal_DestroyRenderPipeline(mtlPipeline);
+                        }
+                    }
+                }
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: RenderPipeline deinit");
                 break;

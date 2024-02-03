@@ -16,6 +16,8 @@ namespace AstralCanvas
         u32 currentRenderPass;
         RenderTarget *currentRenderTarget;
         RenderPipeline *currentRenderPipeline;
+        
+        void* currentCommandEncoderInstance;
 
         Maths::Rectangle Viewport;
         Maths::Rectangle ClipArea;

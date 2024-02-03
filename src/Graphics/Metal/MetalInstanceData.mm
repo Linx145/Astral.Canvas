@@ -3,7 +3,9 @@
 
 id<MTLDevice> AstralCanvasMetal_CurrentGPU;
 id<MTLCommandQueue> AstralCanvasMetal_MainCmdQueue;
+id<MTLCommandBuffer> AstralCanvasMetal_MainCmdBuffer;
 CAMetalLayer *AstralCanvasMetal_Swapchain;
+id<CAMetalDrawable> AstralCanvasMetal_CurrentSwapchainTexture;
 
 id<MTLDevice> AstralCanvasMetal_GetCurrentGPU()
 {
@@ -30,5 +32,23 @@ CAMetalLayer *AstralCanvasMetal_GetSwapchain()
 void AstralCanvasMetal_SetSwapchain(CAMetalLayer *swapchain)
 {
     AstralCanvasMetal_Swapchain = swapchain;
+}
+
+id<CAMetalDrawable> AstralCanvasMetal_GetCurrentSwapchainTexture()
+{
+    return AstralCanvasMetal_CurrentSwapchainTexture;
+}
+void AstralCanvasMetal_SetCurrentSwapchainTexture(id<CAMetalDrawable> texture)
+{
+    AstralCanvasMetal_CurrentSwapchainTexture = texture;
+}
+
+id<MTLCommandBuffer> AstralCanvasMetal_GetMainCmdBuffer()
+{
+    return AstralCanvasMetal_MainCmdBuffer;
+}
+void AstralCanvasMetal_SetMainCmdBuffer(id<MTLCommandBuffer> buffer)
+{
+    AstralCanvasMetal_MainCmdBuffer = buffer;
 }
 #endif

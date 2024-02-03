@@ -2,7 +2,34 @@
 #ifdef MACOS
 #include "Linxc.h"
 #include "string.hpp"
+#include "Graphics/RenderProgram.hpp"
+#include "Graphics/RenderTarget.hpp"
+#include "Graphics/RenderPipeline.hpp"
+#include "Graphics/VertexBuffer.hpp"
+#include "Graphics/IndexBuffer.hpp"
+#include "Graphics/Color.hpp"
+#include "Maths/Rectangle.hpp"
 
 void AstralCanvasMetal_DestroyShaderProgram(void* vertex, void* fragment);
 bool AstralCanvasMetal_CreateShaderProgram(string vertexSource, string fragmentSource, void** vertexOut, void** fragmentOut);
+
+bool AstralCanvasMetal_CreateRenderProgram(AstralCanvas::RenderProgram *program);
+void AstralCanvasMetal_DestroyRenderProgram(AstralCanvas::RenderProgram *program);
+
+void* AstralCanvasMetal_StartRenderProgram(AstralCanvas::RenderProgram *program, AstralCanvas::RenderTarget *target, u32 currentRenderPass, AstralCanvas::Color color);
+void AstralCanvasMetal_EndRenderProgram(void* encoder);
+
+void *AstralCanvasMetal_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPass);
+void AstralCanvasMetal_DestroyRenderPipeline(void *pipeline);
+void AstralCanvasMetal_UseRenderPipeline(void *commandEncoder, AstralCanvas::RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse, Maths::Rectangle viewport, Maths::Rectangle clipArea);
+
+void AstralCanvasMetal_CreateVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer, void* verticesData, usize count);
+void AstralCanvasMetal_SetVertexBuffer(void *commandEncoder, AstralCanvas::VertexBuffer *vertexBuffer, u32 bindingPoint);
+void AstralCanvasMetal_DestroyVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer);
+
+void AstralCanvasMetal_CreateIndexBuffer(AstralCanvas::IndexBuffer *indexBuffer, void* indicesData, usize count);
+void AstralCanvasMetal_SetIndexBuffer(void *commandEncoder, AstralCanvas::IndexBuffer *indexBuffer);
+void AstralCanvasMetal_DestroyIndexBuffer(AstralCanvas::IndexBuffer *indexBuffer);
+
+void AstralCanvasMetal_DrawIndexedPrimitives(void *currentCommandEncoderInstance, u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance);
 #endif

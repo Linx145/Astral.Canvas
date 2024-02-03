@@ -1,5 +1,5 @@
-#include <Application.hpp>
-#include <allocators.hpp>
+#include "Application.hpp"
+#include "allocators.hpp"
 #include "Maths/All.h"
 #include "ArenaAllocator.hpp"
 #include "Json.hpp"
@@ -38,10 +38,7 @@ struct WVP
 };
 void Initialize()
 {
-	#ifdef MACOS
-	return;
-	#endif
-	string filePath = exeLocation.Clone(&cAllocator);
+	/*string filePath = exeLocation.Clone(&cAllocator);
 	filePath.Append("/Triangle.shaderobj");
 	string fileContents = io::ReadFile(&cAllocator, filePath.buffer);
 	filePath.deinit();
@@ -103,7 +100,7 @@ void Initialize()
 	indices[3] = 3;
 	indices[4] = 0;
 	indices[5] = 2;
-	ib.SetData((u8*)indices, sizeof(u16) * 6);
+	ib.SetData((u8*)indices, sizeof(u16) * 6);*/
 
 	renderProgram = AstralCanvas::RenderProgram(&resourcesArena.asAllocator);
 	i32 color = renderProgram.AddAttachment(AstralCanvas::ImageFormat_BackbufferFormat, true, false, AstralCanvas::RenderPassOutput_ToWindow);
@@ -114,21 +111,19 @@ void Initialize()
 }
 void Deinitialize()
 {
-	#ifdef MACOS
-	return;
-	#endif
-	tbh.deinit();
+	/*tbh.deinit();
 
 	ib.deinit();
 
 	vb.deinit();
 
-	renderProgram.deinit();
-
 	pipeline.deinit();
 
-	shader.deinit();
+	shader.deinit();*/
+
+	renderProgram.deinit();
 }
+float timer = 0.0f;
 float x = 0.0f;
 float y = 0.0f;
 void Update(float deltaTime)
@@ -149,33 +144,36 @@ void Update(float deltaTime)
 	{
 		y += deltaTime * 5.0f;
 	}
+	//timer += deltaTime;
+	if (timer >= 1.0f)
+	{
+		printf("fps: %f\n", 1.0f / deltaTime);
+		timer = 0.0f;
+	}
 }
 void Draw(float time)
 {
-	#ifdef MACOS
-	return;
-	#endif
 	//CreateRotationZ(Degree2Radian * 90.0f)
-	Maths::Matrix4x4 projMatrix = Maths::Matrix4x4::CreateOrthographic(40.0f, 22.5f, 0.0f, 1.0f);
+	//Maths::Matrix4x4 projMatrix = Maths::Matrix4x4::CreateOrthographic(40.0f, 22.5f, 0.0f, 1.0f);
 
 	AstralCanvas::Application* app = AstralCanvas::GetAppInstance();
 	app->graphicsDevice.StartRenderProgram(&renderProgram, COLOR_BLACK);
 
-	app->graphicsDevice.UseRenderPipeline(&pipeline);
+	//app->graphicsDevice.UseRenderPipeline(&pipeline);
 
-	app->graphicsDevice.SetVertexBuffer(&vb, 0);
-	app->graphicsDevice.SetIndexBuffer(&ib);
+	// app->graphicsDevice.SetVertexBuffer(&vb, 0);
+	// app->graphicsDevice.SetIndexBuffer(&ib);
 
-	WVP matrices = WVP(Maths::Matrix4x4::CreateTranslation(x, y, 0.0f), Maths::Matrix4x4::Identity(), projMatrix);
-	app->graphicsDevice.SetShaderVariable("Matrices", &matrices, sizeof(WVP));
-	app->graphicsDevice.SetShaderVariableSampler("samplerState", AstralCanvas::SamplerGetPointClamp());
-	app->graphicsDevice.SetShaderVariableTexture("inputTexture", &tbh);
+	// WVP matrices = WVP(Maths::Matrix4x4::CreateTranslation(x, y, 0.0f), Maths::Matrix4x4::Identity(), projMatrix);
+	// app->graphicsDevice.SetShaderVariable("Matrices", &matrices, sizeof(WVP));
+	// app->graphicsDevice.SetShaderVariableSampler("samplerState", AstralCanvas::SamplerGetPointClamp());
+	// app->graphicsDevice.SetShaderVariableTexture("inputTexture", &tbh);
 
-	app->graphicsDevice.DrawIndexedPrimitives(6, 1);
+	// app->graphicsDevice.DrawIndexedPrimitives(6, 1);
 
 	app->graphicsDevice.EndRenderProgram();
 
-	shader.descriptorForThisDrawCall = 0;
+	//shader.descriptorForThisDrawCall = 0;
 }
 
 i32 main(i32 argc, const char** argv)
@@ -187,8 +185,8 @@ i32 main(i32 argc, const char** argv)
 
 	string appName = string(&cAllocator, "test");
 	string engineName = string(&cAllocator, "AstralGametech");
-	AstralCanvas::Application* appPtr = AstralCanvas::ApplicationInit(&cAllocator, appName, engineName, 0, 0, 0.0f);
-	appPtr->AddWindow(1920, 1080, -1, true);
+	AstralCanvas::Application* appPtr = AstralCanvas::ApplicationInit(&cAllocator, appName, engineName, 0, 0, 60.0f);
+	appPtr->AddWindow(1024, 768, -1, true);
 	appPtr->Run(&Update, &Draw, &Initialize, &Deinitialize);
 
 	resourcesArena.deinit();

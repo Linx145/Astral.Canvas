@@ -9,4 +9,6 @@
 #include "GLFW/glfw3native.h"
 
 bool AstralCanvasMetal_Initialize(IAllocator *allocator, AstralCanvas::Window* window);
+void AstralCanvasMetal_BeginDraw();
+void AstralCanvasMetal_EndDraw();
 #endif

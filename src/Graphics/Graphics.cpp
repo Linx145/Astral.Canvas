@@ -7,12 +7,18 @@
 #include "Graphics/Vulkan/VulkanHelpers.hpp"
 #endif
 
+#ifdef ASTRALCANVAS_METAL
+#include "Graphics/Metal/MetalImplementations.h"
+#include "ErrorHandling.hpp"
+#endif
+
 namespace AstralCanvas
 {
     usize bindBufferNoOffsets = 0;
 
     Graphics::Graphics()
     {
+        this->currentCommandEncoderInstance = NULL;
         this->currentRenderPass = 0;
         this->currentRenderPipeline = NULL;
         this->currentRenderProgram = NULL;
@@ -31,6 +37,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_SetVertexBuffer(this->currentCommandEncoderInstance, vb, bindingPoint);
+                break;
+            }
+#endif
             default:
                 break;
         }
@@ -48,6 +61,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_SetIndexBuffer(this->currentCommandEncoderInstance, indexBuffer);
+                break;
+            }
+#endif
             default:
                 break;
         }
@@ -113,6 +133,14 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                void* cmdBufferEncoder = AstralCanvasMetal_StartRenderProgram(currentRenderProgram, currentRenderTarget, currentRenderPass, clearColor);
+                this->currentCommandEncoderInstance = cmdBufferEncoder;
+                break;
+            }
+#endif
             default:
                 break;
         }
@@ -132,10 +160,19 @@ namespace AstralCanvas
                     break;
                 }
                 #endif
+#ifdef ASTRALCANVAS_METAL
+                case Backend_Metal:
+                {
+                    if (currentCommandEncoderInstance != NULL)
+                        AstralCanvasMetal_EndRenderProgram(this->currentCommandEncoderInstance);
+                    break;
+                }
+#endif
                 default:
                     break;
             }
         }
+        this->currentRenderPass = 0;
         this->currentRenderProgram = NULL;
     }
     void Graphics::UseRenderPipeline(RenderPipeline *pipeline)
@@ -172,6 +209,13 @@ namespace AstralCanvas
                     break;
                 }
                 #endif
+#ifdef ASTRALCANVAS_METAL
+                case Backend_Metal:
+                {
+                    AstralCanvasMetal_UseRenderPipeline(this->currentCommandEncoderInstance, pipeline, this->currentRenderProgram, this->currentRenderPass, this->Viewport, this->ClipArea);
+                    break;
+                }
+#endif
                 default:
                     break;
             }
@@ -291,6 +335,13 @@ namespace AstralCanvas
                     break;
                 }
                 #endif
+#ifdef ASTRALCANVAS_METAL
+                case Backend_Metal:
+                {
+                    AstralCanvasMetal_DrawIndexedPrimitives(this->currentCommandEncoderInstance, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+                    break;
+                }
+#endif
                 default:
                     break;
             }

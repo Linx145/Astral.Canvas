@@ -6,6 +6,10 @@
 #include "Graphics/Vulkan/vk_mem_alloc.h"
 #endif
 
+#ifdef ASTRALCANVAS_METAL
+#include "Graphics/Metal/MetalImplementations.h"
+#endif
+
 namespace AstralCanvas
 {
     VertexBuffer::VertexBuffer()
@@ -68,6 +72,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_CreateVertexBuffer(this, verticesData, count);
+                break;
+            }
+            #endif
             default:
                 break;
         }
@@ -76,32 +87,39 @@ namespace AstralCanvas
     {
         switch (GetActiveBackend())
         {
-        #ifdef ASTRALCANVAS_VULKAN
-        case Backend_Vulkan:
-        {
-            usize lengthOfBytes = this->vertexCount * this->vertexType->size;
-            AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
-            VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, lengthOfBytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-            MemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_GPU_TO_CPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
-
-            AstralCanvasVk_CopyBufferToBuffer(gpu, (VkBuffer)this->handle, stagingBuffer, lengthOfBytes);
-
-            void *result = allocator->Allocate(lengthOfBytes);
-            memcpy(result, stagingMemory.vkAllocationInfo.pMappedData, lengthOfBytes);
-
-            vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
-            vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
-
-            if (dataLength != NULL)
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
             {
-                *dataLength = lengthOfBytes;
+                usize lengthOfBytes = this->vertexCount * this->vertexType->size;
+                AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+                VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, lengthOfBytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+                MemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_GPU_TO_CPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+
+                AstralCanvasVk_CopyBufferToBuffer(gpu, (VkBuffer)this->handle, stagingBuffer, lengthOfBytes);
+
+                void *result = allocator->Allocate(lengthOfBytes);
+                memcpy(result, stagingMemory.vkAllocationInfo.pMappedData, lengthOfBytes);
+
+                vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
+                vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
+
+                if (dataLength != NULL)
+                {
+                    *dataLength = lengthOfBytes;
+                }
+                return result;
             }
-            return result;
+            #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                break;
+            }
+            #endif
+            default:
+                break;
         }
-        #endif
-        default:
-            break;
-        }
+        return NULL;
     }
     void VertexBuffer::deinit()
     {
@@ -116,6 +134,13 @@ namespace AstralCanvas
 
                 vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->memoryAllocation.vkAllocation);
                 printf("Freed vertex buffer memory\n");
+                break;
+            }
+            #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_DestroyVertexBuffer(this);
                 break;
             }
             #endif
