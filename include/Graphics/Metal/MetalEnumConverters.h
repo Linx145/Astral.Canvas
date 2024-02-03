@@ -41,6 +41,43 @@ inline MTLPixelFormat AstralCanvasMetal_FromImageFormat(AstralCanvas::ImageForma
     }
 }
 
+inline AstralCanvas::ImageFormat AstralCanvasMetal_ToImageFormat(MTLPixelFormat format)
+{
+    switch (format)
+    {
+        case MTLPixelFormatInvalid:
+            return AstralCanvas::ImageFormat::ImageFormat_Undefined;
+        case MTLPixelFormatBGRA8Unorm_sRGB:
+            return AstralCanvas::ImageFormat::ImageFormat_B8G8R8A8Srgb;
+        case MTLPixelFormatBGRA8Unorm:
+            return AstralCanvas::ImageFormat::ImageFormat_B8G8R8A8Unorm;
+
+        case MTLPixelFormatRGBA8Snorm:
+            return AstralCanvas::ImageFormat::ImageFormat_R8G8B8A8SNorm;
+        case MTLPixelFormatRGBA8Unorm_sRGB:
+            return AstralCanvas::ImageFormat::ImageFormat_R8G8B8A8Srgb;
+        case MTLPixelFormatRGBA8Unorm:
+            return AstralCanvas::ImageFormat::ImageFormat_R8G8B8A8Unorm;
+
+        case MTLPixelFormatRGBA16Float:
+            return AstralCanvas::ImageFormat::ImageFormat_HalfVector4;
+        case MTLPixelFormatR32Uint:
+            return AstralCanvas::ImageFormat::ImageFormat_R32Uint;
+        case MTLPixelFormatRGBA32Float:
+            return AstralCanvas::ImageFormat::ImageFormat_Vector4;
+
+        case MTLPixelFormatDepth16Unorm:
+            return AstralCanvas::ImageFormat::ImageFormat_Depth16;
+        case MTLPixelFormatDepth24Unorm_Stencil8:
+            return AstralCanvas::ImageFormat::ImageFormat_Depth24Stencil8;
+        case MTLPixelFormatDepth32Float:
+            return AstralCanvas::ImageFormat::ImageFormat_Depth32;
+        
+        default:
+            return AstralCanvas::ImageFormat::ImageFormat_Undefined;
+    }
+}
+
 inline MTLVertexFormat AstralCanvasMetal_FromVertexElementFormat(AstralCanvas::VertexElementFormat format)
 {
     switch (format)

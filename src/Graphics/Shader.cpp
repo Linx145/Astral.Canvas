@@ -355,6 +355,8 @@ namespace AstralCanvas
             case Backend_Metal:
             {
                 AstralCanvasMetal_DestroyShaderProgram(this->shaderModule1, this->shaderModule2);
+                this->shaderModule1 = NULL;
+                this->shaderModule2 = NULL;
                 break;
             }
 #endif
@@ -516,8 +518,8 @@ namespace AstralCanvas
                         ParseShaderVariables(vertexElement, &result->shaderVariables, InputAccessedBy_Vertex);
                         ParseShaderVariables(fragmentElement, &result->shaderVariables, InputAccessedBy_Fragment);
                         
-                        JsonElement *vertexMetal = vertexElement->GetProperty("mtl");
-                        JsonElement *fragmentMetal = fragmentElement->GetProperty("mtl");
+                        JsonElement *vertexMetal = vertexElement->GetProperty("msl");
+                        JsonElement *fragmentMetal = fragmentElement->GetProperty("msl");
                         
                         string vertexMetalString = vertexMetal->GetString(&localArena.asAllocator);
                         string fragmentMetalString = fragmentMetal->GetString(&localArena.asAllocator);
@@ -526,10 +528,9 @@ namespace AstralCanvas
                         {
                             THROW_ERR("Failed to create metal shader program!");
                         }
-                        
                     }
                 }
-                break;
+                return 0;
             }
 #endif
             default:

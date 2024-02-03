@@ -6,6 +6,10 @@
 #include "Graphics/Vulkan/vk_mem_alloc.h"
 #endif
 
+#ifdef ASTRALCANVAS_METAL
+#include "Graphics/Metal/MetalImplementations.h"
+#endif
+
 namespace AstralCanvas
 {
     IndexBuffer::IndexBuffer()
@@ -69,6 +73,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_CreateIndexBuffer(this, bytes, lengthOfBytes);
+                break;
+            }
+#endif
             default:
                 break;
         }
@@ -85,10 +96,16 @@ namespace AstralCanvas
                 vkDestroyBuffer(gpu->logicalDevice, (VkBuffer)this->handle, NULL);
 
                 vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->memoryAllocation.vkAllocation);
-                printf("Freed index buffer memory\n");
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_DestroyIndexBuffer(this);
+                break;
+            }
+#endif
             default:
                 break;
         }

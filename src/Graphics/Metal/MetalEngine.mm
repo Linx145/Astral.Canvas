@@ -21,6 +21,8 @@ bool AstralCanvasMetal_Initialize(IAllocator *allocator, AstralCanvas::Window* w
     NSWindow *nswindow = glfwGetCocoaWindow(window->handle);
     nswindow.contentView.layer = swapchain;
     nswindow.contentView.wantsLayer = YES;
+    
+    return true;
 }
 void AstralCanvasMetal_BeginDraw()
 {

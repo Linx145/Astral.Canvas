@@ -7,8 +7,12 @@
 #include "ErrorHandling.hpp"
 #include "Graphics/Metal/MetalEnumConverters.h"
 
-id<MTLBuffer> currentIndexBuffer;
+id<MTLBuffer> currentIndexBuffer = nil;
 
+AstralCanvas::ImageFormat AstralCanvasMetal_GetSwapchainFormat()
+{
+    return AstralCanvasMetal_ToImageFormat(AstralCanvasMetal_GetSwapchain().pixelFormat);
+}
 bool AstralCanvasMetal_CreateRenderProgram(AstralCanvas::RenderProgram *program)
 {
     usize size = sizeof(void*) * program->renderPasses.count;
@@ -94,13 +98,15 @@ void *AstralCanvasMetal_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipel
     pipelineDescriptor.vertexFunction = (id<MTLFunction>)pipeline->shader->shaderModule1;
     pipelineDescriptor.fragmentFunction = (id<MTLFunction>)pipeline->shader->shaderModule2;
 
-    AstralCanvas::RenderPass *pass = renderProgram->renderPasses.ptr[renderPass];
+    AstralCanvas::RenderPass *pass = &renderProgram->renderPasses.ptr[renderPass];
 
     pipelineDescriptor.colorAttachments[0].pixelFormat = AstralCanvasMetal_FromImageFormat(renderProgram->attachments.ptr[pass->colorAttachmentIndices.data[0]].imageFormat);
+    
     if (pass->depthAttachmentIndex != -1)
     {
         pipelineDescriptor.depthAttachmentPixelFormat = AstralCanvasMetal_FromImageFormat(renderProgram->attachments.ptr[pass->depthAttachmentIndex].imageFormat);
     }
+    else pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
     
     usize attribCount = 0;
     for (usize i = 0; i < pipeline->vertexDeclarations.length; i++)
@@ -135,9 +141,11 @@ void *AstralCanvasMetal_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipel
 void AstralCanvasMetal_UseRenderPipeline(void *commandEncoder, AstralCanvas::RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse, Maths::Rectangle viewport, Maths::Rectangle clipArea)
 {
     id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)commandEncoder;
-    id<MTLRenderPipelineState> pipelineDescriptor = (id<MTLRenderPipelineState>)pipeline->GetOrCreateFor(renderProgram, renderPassToUse);
-    
-    MTLViewport metalViewport;
+    id<MTLRenderPipelineState> pipelineState = (id<MTLRenderPipelineState>)pipeline->GetOrCreateFor(renderProgram, renderPassToUse);
+
+    [encoder setRenderPipelineState:pipelineState];
+
+    /*MTLViewport metalViewport;
     metalViewport.width = viewport.Width;
     metalViewport.height = viewport.Height;
     metalViewport.originX = viewport.X;
@@ -152,7 +160,7 @@ void AstralCanvasMetal_UseRenderPipeline(void *commandEncoder, AstralCanvas::Ren
     metalScissorRect.x = clipArea.X;
     metalScissorRect.y = clipArea.Y;
     
-    [encoder setScissorRect:metalScissorRect];
+    [encoder setScissorRect:metalScissorRect];*/
 }
 void AstralCanvasMetal_DestroyRenderPipeline(void *pipeline)
 {
@@ -170,12 +178,12 @@ void AstralCanvasMetal_CreateVertexBuffer(AstralCanvas::VertexBuffer *vertexBuff
     id<MTLBuffer> buffer = [gpu newBufferWithBytes:verticesData length:count options:MTLResourceOptionCPUCacheModeDefault];
     vertexBuffer->handle = buffer;
 }
-void AstralCanvasMetal_SetVertexBuffer(void *commandEncoder, AstralCanvas::VertexBuffer *vertexBuffer, u32 bindingPoint)
+void AstralCanvasMetal_SetVertexBuffer(void *commandEncoder, const AstralCanvas::VertexBuffer *vertexBuffer, u32 bindingPoint)
 {
     id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)commandEncoder;
     id<MTLBuffer> buffer = (id<MTLBuffer>)vertexBuffer->handle;
     
-    [encoder setVertexBuffer:buffer offset:offset atIndex:bindingPoint];
+    [encoder setVertexBuffer:buffer offset:0 atIndex:bindingPoint];
 }
 void AstralCanvasMetal_DestroyVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer)
 {
@@ -196,9 +204,8 @@ void AstralCanvasMetal_CreateIndexBuffer(AstralCanvas::IndexBuffer *indexBuffer,
     id<MTLBuffer> buffer = [gpu newBufferWithBytes:indicesData length:count options:MTLResourceOptionCPUCacheModeDefault];
     indexBuffer->handle = buffer;
 }
-void AstralCanvasMetal_SetIndexBuffer(void *commandEncoder, AstralCanvas::IndexBuffer *indexBuffer)
+void AstralCanvasMetal_SetIndexBuffer(void *commandEncoder, const AstralCanvas::IndexBuffer *indexBuffer)
 {
-    id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)commandEncoder;
     id<MTLBuffer> buffer = (id<MTLBuffer>)indexBuffer->handle;
     
     currentIndexBuffer = buffer;
@@ -237,7 +244,7 @@ bool AstralCanvasMetal_CreateShaderProgram(string vertexSource, string fragmentS
     id<MTLLibrary> vertexShader = [gpu newLibraryWithSource:vertexNSString options:NULL error:NULL];
     if (vertexShader != NULL)
     {
-        vertexFunction = [vertexShader newFunctionWithName:@"main"];
+        vertexFunction = [vertexShader newFunctionWithName:@"main0"];
         [vertexShader release];
     }
     else 
@@ -249,7 +256,7 @@ bool AstralCanvasMetal_CreateShaderProgram(string vertexSource, string fragmentS
     id<MTLLibrary> fragmentShader = [gpu newLibraryWithSource:fragmentNSString options:NULL error:NULL];
     if (fragmentShader != NULL)
     {
-        fragmentFunction = [fragmentShader newFunctionWithName:@"main"];
+        fragmentFunction = [fragmentShader newFunctionWithName:@"main0"];
         [fragmentShader release];
     }
     else
@@ -262,8 +269,8 @@ bool AstralCanvasMetal_CreateShaderProgram(string vertexSource, string fragmentS
     [vertexNSString release];
     [fragmentNSString release];
     
-    *vertexOut = (void*)vertexShader;
-    *fragmentOut = (void*)fragmentShader;
+    *vertexOut = (void*)vertexFunction;
+    *fragmentOut = (void*)fragmentFunction;
     return true;
 }
 

@@ -10,6 +10,8 @@
 #include "Graphics/Color.hpp"
 #include "Maths/Rectangle.hpp"
 
+AstralCanvas::ImageFormat AstralCanvasMetal_GetSwapchainFormat();
+
 void AstralCanvasMetal_DestroyShaderProgram(void* vertex, void* fragment);
 bool AstralCanvasMetal_CreateShaderProgram(string vertexSource, string fragmentSource, void** vertexOut, void** fragmentOut);
 
@@ -24,11 +26,11 @@ void AstralCanvasMetal_DestroyRenderPipeline(void *pipeline);
 void AstralCanvasMetal_UseRenderPipeline(void *commandEncoder, AstralCanvas::RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse, Maths::Rectangle viewport, Maths::Rectangle clipArea);
 
 void AstralCanvasMetal_CreateVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer, void* verticesData, usize count);
-void AstralCanvasMetal_SetVertexBuffer(void *commandEncoder, AstralCanvas::VertexBuffer *vertexBuffer, u32 bindingPoint);
+void AstralCanvasMetal_SetVertexBuffer(void *commandEncoder, const AstralCanvas::VertexBuffer *vertexBuffer, u32 bindingPoint);
 void AstralCanvasMetal_DestroyVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer);
 
 void AstralCanvasMetal_CreateIndexBuffer(AstralCanvas::IndexBuffer *indexBuffer, void* indicesData, usize count);
-void AstralCanvasMetal_SetIndexBuffer(void *commandEncoder, AstralCanvas::IndexBuffer *indexBuffer);
+void AstralCanvasMetal_SetIndexBuffer(void *commandEncoder, const AstralCanvas::IndexBuffer *indexBuffer);
 void AstralCanvasMetal_DestroyIndexBuffer(AstralCanvas::IndexBuffer *indexBuffer);
 
 void AstralCanvasMetal_DrawIndexedPrimitives(void *currentCommandEncoderInstance, u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance);

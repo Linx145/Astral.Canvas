@@ -47,6 +47,7 @@ namespace AstralCanvas
 #ifdef ASTRALCANVAS_METAL
                 case Backend_Metal:
                 {
+                    imageFormat = AstralCanvasMetal_GetSwapchainFormat();
                     break;
                 }
 #endif
