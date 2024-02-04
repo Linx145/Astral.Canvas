@@ -14,7 +14,7 @@
 
 #include "stdlib.h"
 
-#define INSTANCE_COUNT 1000
+#define INSTANCE_COUNT 1
 
 string exeLocation;
 
@@ -27,6 +27,8 @@ AstralCanvas::IndexBuffer ib;
 AstralCanvas::InstanceBuffer instanceBuffer;
 AstralCanvas::RenderPipeline pipeline;
 AstralCanvas::Texture2D tbh;
+
+Maths::Matrix4x4 *matrices;
 
 struct WVP
 {
@@ -113,8 +115,8 @@ void Initialize()
 	{
 		srand(time(NULL));
 
-		instanceBuffer = AstralCanvas::InstanceBuffer(AstralCanvas::GetInstanceDataMatrixDecl(), INSTANCE_COUNT);
-		Maths::Matrix4x4 *matrices = (Maths::Matrix4x4*)malloc(sizeof(Maths::Matrix4x4) * INSTANCE_COUNT);
+		instanceBuffer = AstralCanvas::InstanceBuffer(AstralCanvas::GetInstanceDataMatrixDecl(), INSTANCE_COUNT, true);
+		matrices = (Maths::Matrix4x4 *)resourcesArena.asAllocator.Allocate(sizeof(Maths::Matrix4x4) * INSTANCE_COUNT);
 		for (usize i = 0; i < INSTANCE_COUNT; i++)
 		{
 			float randFloatX = (float)rand() / (float)RAND_MAX;
@@ -122,7 +124,6 @@ void Initialize()
 			matrices[i] = Maths::Matrix4x4::CreateTranslation(Maths::Lerp(1024.0f * -0.5f, 1024.0f * 0.5f, randFloatX), Maths::Lerp(768.0f * -0.5f, 768.0f * 0.5f, randFloatY), 0.0f);
 		}
 		instanceBuffer.SetData(matrices, INSTANCE_COUNT);
-		free(matrices);
 	}
 
 	renderProgram = AstralCanvas::RenderProgram(&resourcesArena.asAllocator);
@@ -159,6 +160,11 @@ void Update(float deltaTime)
 {
 	if (INSTANCE_COUNT > 1)
 	{
+		for (usize i = 0; i < INSTANCE_COUNT; i++)
+		{
+			matrices[i].M14 += 32.0f * deltaTime;
+		}
+		instanceBuffer.SetData(matrices, INSTANCE_COUNT);
 		return;
 	}
 	if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_D))
@@ -177,7 +183,7 @@ void Update(float deltaTime)
 	{
 		y += deltaTime * 128.0f;
 	}
-	//timer += deltaTime;
+	timer += deltaTime;
 	if (timer >= 1.0f)
 	{
 		printf("fps: %f\n", 1.0f / deltaTime);

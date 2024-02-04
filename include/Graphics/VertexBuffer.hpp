@@ -11,11 +11,12 @@ namespace AstralCanvas
         bool canRead;
         VertexDeclaration *vertexType;
         usize vertexCount;
+        bool isDynamic;
 
         MemoryAllocation memoryAllocation;
 
         VertexBuffer();
-        VertexBuffer(VertexDeclaration *thisVertexType, usize vertexCount, bool canRead = false);
+        VertexBuffer(VertexDeclaration *thisVertexType, usize vertexCount, bool isDynamic = false, bool canRead = false);
 
         void SetData(void* verticesData, usize count);
         void *GetData(IAllocator *allocator, usize* dataLength);
