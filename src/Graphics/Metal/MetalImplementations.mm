@@ -129,32 +129,6 @@ void *AstralCanvasMetal_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipel
         }
         else pipelineDescriptor.vertexDescriptor.layouts[i].stepFunction = MTLVertexStepFunctionPerInstance;
     }
-    /*usize uniformBuffersCount = 0;
-    for (usize i = 0; i < pipeline->shader->shaderVariables.uniforms.capacity; i++)
-    {
-        if (pipeline->shader->shaderVariables.uniforms.ptr[i].variableName.buffer == NULL)
-        {
-            break;
-        }
-        if (pipeline->shader->shaderVariables.uniforms.ptr[i].type == AstralCanvas::ShaderResourceType_Uniform)
-        {
-            pipelineDescriptor.vertexDescriptor.layouts[verticesLength + uniformBuffersCount].stepRate = 0;
-            pipelineDescriptor.vertexDescriptor.layouts[verticesLength + uniformBuffersCount].stepFunction = MTLVertexStepFunctionConstant;
-            pipelineDescriptor.vertexDescriptor.layouts[verticesLength + uniformBuffersCount].stride = pipeline->shader->shaderVariables.uniforms.ptr[i].size;
-            
-            //pipelineDescriptor
-            //pipelineDescriptor.vertexDescriptor.attributes[attribCount].offset
-            for (usize i = 0; i < pipeline->shader->shaderVariables.uniforms.ptr[i].size; i += 16)
-            {
-                pipelineDescriptor.vertexDescriptor.attributes[attribCount].format = MTLVertexFormatFloat4;
-                pipelineDescriptor.vertexDescriptor.attributes[attribCount].offset = verticesOffset + i;
-                pipelineDescriptor.vertexDescriptor.attributes[attribCount].bufferIndex = verticesLength + uniformBuffersCount;
-                attribCount += 1;
-            }
-            
-            uniformBuffersCount += 1;
-        }
-    }*/
     
     pipelineDescriptor.inputPrimitiveTopology = MTLPrimitiveTopologyClassTriangle;
     pipelineDescriptor.rasterizationEnabled = true;
@@ -452,11 +426,11 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
             {
                 if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Vertex) != 0)
                 {
-                    [encoder setVertexBuffer:(id<MTLBuffer>)toMutate->ub.handle offset:0 atIndex:1];//shader->shaderVariables.uniforms.ptr[i].binding];
+                    [encoder setVertexBuffer:(id<MTLBuffer>)toMutate->ub.handle offset:0 atIndex:shader->shaderVariables.uniforms.ptr[i].binding + 1];
                 }
                 if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
                 {
-                    [encoder setFragmentBuffer:(id<MTLBuffer>)toMutate->ub.handle offset:0 atIndex:1];//shader->shaderVariables.uniforms.ptr[i].binding];
+                    [encoder setFragmentBuffer:(id<MTLBuffer>)toMutate->ub.handle offset:0 atIndex:shader->shaderVariables.uniforms.ptr[i].binding + 1];
                 }
                 
                 break;

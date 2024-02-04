@@ -195,6 +195,10 @@ void Draw(float time)
 	//CreateRotationZ(Degree2Radian * 90.0f)
     Maths::Point2 resolution = AstralCanvas::GetAppInstance()->windows.ptr[0].resolution;
     Maths::Matrix4x4 projMatrix = Maths::Matrix4x4::CreateOrthographic(resolution.X, resolution.Y, 0.0f, 1.0f);
+	Maths::Matrix4x4 viewMatrix = Maths::Matrix4x4::Identity();
+	#ifdef MACOS
+	viewMatrix = Maths::Matrix4x4::CreateScale(1.0f, -1.0f, 1.0f);
+	#endif
 
 	AstralCanvas::Application* app = AstralCanvas::GetAppInstance();
 	app->graphicsDevice.StartRenderProgram(&renderProgram, AstralCanvas::Color(128, 128, 128));
@@ -202,10 +206,13 @@ void Draw(float time)
 	app->graphicsDevice.UseRenderPipeline(&pipeline);
 
 	app->graphicsDevice.SetVertexBuffer(&vb, 0);
-	app->graphicsDevice.SetVertexBuffer(&instanceBuffer, 1);
+	if (INSTANCE_COUNT > 1)
+	{
+		app->graphicsDevice.SetVertexBuffer(&instanceBuffer, 1);
+	}
 	app->graphicsDevice.SetIndexBuffer(&ib);
 
-	WVP matrices = WVP(Maths::Matrix4x4::CreateTranslation(x, y, 0.0f) * Maths::Matrix4x4::CreateScale(2.0f, 2.0f, 2.0f), Maths::Matrix4x4::Identity(), projMatrix);
+	WVP matrices = WVP(Maths::Matrix4x4::CreateTranslation(x, y, 0.0f) * Maths::Matrix4x4::CreateScale(2.0f, 2.0f, 2.0f), viewMatrix, projMatrix);
 	app->graphicsDevice.SetShaderVariable("Matrices", &matrices, sizeof(WVP));
 	app->graphicsDevice.SetShaderVariableSampler("samplerState", AstralCanvas::SamplerGetPointClamp());
 	app->graphicsDevice.SetShaderVariableTexture("inputTexture", &tbh);
