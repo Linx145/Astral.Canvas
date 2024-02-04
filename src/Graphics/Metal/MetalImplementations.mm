@@ -93,6 +93,10 @@ void AstralCanvasMetal_DestroyRenderProgram(AstralCanvas::RenderProgram *program
 
 void *AstralCanvasMetal_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPass)
 {
+    if (pipeline->shader == NULL || pipeline->shader->shaderModule1 == NULL || pipeline->shader->shaderModule2 == NULL)
+    {
+        THROW_ERR("Pipeline does not have a valid shader");
+    }
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = (id<MTLFunction>)pipeline->shader->shaderModule1;
     pipelineDescriptor.fragmentFunction = (id<MTLFunction>)pipeline->shader->shaderModule2;
@@ -109,12 +113,10 @@ void *AstralCanvasMetal_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipel
     
     usize attribCount = 0;
     usize verticesLength = pipeline->vertexDeclarations.length;
-    usize verticesOffset = 0;
     for (usize i = 0; i < verticesLength; i++)
     {
         for (usize j = 0; j < pipeline->vertexDeclarations.data[i]->elements.count; j++)
         {
-            //printf("Attribute %llu: offset %llu\n", attribCount, pipeline->vertexDeclarations.data[i]->elements.ptr[j].offset);
             pipelineDescriptor.vertexDescriptor.attributes[attribCount].offset = pipeline->vertexDeclarations.data[i]->elements.ptr[j].offset;
             pipelineDescriptor.vertexDescriptor.attributes[attribCount].format = AstralCanvasMetal_FromVertexElementFormat(pipeline->vertexDeclarations.data[i]->elements.ptr[j].format);
             pipelineDescriptor.vertexDescriptor.attributes[attribCount].bufferIndex = i;
@@ -122,7 +124,6 @@ void *AstralCanvasMetal_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipel
         }
         
         pipelineDescriptor.vertexDescriptor.layouts[i].stride = pipeline->vertexDeclarations.data[i]->size;
-        verticesOffset += pipelineDescriptor.vertexDescriptor.layouts[i].stride;
         if (pipeline->vertexDeclarations.data[i]->inputRate == AstralCanvas::VertexInput_PerVertex)
         {
             pipelineDescriptor.vertexDescriptor.layouts[i].stepFunction = MTLVertexStepFunctionPerVertex;
@@ -135,9 +136,18 @@ void *AstralCanvasMetal_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipel
     pipelineDescriptor.rasterSampleCount = 1;
     
     id<MTLDevice> device = AstralCanvasMetal_GetCurrentGPU();
-    id<MTLRenderPipelineState> pipelineState = [device newRenderPipelineStateWithDescriptor:pipelineDescriptor error:NULL];
+    
+    NSError *errors;
+    id<MTLRenderPipelineState> pipelineState = [device newRenderPipelineStateWithDescriptor:pipelineDescriptor error:&errors];
+
 
     [pipelineDescriptor release];
+
+    if (pipelineState == nil)
+    {
+        printf("Error: %s\n", [errors.localizedDescription cStringUsingEncoding:NSUTF8StringEncoding]);
+        THROW_ERR("Failed to create pipeline state");
+    }
     
     return pipelineState;
 }
@@ -363,43 +373,43 @@ void AstralCanvasMetal_DestroySampler(AstralCanvas::SamplerState *sampler)
 
 void AstralCanvasMetal_AddUniformDescriptorSets(AstralCanvas::Shader *shader)
 {
+    
     AstralCanvas::ShaderVariables shaderVariables = shader->shaderVariables;
     //Metal doesnt have descriptor set objects like Vulkan, so just add NULL to fill the buffer up
     shader->descriptorSets.Add(NULL);
     for (usize i = 0; i < shaderVariables.uniforms.capacity; i++)
     {
         AstralCanvas::ShaderResource *resource = &shaderVariables.uniforms.ptr[i];
-        if (resource->variableName.buffer == NULL)
+        if (resource->variableName.buffer != NULL)
         {
-            break;
+            AstralCanvas::ShaderStagingMutableState newMutableState{};
+            switch (resource->type)
+            {
+                case AstralCanvas::ShaderResourceType_Uniform:
+                {
+                    newMutableState.ub = AstralCanvas::UniformBuffer(resource->size);
+                    newMutableState.ownsUniformBuffer = true;
+                    break;
+                }
+                case AstralCanvas::ShaderResourceType_Texture:
+                {
+                    newMutableState.textures = collections::Array<AstralCanvas::Texture2D*>(shader->allocator, fmax(resource->arrayLength, 1));
+                    newMutableState.imageInfos = shader->allocator->Allocate(sizeof(void*) * newMutableState.textures.length);
+                    //newMutableState.imageInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
+                    break;
+                }
+                case AstralCanvas::ShaderResourceType_Sampler:
+                {
+                    newMutableState.samplers = collections::Array<AstralCanvas::SamplerState*>(shader->allocator, fmax(resource->arrayLength, 1));
+                    newMutableState.samplerInfos = shader->allocator->Allocate(sizeof(void*) * newMutableState.samplers.length);
+                    //newMutableState.samplerInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.samplers.length);
+                    break;
+                }
+                default:
+                    break;
+            }
+            shaderVariables.uniforms.ptr[i].stagingData.Add(newMutableState);
         }
-        AstralCanvas::ShaderStagingMutableState newMutableState{};
-        switch (resource->type)
-        {
-            case AstralCanvas::ShaderResourceType_Uniform:
-            {
-                newMutableState.ub = AstralCanvas::UniformBuffer(resource->size);
-                newMutableState.ownsUniformBuffer = true;
-                break;
-            }
-            case AstralCanvas::ShaderResourceType_Texture:
-            {
-                newMutableState.textures = collections::Array<AstralCanvas::Texture2D*>(shader->allocator, fmax(resource->arrayLength, 1));
-                newMutableState.imageInfos = shader->allocator->Allocate(sizeof(void*) * newMutableState.textures.length);
-                //newMutableState.imageInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
-                break;
-            }
-            case AstralCanvas::ShaderResourceType_Sampler:
-            {
-                newMutableState.samplers = collections::Array<AstralCanvas::SamplerState*>(shader->allocator, fmax(resource->arrayLength, 1));
-                newMutableState.samplerInfos = shader->allocator->Allocate(sizeof(void*) * newMutableState.samplers.length);
-                //newMutableState.samplerInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.samplers.length);
-                break;
-            }
-            default:
-                break;
-        }
-        shaderVariables.uniforms.ptr[i].stagingData.Add(newMutableState);
     }
 }
 void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::Shader *shader)
@@ -407,72 +417,72 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
     id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)commandEncoder;
     for (usize i = 0; i < shader->shaderVariables.uniforms.capacity; i++)
     {
-        if (shader->shaderVariables.uniforms.ptr[i].variableName.buffer == NULL)
+        if (shader->shaderVariables.uniforms.ptr[i].variableName.buffer != NULL)
         {
-            break;
-        }
-        //should never throw out of range error since CheckDescriptorSetAvailability() is always called prior to this
-        AstralCanvas::ShaderStagingMutableState *toMutate = &shader->shaderVariables.uniforms.ptr[i].stagingData.ptr[shader->descriptorForThisDrawCall];
-        if (!toMutate->mutated)
-        {
-            continue;
-        }
-        //set mutated to false in anticipation of reuse for next frame
-        toMutate->mutated = false;
-        
-        switch (shader->shaderVariables.uniforms.ptr[i].type)
-        {
-            case AstralCanvas::ShaderResourceType_Uniform:
+            //should never throw out of range error since CheckDescriptorSetAvailability() is always called prior to this
+            AstralCanvas::ShaderStagingMutableState *toMutate = &shader->shaderVariables.uniforms.ptr[i].stagingData.ptr[shader->descriptorForThisDrawCall];
+            if (!toMutate->mutated)
             {
-                if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Vertex) != 0)
-                {
-                    [encoder setVertexBuffer:(id<MTLBuffer>)toMutate->ub.handle offset:0 atIndex:shader->shaderVariables.uniforms.ptr[i].binding + 1];
-                }
-                if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
-                {
-                    [encoder setFragmentBuffer:(id<MTLBuffer>)toMutate->ub.handle offset:0 atIndex:shader->shaderVariables.uniforms.ptr[i].binding + 1];
-                }
-                
-                break;
+                continue;
             }
-            case AstralCanvas::ShaderResourceType_Texture:
+            //set mutated to false in anticipation of reuse for next frame
+            toMutate->mutated = false;
+            
+            switch (shader->shaderVariables.uniforms.ptr[i].type)
             {
-                for (usize i = 0; i < toMutate->textures.length; i++)
+                case AstralCanvas::ShaderResourceType_Uniform:
                 {
-                    ((void**)toMutate->imageInfos)[i] = toMutate->textures.data[i]->imageHandle;
+                    if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Vertex) != 0)
+                    {
+                        //printf("Setting vertex uniform buffer at %u\n", shader->shaderVariables.uniforms.ptr[i].binding);
+                        [encoder setVertexBuffer:(id<MTLBuffer>)toMutate->ub.handle offset:0 atIndex:shader->shaderVariables.uniforms.ptr[i].binding];
+                    }
+                    if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
+                    {
+                        [encoder setFragmentBuffer:(id<MTLBuffer>)toMutate->ub.handle offset:0 atIndex:shader->shaderVariables.uniforms.ptr[i].binding];
+                    }
+                    
+                    break;
                 }
-                
-                if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Vertex) != 0)
+                case AstralCanvas::ShaderResourceType_Texture:
                 {
-                    [encoder setVertexTexture:(id<MTLTexture>)((id<MTLTexture>*)toMutate->imageInfos)[0] atIndex:0];//shader->shaderVariables.uniforms.ptr[i].binding];
+                    for (usize i = 0; i < toMutate->textures.length; i++)
+                    {
+                        ((void**)toMutate->imageInfos)[i] = toMutate->textures.data[i]->imageHandle;
+                    }
+                    
+                    if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Vertex) != 0)
+                    {
+                        [encoder setVertexTexture:(id<MTLTexture>)((id<MTLTexture>*)toMutate->imageInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].binding];//shader->shaderVariables.uniforms.ptr[i].binding];
+                    }
+                    if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
+                    {
+                        [encoder setFragmentTexture:(id<MTLTexture>)((id<MTLTexture>*)toMutate->imageInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].binding];//shader->shaderVariables.uniforms.ptr[i].binding];
+                    }
+                    break;
                 }
-                if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
+                case AstralCanvas::ShaderResourceType_Sampler:
                 {
-                    [encoder setFragmentTexture:(id<MTLTexture>)((id<MTLTexture>*)toMutate->imageInfos)[0] atIndex:0];//shader->shaderVariables.uniforms.ptr[i].binding];
+                    for (usize i = 0; i < toMutate->samplers.length; i++)
+                    {
+                        ((void**)toMutate->samplerInfos)[i] = toMutate->samplers.data[i]->handle;
+                    }
+                    
+                    if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Vertex) != 0)
+                    {
+                        [encoder setVertexSamplerState:(id<MTLSamplerState>)((id<MTLSamplerState>*)toMutate->samplerInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].binding];//shader->shaderVariables.uniforms.ptr[i].binding];
+                    }
+                    if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
+                    {
+                        [encoder setFragmentSamplerState:(id<MTLSamplerState>)((id<MTLSamplerState>*)toMutate->samplerInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].binding];//shader->shaderVariables.uniforms.ptr[i].binding];
+                    }
+                    //printf("Sent sampler at position %i\n", shader->shaderVariables.uniforms.ptr[i].binding);
+                    break;
                 }
-                break;
-            }
-            case AstralCanvas::ShaderResourceType_Sampler:
-            {
-                for (usize i = 0; i < toMutate->samplers.length; i++)
+                case AstralCanvas::ShaderResourceType_StructuredBuffer:
                 {
-                    ((void**)toMutate->samplerInfos)[i] = toMutate->samplers.data[i]->handle;
+                    break;
                 }
-                
-                if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Vertex) != 0)
-                {
-                    [encoder setVertexSamplerState:(id<MTLSamplerState>)((id<MTLSamplerState>*)toMutate->samplerInfos)[0] atIndex:0];//shader->shaderVariables.uniforms.ptr[i].binding];
-                }
-                if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
-                {
-                    [encoder setFragmentSamplerState:(id<MTLSamplerState>)((id<MTLSamplerState>*)toMutate->samplerInfos)[0] atIndex:0];//shader->shaderVariables.uniforms.ptr[i].binding];
-                }
-                //printf("Sent sampler at position %i\n", shader->shaderVariables.uniforms.ptr[i].binding);
-                break;
-            }
-            case AstralCanvas::ShaderResourceType_StructuredBuffer:
-            {
-                break;
             }
         }
     }

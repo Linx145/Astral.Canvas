@@ -1,6 +1,7 @@
 #pragma once
 #include "Linxc.h"
 #include "allocators.hpp"
+#include "stdio.h"
 
 namespace collections
 {
@@ -26,8 +27,10 @@ namespace collections
         sparseset(IAllocator *myAllocator, usize minCapacity)
         {
             this->allocator = myAllocator;
-            ptr = (T*)this->allocator->Allocate(sizeof(T) * minCapacity);
-            capacity = minCapacity;
+            ptr = NULL;//(T*)this->allocator->Allocate(sizeof(T) * minCapacity);
+            capacity = 0;
+            //capacity = minCapacity;
+            EnsureArrayCapacity(minCapacity);
         }
         void deinit()
         {

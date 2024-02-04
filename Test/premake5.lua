@@ -25,7 +25,7 @@ project "AstralCanvasTest"
     postbuildcommands { 
         "{COPYFILE}	 \"TestContent/Triangle.shaderobj\" \"bin/Debug/Triangle.shaderobj\"",
         "{COPYFILE}	 \"TestContent/Texture.shaderobj\" \"bin/Debug/Texture.shaderobj\"",
-        "{COPYFILE}	 \"TestContent/Instancing.shaderobj\" \"bin/Debug/Texture.shaderobj\"",
+        "{COPYFILE}	 \"TestContent/Instancing.shaderobj\" \"bin/Debug/Instancing.shaderobj\"",
         "{COPYFILE}	 \"TestContent/tbh.png\" \"bin/Debug/tbh.png\""
     }
 

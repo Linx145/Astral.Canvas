@@ -15,7 +15,7 @@
 
 #include "stdlib.h"
 
-#define INSTANCE_COUNT 100
+#define INSTANCE_COUNT 100000
 
 string exeLocation;
 
@@ -47,7 +47,7 @@ struct WVP
 void Initialize()
 {
 	string filePath = exeLocation.Clone(&cAllocator);
-	filePath.Append(INSTANCE_COUNT > 1 ? "/Instancing.shaderobj" : "/Texture.shaderobj");
+    filePath.Append(INSTANCE_COUNT > 1 ? "/Instancing.shaderobj" : "/Texture.shaderobj");
 	string fileContents = io::ReadFile(&cAllocator, filePath.buffer);
 	filePath.deinit();
 
@@ -138,8 +138,12 @@ void Initialize()
 
 	renderProgram = AstralCanvas::RenderProgram(&resourcesArena.asAllocator);
 	i32 color = renderProgram.AddAttachment(AstralCanvas::ImageFormat_BackbufferFormat, true, false, AstralCanvas::RenderPassOutput_ToWindow);
-	i32 depth = renderProgram.AddAttachment(AstralCanvas::ImageFormat_Depth32, false, true, AstralCanvas::RenderPassOutput_ToWindow);
-	renderProgram.AddRenderPass(&resourcesArena.asAllocator, color, depth);
+#ifdef MACOS
+    i32 depth = -1;
+#else
+    i32 depth = renderProgram.AddAttachment(AstralCanvas::ImageFormat_Depth32, false, true, AstralCanvas::RenderPassOutput_ToWindow);
+#endif
+    renderProgram.AddRenderPass(&resourcesArena.asAllocator, color, depth);
 
 	renderProgram.Construct();
 }
@@ -206,7 +210,7 @@ void Draw(float time)
 
 	AstralCanvas::Application* app = AstralCanvas::GetAppInstance();
 	app->graphicsDevice.StartRenderProgram(&renderProgram, AstralCanvas::Color(128, 128, 128));
-
+    
 	app->graphicsDevice.UseRenderPipeline(&pipeline);
 
 	app->graphicsDevice.SetVertexBuffer(&vb, 0);
@@ -216,7 +220,7 @@ void Draw(float time)
 	}
 	app->graphicsDevice.SetIndexBuffer(&ib);
 
-	WVP matrices = WVP(Maths::Matrix4x4::CreateTranslation(x, y, 0.0f) * Maths::Matrix4x4::CreateScale(2.0f, 2.0f, 2.0f), viewMatrix, projMatrix);
+	WVP matrices = WVP(Maths::Matrix4x4::CreateTranslation(x, y, 0.0f), viewMatrix, projMatrix);
 	app->graphicsDevice.SetShaderVariable("Matrices", &matrices, sizeof(WVP));
 	app->graphicsDevice.SetShaderVariableSampler("samplerState", AstralCanvas::SamplerGetPointClamp());
 	app->graphicsDevice.SetShaderVariableTexture("inputTexture", &tbh);

@@ -60,6 +60,7 @@ namespace AstralCanvas
                 if (resource != NULL && resource->variableName.buffer != NULL)
                 {
                     resource->accessedBy = (ShaderInputAccessedBy)((u32)resource->accessedBy | (u32)accessedByShaderOfType);
+                    name.deinit();
                 }
                 else
                 {
@@ -73,6 +74,7 @@ namespace AstralCanvas
                     newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
                     newResource.type = ShaderResourceType_Uniform;
                     results->uniforms.Insert((usize)binding, newResource);
+                    //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
                 }
                 //results->uniforms.Add(binding, {name, set, binding, stride});
             }
@@ -91,6 +93,7 @@ namespace AstralCanvas
                 if (resource != NULL && resource->variableName.buffer != NULL)
                 {
                     resource->accessedBy = (ShaderInputAccessedBy)((u32)resource->accessedBy | (u32)accessedByShaderOfType);
+                    name.deinit();
                 }
                 else
                 {
@@ -104,6 +107,7 @@ namespace AstralCanvas
                     newResource.size = 0;
                     newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
                     results->uniforms.Insert((usize)binding, newResource);
+                    //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
                 }
             }
         }
@@ -121,6 +125,7 @@ namespace AstralCanvas
                 if (resource != NULL && resource->variableName.buffer != NULL)
                 {
                     resource->accessedBy = (ShaderInputAccessedBy)((u32)resource->accessedBy | (u32)accessedByShaderOfType);
+                    name.deinit();
                 }
                 else
                 {
@@ -134,6 +139,7 @@ namespace AstralCanvas
                     newResource.size = 0;
                     newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
                     results->uniforms.Insert((usize)binding, newResource);
+                    //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
                 }
             }
         }

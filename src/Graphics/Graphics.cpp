@@ -234,8 +234,13 @@ namespace AstralCanvas
             {
                 if (variables->uniforms.ptr[i].variableName.buffer == NULL)
                 {
-                    break;
+                    if (GetActiveBackend() == Backend_Vulkan)
+                    {
+                        break; //can only break in vulkan as metal has non-continguous uniform indices
+                    }
+                    continue;
                 }
+                
                 if (variables->uniforms.ptr[i].variableName == variableName)
                 {
                     currentRenderPipeline->shader->uniformsHasBeenSet = true;
@@ -256,7 +261,11 @@ namespace AstralCanvas
             {
                 if (variables->uniforms.ptr[i].variableName.buffer == NULL)
                 {
-                    break;
+                    if (GetActiveBackend() == Backend_Vulkan)
+                    {
+                        break; //can only break in vulkan as metal has non-continguous uniform indices
+                    }
+                    continue;
                 }
                 if (variables->uniforms.ptr[i].variableName == variableName)
                 {
@@ -278,9 +287,12 @@ namespace AstralCanvas
             {
                 if (variables->uniforms.ptr[i].variableName.buffer == NULL)
                 {
-                    break;
+                    if (GetActiveBackend() == Backend_Vulkan)
+                    {
+                        break; //can only break in vulkan as metal has non-continguous uniform indices
+                    }
+                    continue;
                 }
-                
                 if (variables->uniforms.ptr[i].variableName == variableName)
                 {
                     currentRenderPipeline->shader->uniformsHasBeenSet = true;
