@@ -164,7 +164,12 @@ enum LinxcTokenID
     Acsl_Keyword_Fragment,
     Acsl_Keyword_Compute,
     Acsl_Keyword_Layout,
-    Acsl_Keyword_Version
+    Acsl_Keyword_Version,
+    Acsl_Keyword_Buffer,
+    Acsl_Keyword_End,
+    Acsl_Keyword_In,
+    Acsl_Keyword_Out,
+    Acsl_Keyword_Location
 };
 
 struct LinxcToken

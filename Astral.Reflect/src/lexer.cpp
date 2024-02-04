@@ -1183,7 +1183,7 @@ LinxcTokenID LinxcGetKeyword(const char *chars, usize strlen, bool isPreprocesso
     {
         LinxcTokenID tokenID = *tokenIDPtr;
         if (tokenID == Linxc_Keyword_endif || tokenID == Linxc_Keyword_include || tokenID == Linxc_Keyword_define || tokenID == Linxc_Keyword_ifdef || tokenID == Linxc_Keyword_ifndef || tokenID == Linxc_Keyword_error || tokenID == Linxc_Keyword_pragma
-        || tokenID == Acsl_Keyword_Fragment || tokenID == Acsl_Keyword_Vertex || tokenID == Acsl_Keyword_Compute)
+        || tokenID == Acsl_Keyword_Fragment || tokenID == Acsl_Keyword_Vertex || tokenID == Acsl_Keyword_Compute || tokenID == Acsl_Keyword_Buffer || tokenID == Acsl_Keyword_End)
         {
             if (!isPreprocessorDirective)
             {

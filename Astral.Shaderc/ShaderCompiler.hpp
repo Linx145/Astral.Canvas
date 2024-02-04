@@ -8,6 +8,9 @@
 #include "Json.hpp"
 #include "spirv_cross/spirv_cross_c.h"
 
+#define OUTPUT_TOKEN(token) AstralShaderc_AddTokenString(&tokenStrings, tokenizer, token)
+#define SHADER_COMPILE_ERR(errorMessage) tokenStrings.deinit(); return AstralShadercCompileResult(string(allocator, errorMessage))
+
 enum AstralShadercParsingState
 {
     AstralShaderc_ParsingNone,
@@ -181,6 +184,11 @@ struct AstralCanvasShaderCompiler
         nameToToken.Add(string(nameToToken.allocator, "compute"), Acsl_Keyword_Compute);
         nameToToken.Add(string(nameToToken.allocator, "layout"), Acsl_Keyword_Layout);
         nameToToken.Add(string(nameToToken.allocator, "version"), Acsl_Keyword_Version);
+        nameToToken.Add(string(nameToToken.allocator, "buffer"), Acsl_Keyword_Buffer);
+        nameToToken.Add(string(nameToToken.allocator, "end"), Acsl_Keyword_End);
+        nameToToken.Add(string(nameToToken.allocator, "in"), Acsl_Keyword_In);
+        nameToToken.Add(string(nameToToken.allocator, "out"), Acsl_Keyword_Out);
+        nameToToken.Add(string(nameToToken.allocator, "location"), Acsl_Keyword_Location);
 
         tokenizer = LinxcTokenizer(fileContents.buffer, fileContents.length, &nameToToken);
     }
@@ -238,7 +246,6 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
     spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &allResources, &uniformCount);
     for (usize i = 0; i < uniformCount; i++)
     {
-        
         //need to increase binding by 1 for msl because binding0 is taken up by the vertex buffer/input from vertex stage
         u32 binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
         u32 descSet = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
@@ -251,14 +258,6 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
         newBindings.msl_buffer = binding + 1;
         spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
     }
-
-    spvc_msl_shader_interface_var_2 instanceInput;
-    spvc_msl_shader_interface_var_init_2(&instanceInput);
-
-    instanceInput.format = SPVC_MSL_SHADER_VARIABLE_FORMAT_ANY32;
-    instanceInput.rate = SPVC_MSL_SHADER_VARIABLE_RATE_PER_PRIMITIVE;
-
-    spvc_compiler_msl_add_shader_input_2(compiler, &instanceInput);
 
     const char *result;
     if (spvc_compiler_compile(compiler, &result) != SPVC_SUCCESS)
@@ -345,11 +344,17 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
     shaderVariables->textures = collections::Array<AstralShadercResource>(allocator, resourcesCount);
     for (usize i = 0; i < resourcesCount; i++)
     {
-        AstralShadercResource resourceData;
+        AstralShadercResource resourceData{};
         resourceData.binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
         resourceData.set = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
         resourceData.variableName = string(allocator, allResources[i].name);
-        resourceData.arrayLength = spvc_type_get_array_dimension(spvc_compiler_get_type_handle(compiler, allResources[i].type_id), 0);
+
+        spvc_type type = spvc_compiler_get_type_handle(compiler, allResources[i].type_id);
+        if (spvc_type_get_num_array_dimensions(type))
+        {
+            resourceData.arrayLength = spvc_type_get_array_dimension(type, 0);
+        }
+        else resourceData.arrayLength = 0;
 
         shaderVariables->textures.data[i] = resourceData;
     }
@@ -360,11 +365,17 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
     shaderVariables->samplers = collections::Array<AstralShadercResource>(allocator, resourcesCount);
     for (usize i = 0; i < resourcesCount; i++)
     {
-        AstralShadercResource resourceData;
+        AstralShadercResource resourceData{};
         resourceData.binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
         resourceData.set = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
         resourceData.variableName = string(allocator, allResources[i].name);
-        resourceData.arrayLength = spvc_type_get_array_dimension(spvc_compiler_get_type_handle(compiler, allResources[i].type_id), 0);
+        
+        spvc_type type = spvc_compiler_get_type_handle(compiler, allResources[i].type_id);
+        if (spvc_type_get_num_array_dimensions(type))
+        {
+            resourceData.arrayLength = spvc_type_get_array_dimension(type, 0);
+        }
+        else resourceData.arrayLength = 0;
 
         shaderVariables->samplers.data[i] = resourceData;
     }
@@ -372,11 +383,23 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
     return true;
 }
 
+inline void AstralShaderc_AddTokenString(collections::vector<CharSlice> *tokenStrings, LinxcTokenizer *tokenizer, LinxcToken token)
+{
+    tokenStrings->Add(token.ToCharSlice());
+    LinxcToken peekNext = tokenizer->PeekNext();
+    if (token.ID != Linxc_Nl && token.ID != Linxc_Period && peekNext.ID != Linxc_Period && peekNext.ID != Linxc_Comma && peekNext.ID != Linxc_RParen && peekNext.ID != Linxc_LParen && peekNext.ID != Linxc_Semicolon)
+    {
+        tokenStrings->Add(CharSlice(" "));
+    }
+}
+
 inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *allocator, string fileContents)
 {
     IAllocator defaultAllocator = GetCAllocator();
     AstralCanvasShaderCompiler compiler = AstralCanvasShaderCompiler(allocator, fileContents);
     AstralShadercParsingState parsingState = AstralShaderc_ParsingNone;
+
+    i32 vertexBufferInputIndex = -1;
 
     collections::vector<CharSlice> tokenStrings = collections::vector<CharSlice>(&defaultAllocator);
     LinxcTokenizer* tokenizer = &compiler.tokenizer;
@@ -391,9 +414,7 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
         LinxcToken token = tokenizer->TokenizeAdvance();
         if (token.ID == Linxc_Invalid)
         {
-            tokenStrings.deinit();
-            compiler.deinit();
-            return AstralShadercCompileResult(string(allocator, "Invalid character in file"));
+            SHADER_COMPILE_ERR("Invalid character in file");
         }
         tokenizer->tokenStream.Add(token);
         if (token.ID == Linxc_Eof)
@@ -412,7 +433,7 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
                 }
                 else
                 {
-                    return AstralShadercCompileResult(string(allocator, "Expected valid file path after #include directive"));
+                    SHADER_COMPILE_ERR("Expected valid file path after #include directive");
                 }
             }
             else
@@ -429,7 +450,7 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
         {
             LinxcToken next = tokenizer->Next();
 
-            if (tokenStrings.count > 0 && (next.ID == Acsl_Keyword_Vertex || next.ID == Acsl_Keyword_Fragment || next.ID == Acsl_Keyword_Fragment))
+            if (tokenStrings.count > 0 && (next.ID == Acsl_Keyword_Vertex || next.ID == Acsl_Keyword_Fragment))
             {
                 if (parsingState == AstralShaderc_ParsingVertex)
                 {
@@ -451,9 +472,7 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
             {
                 if (vertexShaderData.buffer != NULL)
                 {
-                    tokenStrings.deinit();
-                    compiler.deinit();
-                    return AstralShadercCompileResult(string(allocator, "Multiple #vertex declarations found!"));
+                    SHADER_COMPILE_ERR("Multiple #vertex declarations found!");
                 }
                 parsingState = AstralShaderc_ParsingVertex;
                 continue;
@@ -462,9 +481,7 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
             {
                 if (fragmentShaderData.buffer != NULL)
                 {
-                    tokenStrings.deinit();
-                    compiler.deinit();
-                    return AstralShadercCompileResult(string(allocator, "Multiple #fragment declarations found!"));
+                    SHADER_COMPILE_ERR("Multiple #fragment declarations found!");
                 }
                 parsingState = AstralShaderc_ParsingFragment;
                 continue;
@@ -473,12 +490,22 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
             {
                 if (computeShaderData.buffer != NULL)
                 {
-                    tokenStrings.deinit();
-                    compiler.deinit();
-                    return AstralShadercCompileResult(string(allocator, "Multiple #compute declarations found!"));
+                    SHADER_COMPILE_ERR("Multiple #compute declarations found!");
                 }
                 parsingState = AstralShaderc_ParsingCompute;
                 continue;
+            }
+            else if (next.ID == Acsl_Keyword_End)
+            {
+                if (vertexBufferInputIndex > -1)
+                {
+                    vertexBufferInputIndex = -1;
+                    continue;
+                }
+                else
+                {
+                    SHADER_COMPILE_ERR("#end declaration without any form of begin");
+                }
             }
             else
             {
@@ -513,12 +540,7 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
         }
         else
         {
-            tokenStrings.Add(token.ToCharSlice());
-            LinxcToken peekNext = tokenizer->PeekNext();
-            if (token.ID != Linxc_Nl && token.ID != Linxc_Period && peekNext.ID != Linxc_Period && peekNext.ID != Linxc_Comma && peekNext.ID != Linxc_RParen && peekNext.ID != Linxc_LParen && peekNext.ID != Linxc_Semicolon)
-            {
-                tokenStrings.Add(CharSlice(" "));
-            }
+            OUTPUT_TOKEN(token);
         }
     }
 
@@ -567,11 +589,10 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
     }
     else
     {
-        tokenStrings.deinit();
         fragmentShaderData.deinit();
         vertexShaderData.deinit();
         compiler.deinit();
-        return AstralShadercCompileResult(string(allocator, "Shader file not recognised as a complete vertex-fragment or compute shader"));
+        SHADER_COMPILE_ERR("Shader file not recognised as a complete vertex-fragment or compute shader");
     }
 
     compiler.deinit();
