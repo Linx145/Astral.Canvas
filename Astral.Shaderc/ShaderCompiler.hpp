@@ -8,6 +8,7 @@
 #include "Json.hpp"
 #include "spirv_cross/spirv_cross_c.h"
 
+#define MSL_UNIFORM_BINDING_START 8
 #define OUTPUT_TOKEN(token) AstralShaderc_AddTokenString(&tokenStrings, tokenizer, token)
 #define SHADER_COMPILE_ERR(errorMessage) tokenStrings.deinit(); return AstralShadercCompileResult(string(allocator, errorMessage))
 
@@ -255,7 +256,7 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
         newBindings.binding = binding;
         newBindings.desc_set = descSet;
         newBindings.stage = reflectData1 ? SpvExecutionModelVertex : SpvExecutionModelFragment;
-        newBindings.msl_buffer = binding + 1;
+        newBindings.msl_buffer = binding + MSL_UNIFORM_BINDING_START;
         spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
     }
 
