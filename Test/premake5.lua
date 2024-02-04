@@ -32,6 +32,9 @@ project "AstralCanvasTest"
     filter "system:macosx"
         links { "GLFW", "Cocoa.framework", "IOKit.framework", "Metal.framework", "MetalKit.framework", "QuartzCore.framework" }
 
+    filter "system:windows"
+        includedirs "%{VULKAN_SDK}/Include"
+        defines "ASTRALCANVAS_VULKAN"
 
     filter "configurations:Debug"
         defines { "DEBUG" }

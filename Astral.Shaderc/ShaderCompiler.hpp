@@ -228,8 +228,6 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
         printf("Error installing MSL compiler options\n");
         return false;
     }
-    spvc_compiler_set_decoration(compiler, 0, SpvDecorationBinding, 1);
-
     spvc_resources resources;
     if (spvc_compiler_create_shader_resources(compiler, &resources) != SPVC_SUCCESS)
     {
@@ -252,10 +250,15 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
         newBindings.stage = reflectData1 ? SpvExecutionModelVertex : SpvExecutionModelFragment;
         newBindings.msl_buffer = binding + 1;
         spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
-        //printf("resource %s, binding %u\n", allResources[i].name, binding + 1);
-        //spvc_compiler_unset_decoration(compiler, allResources[i].id, SpvDecorationBinding);
-        //spvc_compiler_set_decoration(compiler, allResources[i].id, SpvDecorationBinding, binding + 1);
     }
+
+    spvc_msl_shader_interface_var_2 instanceInput;
+    spvc_msl_shader_interface_var_init_2(&instanceInput);
+
+    instanceInput.format = SPVC_MSL_SHADER_VARIABLE_FORMAT_ANY32;
+    instanceInput.rate = SPVC_MSL_SHADER_VARIABLE_RATE_PER_PRIMITIVE;
+
+    spvc_compiler_msl_add_shader_input_2(compiler, &instanceInput);
 
     const char *result;
     if (spvc_compiler_compile(compiler, &result) != SPVC_SUCCESS)

@@ -16,9 +16,6 @@ namespace AstralCanvas
             VmaAllocationInfo vkAllocationInfo;
         };
         #endif
-        struct
-        {
-            i32 unused;
-        };
+        i32 unused;
     };
 }

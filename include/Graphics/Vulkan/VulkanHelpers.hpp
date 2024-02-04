@@ -41,7 +41,7 @@ inline AstralCanvas::MemoryAllocation AstralCanvasVk_AllocateMemoryForImage(VkIm
 
     return memoryAllocated;
 }
-inline AstralCanvas::MemoryAllocation AstralCanvasVk_AllocateMemoryForBuffer(VkBuffer buffer, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlagBits memoryProperties, bool createMapped = true)
+inline AstralCanvas::MemoryAllocation AstralCanvasVk_AllocateMemoryForBuffer(VkBuffer buffer, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlags memoryProperties, bool createMapped = true)
 {
     VmaAllocator vma = AstralCanvasVk_GetCurrentVulkanAllocator();
     
@@ -52,8 +52,8 @@ inline AstralCanvas::MemoryAllocation AstralCanvasVk_AllocateMemoryForBuffer(VkB
         allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
     }
     allocationCreateInfo.requiredFlags = memoryProperties;
-    
-    AstralCanvas::MemoryAllocation memoryAllocated;
+
+    AstralCanvas::MemoryAllocation memoryAllocated{};
 
     if (vmaAllocateMemoryForBuffer(vma, buffer, &allocationCreateInfo, &memoryAllocated.vkAllocation, &memoryAllocated.vkAllocationInfo) != VK_SUCCESS)
     {

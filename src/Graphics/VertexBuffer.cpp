@@ -18,6 +18,7 @@ namespace AstralCanvas
         this->memoryAllocation.unused = 0;
         this->vertexCount = 0;
         this->vertexType = NULL;
+        this->isDynamic = false;
     }
     VertexBuffer::VertexBuffer(VertexDeclaration *thisVertexType, usize vertexCount, bool isDynamic, bool canRead)
     {
@@ -42,15 +43,15 @@ namespace AstralCanvas
                 {
                     bufferUsage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
                 }
-
+                this->handle = AstralCanvasVk_CreateResourceBuffer(AstralCanvasVk_GetCurrentGPU(), this->vertexCount * this->vertexType->size, bufferUsage);
                 if (this->isDynamic)
                 {
-                    this->handle = AstralCanvasVk_CreateResourceBuffer(AstralCanvasVk_GetCurrentGPU(), this->vertexCount * this->vertexType->size, bufferUsage);
-                    this->memoryAllocation = AstralCanvasVk_AllocateMemoryForBuffer((VkBuffer)this->handle, VMA_MEMORY_USAGE_CPU_TO_GPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
-                    break;
+                    this->memoryAllocation = AstralCanvasVk_AllocateMemoryForBuffer((VkBuffer)this->handle, VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
                 }
-                this->handle = AstralCanvasVk_CreateResourceBuffer(AstralCanvasVk_GetCurrentGPU(), this->vertexCount * this->vertexType->size, bufferUsage);
-                this->memoryAllocation = AstralCanvasVk_AllocateMemoryForBuffer((VkBuffer)this->handle, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                else
+                {
+                    this->memoryAllocation = AstralCanvasVk_AllocateMemoryForBuffer((VkBuffer)this->handle, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                }
                 break;
             }
             #endif
@@ -67,15 +68,14 @@ namespace AstralCanvas
             {
                 if (this->isDynamic)
                 {
-                    void *destination = this->memoryAllocation.vkAllocationInfo.pMappedData;
-                    memcpy(destination, verticesData, count * this->vertexType->size);
+                    memcpy(this->memoryAllocation.vkAllocationInfo.pMappedData, verticesData, count * this->vertexType->size);
                 }
                 else
                 {
                     usize lengthOfBytes = count * this->vertexType->size;
                     AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
                     VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, lengthOfBytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-                    MemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+                    MemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
                     memcpy(stagingMemory.vkAllocationInfo.pMappedData, verticesData, lengthOfBytes);
 
@@ -148,7 +148,6 @@ namespace AstralCanvas
                 vkDestroyBuffer(gpu->logicalDevice, (VkBuffer)this->handle, NULL);
 
                 vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->memoryAllocation.vkAllocation);
-                printf("Freed vertex buffer memory\n");
                 break;
             }
             #endif

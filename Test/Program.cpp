@@ -11,10 +11,11 @@
 #include "Input/Input.hpp"
 #include "string.hpp"
 #include "path.hpp"
+#include "Graphics/MemoryAllocation.hpp"
 
 #include "stdlib.h"
 
-#define INSTANCE_COUNT 1
+#define INSTANCE_COUNT 100
 
 string exeLocation;
 
@@ -56,9 +57,18 @@ void Initialize()
 		return;
 	}
 
-	collections::Array<AstralCanvas::VertexDeclaration*> vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.asAllocator, 2);
-	vertexDeclsUsed.data[0] = AstralCanvas::GetVertexPositionColorTextureDecl();
-	vertexDeclsUsed.data[1] = AstralCanvas::GetInstanceDataMatrixDecl();
+	collections::Array<AstralCanvas::VertexDeclaration *> vertexDeclsUsed;
+	if (INSTANCE_COUNT > 1)
+	{
+		vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.asAllocator, 2);
+		vertexDeclsUsed.data[0] = AstralCanvas::GetVertexPositionColorTextureDecl();
+		vertexDeclsUsed.data[1] = AstralCanvas::GetInstanceDataMatrixDecl();
+	}
+	else
+	{
+		vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.asAllocator, 1);
+		vertexDeclsUsed.data[0] = AstralCanvas::GetVertexPositionColorTextureDecl();
+	}
 
 	pipeline = AstralCanvas::RenderPipeline(
 		&resourcesArena.asAllocator,
@@ -158,30 +168,24 @@ float x = 0.0f;
 float y = 0.0f;
 void Update(float deltaTime)
 {
-	if (INSTANCE_COUNT > 1)
+	if (INSTANCE_COUNT == 1)
 	{
-		for (usize i = 0; i < INSTANCE_COUNT; i++)
+		if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_D))
 		{
-			matrices[i].M14 += 32.0f * deltaTime;
+			x += deltaTime * 128.0f;
 		}
-		instanceBuffer.SetData(matrices, INSTANCE_COUNT);
-		return;
-	}
-	if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_D))
-	{
-		x += deltaTime * 128.0f;
-	}
-	if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_A))
-	{
-		x -= deltaTime * 128.0f;
-	}
-	if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_W))
-	{
-		y -= deltaTime * 128.0f;
-	}
-	if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_S))
-	{
-		y += deltaTime * 128.0f;
+		if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_A))
+		{
+			x -= deltaTime * 128.0f;
+		}
+		if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_W))
+		{
+			y -= deltaTime * 128.0f;
+		}
+		if (AstralCanvas::Input_IsKeyDown(AstralCanvas::Keys_S))
+		{
+			y += deltaTime * 128.0f;
+		}
 	}
 	timer += deltaTime;
 	if (timer >= 1.0f)
