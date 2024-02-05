@@ -224,6 +224,7 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
     spvc_compiler compiler;
     if (spvc_context_create_compiler(context, SPVC_BACKEND_MSL, parsedIR, SPVC_CAPTURE_MODE_COPY, &compiler) != SPVC_SUCCESS)
     {
+        printf("Error creating MSL compiler\n");
         return false;
     }
 
@@ -232,6 +233,7 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
     {
         return false;
     }
+    spvc_compiler_options_set_uint(options, SPVC_COMPILER_OPTION_MSL_VERSION, SPVC_MAKE_MSL_VERSION(2, 0, 0));
     if (spvc_compiler_install_compiler_options(compiler, options) != SPVC_SUCCESS)
     {
         printf("Error installing MSL compiler options\n");
@@ -261,9 +263,10 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
     }
 
     const char *result;
+    
     if (spvc_compiler_compile(compiler, &result) != SPVC_SUCCESS)
     {
-        printf("Error compiling MSL\n");
+        printf("Error compiling MSL: %s\n", spvc_context_get_last_error_string(context));
         return false;
     }
     *resultString = string(allocator, result);
@@ -288,28 +291,33 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
     spvc_parsed_ir parsedIR;
     if (spvc_context_parse_spirv(context, dataToReflect->ptr, dataToReflect->count, &parsedIR) != SPVC_SUCCESS)
     {
+        printf("Failed to parse spirv\n");
         return false;
     }
 
     spvc_compiler compiler;
     if (spvc_context_create_compiler(context, SPVC_BACKEND_NONE, parsedIR, SPVC_CAPTURE_MODE_COPY, &compiler) != SPVC_SUCCESS)
     {
+        printf("Failed to create compiler\n");
         return false;
     }
 
     spvc_compiler_options options;
     if (spvc_compiler_create_compiler_options(compiler, &options) != SPVC_SUCCESS)
     {
+        printf("Failed to create compiler options\n");
         return false;
     }
     if (spvc_compiler_install_compiler_options(compiler, options) != SPVC_SUCCESS)
     {
+        printf("Failed to install compiler options\n");
         return false;
     }
 
     spvc_resources resources;
     if (spvc_compiler_create_shader_resources(compiler, &resources) != SPVC_SUCCESS)
     {
+        printf("Failed to create shader resources\n");
         return false;
     }
 
@@ -325,6 +333,7 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
         usize structSize;
         if (spvc_compiler_get_declared_struct_size(compiler, spvc_compiler_get_type_handle(compiler, allResources[i].type_id), &structSize) != SPVC_SUCCESS)
         {
+            printf("Failed to find struct size\n");
             return false;
         }
         u32 set = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
@@ -351,7 +360,8 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
         resourceData.variableName = string(allocator, allResources[i].name);
 
         spvc_type type = spvc_compiler_get_type_handle(compiler, allResources[i].type_id);
-        if (spvc_type_get_num_array_dimensions(type))
+        u32 arrayDimensions = spvc_type_get_num_array_dimensions(type);
+        if (arrayDimensions > 0)
         {
             resourceData.arrayLength = spvc_type_get_array_dimension(type, 0);
         }
@@ -372,7 +382,7 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
         resourceData.variableName = string(allocator, allResources[i].name);
         
         spvc_type type = spvc_compiler_get_type_handle(compiler, allResources[i].type_id);
-        if (spvc_type_get_num_array_dimensions(type))
+        if (spvc_type_get_num_array_dimensions(type) > 0)
         {
             resourceData.arrayLength = spvc_type_get_array_dimension(type, 0);
         }
@@ -646,10 +656,10 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
                 {
                     if (result.errorMessage.buffer == NULL)
                     {
-                        result.errorMessage = string(allocator, "Failed to perform reflection on fragment shader");
+                        result.errorMessage = string(allocator, "Failed to compile MSL");
                     }
                     else
-                        result.errorMessage.Append("\nFailed to perform reflection on fragment shader");
+                        result.errorMessage.Append("\nFailed to compile MSL");
                 }
             }
 
