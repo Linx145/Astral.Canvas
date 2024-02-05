@@ -15,7 +15,7 @@
 
 #include "stdlib.h"
 
-#define INSTANCE_COUNT 100000
+#define INSTANCE_COUNT 1000
 #define BINDLESS
 
 #ifdef BINDLESS
@@ -328,7 +328,7 @@ i32 main(i32 argc, const char** argv)
 	string appName = string(&cAllocator, "test");
 	string engineName = string(&cAllocator, "Astral Gametech");
 	AstralCanvas::Application* appPtr = AstralCanvas::ApplicationInit(&cAllocator, appName, engineName, 0, 0, 0.0f);
-	appPtr->AddWindow(1024, 768, -1, true);
+	appPtr->AddWindow(1024, 768, true);
 	appPtr->Run(&Update, &Draw, &Initialize, &Deinitialize);
 
 	resourcesArena.deinit();

@@ -76,9 +76,9 @@ namespace AstralCanvas
             }
         );
     }
-    void RenderProgram::AddRenderPass(IAllocator *allocator, i32 colorAttachmentID, i32 depthAttachmentID)
+    void RenderProgram::AddRenderPass(i32 colorAttachmentID, i32 depthAttachmentID)
     {
-        collections::Array<i32> colorAttachmentIDs = collections::Array<i32>(allocator, 1);
+        collections::Array<i32> colorAttachmentIDs = collections::Array<i32>(this->allocator, 1);
         colorAttachmentIDs.data[0] = colorAttachmentID;
 
         this->renderPasses.Add(
@@ -319,11 +319,11 @@ namespace AstralCanvas
         if (depthFormat > ImageFormat_DepthNone)
         {
             i32 depthAttachment = newProgram.AddAttachment(depthFormat, mustClear, mustClear, willDrawToWindow ? RenderPassOutput_ToWindow : RenderPassOutput_ToRenderTarget);
-            newProgram.AddRenderPass(allocator, outputAttachment, depthAttachment);
+            newProgram.AddRenderPass(outputAttachment, depthAttachment);
         }
         else
         {
-            newProgram.AddRenderPass(allocator, outputAttachment, -1);
+            newProgram.AddRenderPass(outputAttachment, -1);
         }
 
         newProgram.Construct();

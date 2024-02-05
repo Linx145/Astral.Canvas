@@ -107,7 +107,7 @@ namespace AstralCanvas
         canvas->resolution.Y = height;
     }
 
-	bool WindowInit(IAllocator *allocator, Window * result, i32 width, i32 height, i32 fps, bool resizeable)
+	bool WindowInit(IAllocator *allocator, Window * result, i32 width, i32 height, bool resizeable)
 	{
 		*result = {};
 		if (!windowLibraryInitialized)

@@ -24,6 +24,22 @@ namespace AstralCanvas
         this->currentRenderProgram = NULL;
         this->currentRenderTarget = NULL;
     }
+    void Graphics::AwaitGraphicsIdle()
+    {
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                AstralCanvasVkCommandQueue *queue = &AstralCanvasVk_GetCurrentGPU()->DedicatedGraphicsQueue;
+                queue->queueMutex.EnterLock();
+                vkQueueWaitIdle(queue->queue);
+                queue->queueMutex.ExitLock();
+                break;
+            }
+            #endif
+        }
+    }
     void Graphics::SetVertexBuffer(const VertexBuffer *vb, u32 bindingPoint)
     {
         switch (GetActiveBackend())
@@ -302,6 +318,36 @@ namespace AstralCanvas
                     currentRenderPipeline->shader->uniformsHasBeenSet = true;
                     variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].mutated = true;
                     variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].textures.data[0] = texture;
+                    break;
+                }
+            }
+        }
+    }
+    void Graphics::SetShaderVariableSamplers(const char* variableName, SamplerState **samplers, usize count)
+    {
+        if (currentRenderPipeline != NULL)
+        {
+            currentRenderPipeline->shader->CheckDescriptorSetAvailability();
+            ShaderVariables *variables = &currentRenderPipeline->shader->shaderVariables;
+            for (usize i = 0; i < variables->uniforms.capacity; i++)
+            {
+                if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+                {
+                    if (GetActiveBackend() == Backend_Vulkan)
+                    {
+                        break; //can only break in vulkan as metal has non-continguous uniform indices
+                    }
+                    continue;
+                }
+                if (variables->uniforms.ptr[i].variableName == variableName)
+                {
+                    currentRenderPipeline->shader->uniformsHasBeenSet = true;
+                    ShaderStagingMutableState *mutableState = &variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall];
+                    mutableState->mutated = true;
+                    for (usize j = 0; j < count; j++)
+                    {
+                        variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].samplers.data[j] = samplers[j];
+                    }
                     break;
                 }
             }

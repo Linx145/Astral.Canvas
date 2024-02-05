@@ -6,12 +6,12 @@
 #include "string.hpp"
 #include "Graphics/Graphics.hpp"
 
-def_delegate(AstralCanvas_Update, void, float);
-def_delegate(AstralCanvas_Init, void);
-def_delegate(AstralCanvas_Deinit, void);
-
 namespace AstralCanvas
 {
+	def_delegate(ApplicationUpdateFunction, void, float);
+	def_delegate(ApplicationInitFunction, void);
+	def_delegate(ApplicationDeinitFunction, void);
+
 	struct Application
 	{
 		collections::vector<Window> windows;
@@ -23,16 +23,16 @@ namespace AstralCanvas
 		u32 appVersion;
 		u32 engineVersion;
 
-		AstralCanvas_Init onInitialize;
-		AstralCanvas_Update onUpdate;
+		ApplicationInitFunction onInitialize;
+		ApplicationUpdateFunction onUpdate;
 
 		float framesPerSecond;
 
 		Application();
-		Application* init(IAllocator* ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
-		bool AddWindow(i32 width, i32 height, i32 fps, bool resizeable = true);
+		Application* init(IAllocator* allocators, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
+		bool AddWindow(i32 width, i32 height, bool resizeable = true);
 		bool FinalizeGraphicsBackend();
-		void Run(AstralCanvas_Update updateFunc, AstralCanvas_Update drawFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc);
+		void Run(ApplicationUpdateFunction updateFunc, ApplicationUpdateFunction drawFunc, ApplicationInitFunction initFunc, ApplicationDeinitFunction deinitFunc);
 	};
 
 	Application* ApplicationInit(IAllocator* ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);

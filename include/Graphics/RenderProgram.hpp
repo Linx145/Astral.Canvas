@@ -50,7 +50,7 @@ namespace AstralCanvas
         void *belongsToProgram;
     };
     struct RenderProgram
-    { //note: corresponds to a VkRenderpass in Vulkan
+    {
         IAllocator *allocator;
         void *handle;
         collections::vector<RenderProgramImageAttachment> attachments;
@@ -64,7 +64,7 @@ namespace AstralCanvas
         /// Adds a render pass to the render program. A render pass is a stage within the 
         /// program, defining how it can read the previous stage (if any)'s texture and how 
         /// it will output to the next stage, or to the result rendertarget.
-        void AddRenderPass(IAllocator *allocator, i32 colorAttachmentID, i32 depthAttachmentID);
+        void AddRenderPass(i32 colorAttachmentID, i32 depthAttachmentID);
         void AddRenderPass(collections::Array<i32> colorAttachmentIDs, i32 depthAttachmentID);
         void Construct();
         void deinit();
