@@ -5,6 +5,8 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
+dispatch_semaphore_t semaphore;
+
 bool AstralCanvasMetal_Initialize(IAllocator *allocator, AstralCanvas::Window* window)
 {
     id<MTLDevice> gpu = MTLCreateSystemDefaultDevice();
@@ -22,10 +24,14 @@ bool AstralCanvasMetal_Initialize(IAllocator *allocator, AstralCanvas::Window* w
     nswindow.contentView.layer = swapchain;
     nswindow.contentView.wantsLayer = YES;
     
+    semaphore = dispatch_semaphore_create(1);
+    
     return true;
 }
 void AstralCanvasMetal_BeginDraw()
 {
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    
     CAMetalLayer *layer = AstralCanvasMetal_GetSwapchain();
     
     id<CAMetalDrawable> currentSwapchainSurface = [layer nextDrawable];
@@ -42,6 +48,12 @@ void AstralCanvasMetal_EndDraw()
 {
     id<MTLCommandBuffer> mainCmdBuffer = AstralCanvasMetal_GetMainCmdBuffer();
     id<CAMetalDrawable> surface = AstralCanvasMetal_GetCurrentSwapchainTexture();
+    
+    __block dispatch_semaphore_t block_semaphore = semaphore;
+    [mainCmdBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer)
+     {
+         dispatch_semaphore_signal(block_semaphore);
+     }];
     
     [mainCmdBuffer presentDrawable:surface];
     [mainCmdBuffer commit];
