@@ -5,8 +5,8 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec4 color;
 layout(location = 2) in vec2 UV;
 
-layout(location = 4) in mat4 instanceData;
 layout(location = 3) in int textureID;
+layout(location = 4) in mat4 instanceData;
 
 layout(binding = 0) uniform Matrices
 {

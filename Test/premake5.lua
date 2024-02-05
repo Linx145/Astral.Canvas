@@ -26,7 +26,11 @@ project "AstralCanvasTest"
         "{COPYFILE}	 \"TestContent/Triangle.shaderobj\" \"bin/Debug/Triangle.shaderobj\"",
         "{COPYFILE}	 \"TestContent/Texture.shaderobj\" \"bin/Debug/Texture.shaderobj\"",
         "{COPYFILE}	 \"TestContent/Instancing.shaderobj\" \"bin/Debug/Instancing.shaderobj\"",
-        "{COPYFILE}	 \"TestContent/tbh.png\" \"bin/Debug/tbh.png\""
+        "{COPYFILE}	 \"TestContent/BindlessTexturing.shaderobj\" \"bin/Debug/BindlessTexturing.shaderobj\"",
+        "{COPYFILE}	 \"TestContent/tbh.png\" \"bin/Debug/tbh.png\"",
+        "{COPYFILE}	 \"TestContent/RedSlime.png\" \"bin/Debug/RedSlime.png\"",
+        "{COPYFILE}	 \"TestContent/GreenSlime.png\" \"bin/Debug/GreenSlime.png\"",
+        "{COPYFILE}	 \"TestContent/BlueSlime.png\" \"bin/Debug/BlueSlime.png\""
     }
 
     filter "system:macosx"

@@ -251,6 +251,36 @@ namespace AstralCanvas
             }
         }
     }
+    void Graphics::SetShaderVariableTextures(const char* variableName, Texture2D **textures, usize count)
+    {
+        if (currentRenderPipeline != NULL)
+        {
+            currentRenderPipeline->shader->CheckDescriptorSetAvailability();
+            ShaderVariables *variables = &currentRenderPipeline->shader->shaderVariables;
+            for (usize i = 0; i < variables->uniforms.capacity; i++)
+            {
+                if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+                {
+                    if (GetActiveBackend() == Backend_Vulkan)
+                    {
+                        break; //can only break in vulkan as metal has non-continguous uniform indices
+                    }
+                    continue;
+                }
+                if (variables->uniforms.ptr[i].variableName == variableName)
+                {
+                    currentRenderPipeline->shader->uniformsHasBeenSet = true;
+                    ShaderStagingMutableState *mutableState = &variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall];
+                    mutableState->mutated = true;
+                    for (usize j = 0; j < count; j++)
+                    {
+                        variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].textures.data[j] = textures[j];
+                    }
+                    break;
+                }
+            }
+        }
+    }
     void Graphics::SetShaderVariableTexture(const char* variableName, Texture2D *texture)
     {
         if (currentRenderPipeline != NULL)
