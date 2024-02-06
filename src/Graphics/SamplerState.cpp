@@ -21,7 +21,6 @@ namespace AstralCanvas
 
     SamplerState::SamplerState()
     {
-        this->backend = Backend_Vulkan;
         this->handle = NULL;
         this->sampleMode = SampleMode_Point;
         this->repeatMode = RepeatMode_Repeat;
@@ -30,7 +29,6 @@ namespace AstralCanvas
     }
     SamplerState::SamplerState(SampleMode thisSampleMode, RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel)
     {
-        this->backend = GetActiveBackend();
         this->sampleMode = thisSampleMode;
         this->repeatMode = thisRepeatMode;
         this->anisotropic = isAnisotropic;

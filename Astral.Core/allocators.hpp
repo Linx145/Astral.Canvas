@@ -18,6 +18,8 @@ inline void CAllocator_Free(void* instance, void* ptr)
     free(ptr);
 }
 
+#define FREEPTR(ptr) FreeAndSetNull((void**)&ptr)
+
 struct IAllocator
 {
     void* instance;
@@ -28,10 +30,14 @@ struct IAllocator
     {
         return allocFunction(instance, bytes);
     }
-    inline void Free(void **ptr)
+    inline void FreeAndSetNull(void **ptr)
     {
         freeFunction(instance, *ptr);
         *ptr = NULL;
+    }
+    inline void Free(void *ptr)
+    {
+        freeFunction(instance, ptr);
     }
 
     inline IAllocator()

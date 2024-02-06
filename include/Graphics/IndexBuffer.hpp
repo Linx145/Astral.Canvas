@@ -16,7 +16,7 @@ namespace AstralCanvas
         IndexBuffer();
         IndexBuffer(IndexBufferSize thisIndexElementSize, usize indexCount);
 
-        void SetData(u8* bytes, usize lengthOfBytes);
+        void SetData(u8* bytes, usize sizeOfBytes);
         void Construct();
         void deinit();
     };

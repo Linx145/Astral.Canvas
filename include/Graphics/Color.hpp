@@ -7,17 +7,21 @@ namespace AstralCanvas
 {
     struct Color
     {
-        u8 R;
-        u8 G;
-        u8 B;
-        u8 A;
+        union
+        {
+            struct
+            {
+                u8 R;
+                u8 G;
+                u8 B;
+                u8 A;
+            };
+            u32 packed;
+        };
 
         inline Color()
         {
-            R = 0;
-            G = 0;
-            B = 0;
-            A = 0;
+            packed = 0;
         }
         inline Color(u8 r, u8 g, u8 b)
         {
@@ -63,11 +67,11 @@ namespace AstralCanvas
         }
         inline bool operator==(Color other)
         {
-            return this->R == other.R && this->G == other.G && this->B == other.B && this->A == other.A;
+            return packed == other.packed;
         }
         inline bool operator!=(Color other)
         {
-            return this->R != other.R || this->G != other.G || this->B != other.B || this->A != other.A;
+            return packed != other.packed;
         }
         inline Color operator*(float amount)
         {

@@ -89,7 +89,7 @@ namespace collections
                     }
                     //buckets[i].entries.~();
                 }
-                allocator->Free((void**)&buckets);
+                allocator->FREEPTR(buckets);
             }
         }
 
@@ -124,7 +124,7 @@ namespace collections
                     }
                 }
 
-                this->allocator->Free((void**)&buckets);
+                this->allocator->FREEPTR(buckets);
                 buckets = newBuckets;
                 bucketsCount = newSize;
             }

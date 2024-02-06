@@ -47,7 +47,7 @@ namespace collections
         {
             if (data != NULL && allocator != NULL)
             {
-                allocator->Free((void**)&data);
+                allocator->FREEPTR(data);
             }
         }
         option<usize> Contains(T value, EqlFunc eqlFunc)

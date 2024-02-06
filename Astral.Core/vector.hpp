@@ -43,7 +43,7 @@ namespace collections
         {
             if (ptr != NULL && this->allocator != NULL)
             {
-                this->allocator->Free((void**)&ptr);
+                this->allocator->FREEPTR(ptr);
             }
             count = 0;
             capacity = 0;
@@ -67,7 +67,7 @@ namespace collections
                 {
                     newPtr[i] = ptr[i];
                 }
-                allocator->Free((void**)&ptr);
+                allocator->FREEPTR(ptr);
                 ptr = newPtr;
                 capacity = newCapacity;
             }

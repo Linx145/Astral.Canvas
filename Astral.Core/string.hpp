@@ -56,7 +56,7 @@ struct string
 
     inline void deinit()
     {
-        this->allocator->Free((void**)&buffer);
+        this->allocator->FREEPTR(buffer);
     }
     bool eql(const char *other)
     {
@@ -90,7 +90,7 @@ struct string
 
         if (this->buffer != NULL)
         {
-            this->allocator->Free((void**)&this->buffer);
+            this->allocator->FREEPTR(this->buffer);
         }
         this->buffer = newBuffer;
         this->length = newLength;
@@ -118,7 +118,7 @@ struct string
 
         if (this->buffer != NULL)
         {
-            this->allocator->Free((void**)&this->buffer);
+            this->allocator->FREEPTR(this->buffer);
         }
         this->buffer = newBuffer;
         this->length = newLength;
