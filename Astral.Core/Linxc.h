@@ -9,7 +9,25 @@
 #define IsAttribute
 #define uselang(language)
 #define enduselang
+#ifdef __cplusplus
+#define exportC
+#else
 #define exportC extern "C"
+#endif
+
+#ifdef WINDOWS
+#define exportDynamic __declspec(dllexport)
+#define importDynamic __declspec(dllimport)
+#else
+#define exportDynamic __attribute__((visibility("default")))
+#define importDynamic
+#endif
+
+#ifdef EXPORT_DYNAMIC_LIBRARY
+#define DynamicFunction exportDynamic
+#else
+#define DynamicFunction importDynamic
+#endif
 
 typedef signed char i8;
 typedef short i16;

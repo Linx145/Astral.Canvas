@@ -1,8 +1,10 @@
 #pragma once
 #include "Astral.Canvas/Graphics/Enums.h"
 
+#ifdef __cplusplus
 extern "C"
 {
+#endif
 
     typedef struct 
     {
@@ -20,10 +22,14 @@ extern "C"
 
     typedef void *AstralCanvasRenderProgram;
 
-    i32 AstralCanvasRenderProgram_AddAttachment(AstralCanvasRenderProgram ptr, AstralCanvas_ImageFormat imageFormat, bool clearColor, bool clearDepth, AstralCanvas_RenderPassOutputType outputType);
-    void AstralCanvasRenderProgram_AddRenderPass(AstralCanvasRenderProgram ptr, i32 colorAttachmentID, i32 depthAttachmentID);
-    void AstralCanvasRenderProgram_AddRenderPass(AstralCanvasRenderProgram ptr, i32 *colorAttachmentIDs, usize colorAttachmentIDsCount, i32 depthAttachmentID);
-    void AstralCanvasRenderProgram_Construct(AstralCanvasRenderProgram ptr);
-    void AstralCanvasRenderProgram_Deinit(AstralCanvasRenderProgram ptr);
+    DynamicFunction AstralCanvasRenderProgram AstralCanvasRenderProgram_Init();
+    DynamicFunction i32 AstralCanvasRenderProgram_AddAttachment(AstralCanvasRenderProgram ptr, AstralCanvas_ImageFormat imageFormat, bool clearColor, bool clearDepth, AstralCanvas_RenderPassOutputType outputType);
+    DynamicFunction void AstralCanvasRenderProgram_AddRenderPass(AstralCanvasRenderProgram ptr, i32 colorAttachmentID, i32 depthAttachmentID);
+    DynamicFunction void AstralCanvasRenderProgram_AddRenderPasses(AstralCanvasRenderProgram ptr, i32 *colorAttachmentIDs, usize colorAttachmentIDsCount, i32 depthAttachmentID);
+    DynamicFunction void AstralCanvasRenderProgram_Construct(AstralCanvasRenderProgram ptr);
+    DynamicFunction void AstralCanvasRenderProgram_Deinit(AstralCanvasRenderProgram ptr);
     //call begin and nextpass through graphics
+
+#ifdef __cplusplus
 }
+#endif

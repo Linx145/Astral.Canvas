@@ -32,9 +32,6 @@ namespace io
             {
                 size += 1;
             }
-            //fseek(fs, 0, SEEK_END);
-            //usize size = ftell(fs);
-            //fseek(fs, 0, SEEK_SET);
             fseek(fs, 0, SEEK_SET);
 
             char* buffer = (char*)allocator->Allocate(size + 1);

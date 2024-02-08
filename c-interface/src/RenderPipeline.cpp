@@ -53,7 +53,7 @@ exportC AstralCanvasRenderPipeline AstralCanvasRenderPipeline_Init(
     AstralCanvas::RenderPipeline* result = (AstralCanvas::RenderPipeline*)GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::RenderPipeline));
     AstralCanvas::BlendState blendState;
     blendState.sourceAlphaBlend = (AstralCanvas::Blend)pipelineBlendState.srcAlpha;
-    blendState.destinationAlphaBlend = (AstralCanvas::Blend)pipelineBlendState.dstAlpha;
+    blendState.destinationAlphaBlend = (AstralCanvas::Blend)pipelineBlendState.destAlpha;
     blendState.sourceColorBlend = (AstralCanvas::Blend)pipelineBlendState.srcColor;
     blendState.destinationColorBlend = (AstralCanvas::Blend)pipelineBlendState.destColor;
 

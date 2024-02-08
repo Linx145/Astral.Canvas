@@ -2,8 +2,10 @@
 #include "Linxc.h"
 #include "Astral.Canvas/Graphics/Enums.h"
 
+#ifdef __cplusplus
 extern "C"
 {
+#endif
     typedef struct
     {
         AstralCanvas_VertexElementFormat format;
@@ -12,13 +14,14 @@ extern "C"
 
     typedef void *AstralCanvasVertexDeclaration;
 
-    usize AstralCanvasVertexDeclaration_GetElementSize(AstralCanvasVertexDeclaration ptr);
-    AstralCanvas_VertexInputRate AstralCanvasVertexDeclaration_GetInputRate(AstralCanvasVertexDeclaration ptr);
-    void AstralCanvasVertexDeclaration_GetElements(AstralCanvasVertexDeclaration ptr, usize* outputCount, AstralCanvasVertexElement *outputData);
-
-    AstralCanvasVertexDeclaration AstralCanvasGetVertexPositionColorDecl();
-    AstralCanvasVertexDeclaration AstralCanvasGetVertexPositionColorTextureDecl();
-    AstralCanvasVertexDeclaration AstralCanvasGetVertexPositionTextureColorDecl();
-    AstralCanvasVertexDeclaration AstralCanvasGetVertexPositionNormalTextureDecl();
-    AstralCanvasVertexDeclaration AstralCanvasGetInstanceDataMatrixDecl();
+    DynamicFunction usize AstralCanvasVertexDeclaration_GetElementSize(AstralCanvasVertexDeclaration ptr);
+    DynamicFunction AstralCanvas_VertexInputRate AstralCanvasVertexDeclaration_GetInputRate(AstralCanvasVertexDeclaration ptr);
+    DynamicFunction void AstralCanvasVertexDeclaration_GetElements(AstralCanvasVertexDeclaration ptr, usize* outputCount, AstralCanvasVertexElement *outputData);
+    DynamicFunction AstralCanvasVertexDeclaration AstralCanvasGetVertexPositionColorDecl();
+    DynamicFunction AstralCanvasVertexDeclaration AstralCanvasGetVertexPositionColorTextureDecl();
+    DynamicFunction AstralCanvasVertexDeclaration AstralCanvasGetVertexPositionTextureColorDecl();
+    DynamicFunction AstralCanvasVertexDeclaration AstralCanvasGetVertexPositionNormalTextureDecl();
+    DynamicFunction AstralCanvasVertexDeclaration AstralCanvasGetInstanceDataMatrixDecl();
+#ifdef __cplusplus
 }
+#endif

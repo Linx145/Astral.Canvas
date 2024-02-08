@@ -82,7 +82,7 @@ namespace AstralCanvas
         }
 		return true;
 	}
-	void Application::Run(AstralCanvas_Update updateFunc, AstralCanvas_Update drawFunc, AstralCanvas_Init initFunc, AstralCanvas_Deinit deinitFunc)
+	void Application::Run(ApplicationUpdateFunction updateFunc, ApplicationUpdateFunction drawFunc, ApplicationInitFunction initFunc, ApplicationDeinitFunction deinitFunc)
 	{
 		FinalizeGraphicsBackend();
 		if (initFunc != NULL)

@@ -52,7 +52,7 @@ namespace AstralCanvas
                 createInfo.flags = 0;
                 createInfo.layers = 1;
                 createInfo.attachmentCount = 1;
-                if (this->depthBuffer.constructed)
+                if (this->depthBuffer.imageView != NULL)
                 {
                     createInfo.attachmentCount = 2;
                 }

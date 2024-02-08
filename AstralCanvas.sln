@@ -3,15 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Astral.Canvas", "Astral.Canvas.vcxproj", "{363E6D13-A2FE-E849-6B39-32C7D7B82D26}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Astral.Canvas.Dynamic", "Astral.Canvas.Dynamic.vcxproj", "{C94195EE-35AE-50E9-FEA1-E8466ACD7251}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Astral.Reflect", "Astral.Reflect\Astral.Reflect.vcxproj", "{5F067D0C-4BD4-7012-3468-E13820D54C77}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Astral.Shaderc", "Astral.Shaderc\Astral.Shaderc.vcxproj", "{54E11760-40AF-0B66-2943-7C8C15B0E7CA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AstralCanvasBindingsGenerator", "BindingsGenerator\AstralCanvasBindingsGenerator.vcxproj", "{DD819672-499A-7D9C-1247-0D367E1E1236}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AstralCanvasTest", "Test\AstralCanvasTest.vcxproj", "{C816414D-B40F-609F-DD41-4524C9993FAB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFW", "dependencies\glfw\GLFW.vcxproj", "{154B857C-0182-860D-AA6E-6C109684020F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Triangle", "c-examples\Triangle\Triangle.vcxproj", "{DB3AC344-C707-1E50-F020-0CF8DC4C53DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,6 +25,10 @@ Global
 		{363E6D13-A2FE-E849-6B39-32C7D7B82D26}.Debug|x64.Build.0 = Debug|x64
 		{363E6D13-A2FE-E849-6B39-32C7D7B82D26}.Release|x64.ActiveCfg = Release|x64
 		{363E6D13-A2FE-E849-6B39-32C7D7B82D26}.Release|x64.Build.0 = Release|x64
+		{C94195EE-35AE-50E9-FEA1-E8466ACD7251}.Debug|x64.ActiveCfg = Debug|x64
+		{C94195EE-35AE-50E9-FEA1-E8466ACD7251}.Debug|x64.Build.0 = Debug|x64
+		{C94195EE-35AE-50E9-FEA1-E8466ACD7251}.Release|x64.ActiveCfg = Release|x64
+		{C94195EE-35AE-50E9-FEA1-E8466ACD7251}.Release|x64.Build.0 = Release|x64
 		{5F067D0C-4BD4-7012-3468-E13820D54C77}.Debug|x64.ActiveCfg = Debug|x64
 		{5F067D0C-4BD4-7012-3468-E13820D54C77}.Debug|x64.Build.0 = Debug|x64
 		{5F067D0C-4BD4-7012-3468-E13820D54C77}.Release|x64.ActiveCfg = Release|x64
@@ -31,10 +37,6 @@ Global
 		{54E11760-40AF-0B66-2943-7C8C15B0E7CA}.Debug|x64.Build.0 = Debug|x64
 		{54E11760-40AF-0B66-2943-7C8C15B0E7CA}.Release|x64.ActiveCfg = Release|x64
 		{54E11760-40AF-0B66-2943-7C8C15B0E7CA}.Release|x64.Build.0 = Release|x64
-		{DD819672-499A-7D9C-1247-0D367E1E1236}.Debug|x64.ActiveCfg = Debug|x64
-		{DD819672-499A-7D9C-1247-0D367E1E1236}.Debug|x64.Build.0 = Debug|x64
-		{DD819672-499A-7D9C-1247-0D367E1E1236}.Release|x64.ActiveCfg = Release|x64
-		{DD819672-499A-7D9C-1247-0D367E1E1236}.Release|x64.Build.0 = Release|x64
 		{C816414D-B40F-609F-DD41-4524C9993FAB}.Debug|x64.ActiveCfg = Debug|x64
 		{C816414D-B40F-609F-DD41-4524C9993FAB}.Debug|x64.Build.0 = Debug|x64
 		{C816414D-B40F-609F-DD41-4524C9993FAB}.Release|x64.ActiveCfg = Release|x64
@@ -43,6 +45,10 @@ Global
 		{154B857C-0182-860D-AA6E-6C109684020F}.Debug|x64.Build.0 = Debug|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Release|x64.ActiveCfg = Release|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Release|x64.Build.0 = Release|x64
+		{DB3AC344-C707-1E50-F020-0CF8DC4C53DE}.Debug|x64.ActiveCfg = Debug|x64
+		{DB3AC344-C707-1E50-F020-0CF8DC4C53DE}.Debug|x64.Build.0 = Debug|x64
+		{DB3AC344-C707-1E50-F020-0CF8DC4C53DE}.Release|x64.ActiveCfg = Release|x64
+		{DB3AC344-C707-1E50-F020-0CF8DC4C53DE}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -27,11 +27,14 @@ exportC void AstralCanvasShader_Deinit(AstralCanvasShader ptr)
 }
 exportC i32 AstralCanvasShader_FromString(AstralCanvas_ShaderType shaderType, const char* jsonString, AstralCanvasShader *result)
 {
+    if (jsonString == NULL)
+    {
+        return -1;
+    }
     AstralCanvas::Shader *shader = (AstralCanvas::Shader *)GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::Shader));
-    string str = string(GetDefaultAllocator(), jsonString);
-    i32 errorLine = AstralCanvas::CreateShaderFromString(GetDefaultAllocator(), (AstralCanvas::ShaderType)shaderType, str, shader);
-    str.deinit();
-    return errorLine;
+    string inputString = string(GetDefaultAllocator(), jsonString);
+    i32 errorLine = AstralCanvas::CreateShaderFromString(GetDefaultAllocator(), (AstralCanvas::ShaderType)shaderType, inputString, shader);
 
     *result = shader;
+    return errorLine;
 }

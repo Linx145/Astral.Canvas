@@ -1,6 +1,12 @@
 #include "Astral.Canvas/Graphics/RenderProgram.h"
 #include "Graphics/RenderProgram.hpp"
 
+exportC AstralCanvasRenderProgram AstralCanvasRenderProgram_Init()
+{
+    AstralCanvas::RenderProgram *result = (AstralCanvas::RenderProgram *)malloc(sizeof(AstralCanvas::RenderProgram));
+    *result = AstralCanvas::RenderProgram(GetDefaultAllocator());
+    return result;
+}
 exportC i32 AstralCanvasRenderProgram_AddAttachment(AstralCanvasRenderProgram ptr, AstralCanvas_ImageFormat imageFormat, bool clearColor, bool clearDepth, AstralCanvas_RenderPassOutputType outputType)
 {
     return ((AstralCanvas::RenderProgram *)ptr)->AddAttachment((AstralCanvas::ImageFormat)imageFormat, clearColor, clearDepth, (AstralCanvas::RenderPassOutputType)outputType);
@@ -9,7 +15,7 @@ exportC void AstralCanvasRenderProgram_AddRenderPass(AstralCanvasRenderProgram p
 {
     ((AstralCanvas::RenderProgram *)ptr)->AddRenderPass(colorAttachmentID, depthAttachmentID);
 }
-exportC void AstralCanvasRenderProgram_AddRenderPass(AstralCanvasRenderProgram ptr, i32 *colorAttachmentIDs, usize colorAttachmentIDsCount, i32 depthAttachmentID)
+exportC void AstralCanvasRenderProgram_AddRenderPasses(AstralCanvasRenderProgram ptr, i32 *colorAttachmentIDs, usize colorAttachmentIDsCount, i32 depthAttachmentID)
 {
     collections::Array<i32> array = collections::Array<i32>(((AstralCanvas::RenderProgram *)ptr)->allocator, colorAttachmentIDsCount);
     ((AstralCanvas::RenderProgram *)ptr)->AddRenderPass(array, depthAttachmentID);

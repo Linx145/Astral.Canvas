@@ -93,12 +93,12 @@ void Initialize()
 		return;
 	}
 
-	collections::Array<AstralCanvas::VertexDeclaration> vertexDeclsUsed;
+	collections::Array<AstralCanvas::VertexDeclaration*> vertexDeclsUsed;
 
 	#ifdef BINDLESS
-		vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration>(&resourcesArena.asAllocator, 2);
+		vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.asAllocator, 2);
 		vertexDeclsUsed.data[0] = AstralCanvas::GetVertexPositionColorTextureDecl();
-		vertexDeclsUsed.data[1] = instanceDataBindlessDecl;
+		vertexDeclsUsed.data[1] = &instanceDataBindlessDecl;
 	#else
 	if (INSTANCE_COUNT > 1)
 	{
@@ -186,7 +186,7 @@ void Initialize()
 	{
 		srand(time(NULL));
 
-		instanceBuffer = AstralCanvas::InstanceBuffer(instanceDataBindlessDecl, INSTANCE_COUNT, true);
+		instanceBuffer = AstralCanvas::InstanceBuffer(&instanceDataBindlessDecl, INSTANCE_COUNT, true);
 		datas = (BindlessData *)resourcesArena.asAllocator.Allocate(sizeof(BindlessData) * INSTANCE_COUNT);
 		for (usize i = 0; i < INSTANCE_COUNT; i++)
 		{

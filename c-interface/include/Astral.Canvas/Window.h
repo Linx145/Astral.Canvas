@@ -1,8 +1,9 @@
 #include "Linxc.h"
 
+#ifdef __cplusplus
 extern "C"
 {
-
+#endif
     typedef struct
     {
         i32 X;
@@ -19,16 +20,12 @@ extern "C"
 
     typedef void *AstralCanvasWindow;
 
-    AstralCanvasPoint2 AstralCanvasWindow_GetResolution(AstralCanvasWindow ptr);
-
-    void AstralCanvasWindow_SetResolution(AstralCanvasWindow ptr, AstralCanvasPoint2 resolution);
-
-    AstralCanvasPoint2 AstralCanvasWindow_GetPosition(AstralCanvasWindow ptr);
-
-    void AstralCanvasWindow_SetPosition(AstralCanvasWindow ptr, AstralCanvasPoint2 position);
-
-    AstralCanvasRectangle AstralCanvasWindow_AsRectangle(AstralCanvasWindow ptr);
-
-    void AstralCanvasWindow_Deinit(AstralCanvasWindow ptr);
-
+    DynamicFunction AstralCanvasPoint2 AstralCanvasWindow_GetResolution(AstralCanvasWindow ptr);
+    DynamicFunction void AstralCanvasWindow_SetResolution(AstralCanvasWindow ptr, AstralCanvasPoint2 resolution);
+    DynamicFunction AstralCanvasPoint2 AstralCanvasWindow_GetPosition(AstralCanvasWindow ptr);
+    DynamicFunction void AstralCanvasWindow_SetPosition(AstralCanvasWindow ptr, AstralCanvasPoint2 position);
+    DynamicFunction AstralCanvasRectangle AstralCanvasWindow_AsRectangle(AstralCanvasWindow ptr);
+    DynamicFunction void AstralCanvasWindow_Deinit(AstralCanvasWindow ptr);
+#ifdef __cplusplus
 }
+#endif

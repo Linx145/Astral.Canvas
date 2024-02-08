@@ -1,22 +1,28 @@
 #pragma once
 #include "Linxc.h"
-#include "Window.h"
+#include "Astral.Canvas/Window.h"
+#include "Astral.Canvas/Graphics/Graphics.h"
 
+#ifdef __cplusplus
 extern "C"
 {
+#endif
+	def_delegate(AstralCanvasUpdateFunction, void, float);
+	def_delegate(AstralCanvasInitFunction, void);
+	def_delegate(AstralCanvasDeinitFunction, void);
+
     typedef void *AstralCanvasApplication;
 
-    const char *AstralCanvasApplication_GetApplicationName(AstralCanvasApplication ptr);
-
-    const char *AstralCanvasApplication_GetEngineName(AstralCanvasApplication ptr);
-
-    float AstralCanvasApplication_GetFramesPerSecond(AstralCanvasApplication ptr);
-
-    void AstralCanvasApplication_SetFramesPerSecond(AstralCanvasApplication ptr, float frames);
-
-    void AstralCanvasApplication_AddWindow(AstralCanvasApplication ptr, i32 width, i32 height, bool resizeable);
-
-    AstralCanvasWindow AstralCanvasApplication_GetWindow(AstralCanvasApplication ptr, usize index);
-
-    AstralCanvasApplication AstralCanvasApplication_Init(const char *appName, const char *engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
+    DynamicFunction const char *AstralCanvasApplication_GetApplicationName(AstralCanvasApplication ptr);
+    DynamicFunction const char *AstralCanvasApplication_GetEngineName(AstralCanvasApplication ptr);
+    DynamicFunction float AstralCanvasApplication_GetFramesPerSecond(AstralCanvasApplication ptr);
+    DynamicFunction void AstralCanvasApplication_SetFramesPerSecond(AstralCanvasApplication ptr, float frames);
+    DynamicFunction void AstralCanvasApplication_AddWindow(AstralCanvasApplication ptr, i32 width, i32 height, bool resizeable);
+    DynamicFunction AstralCanvasWindow AstralCanvasApplication_GetWindow(AstralCanvasApplication ptr, usize index);
+    DynamicFunction AstralCanvasApplication AstralCanvasApplication_Init(const char *appName, const char *engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
+    DynamicFunction void AstralCanvasApplication_Run(AstralCanvasApplication app, AstralCanvasUpdateFunction updateFunc, AstralCanvasUpdateFunction drawFunc, AstralCanvasInitFunction initFunc, AstralCanvasDeinitFunction deinitFunc);
+    DynamicFunction AstralCanvasGraphics AstralCanvasApplication_GetGraphicsDevice(AstralCanvasApplication ptr);
+    DynamicFunction AstralCanvasApplication AstralCanvasApplication_GetInstance();
+#ifdef __cplusplus
 }
+#endif

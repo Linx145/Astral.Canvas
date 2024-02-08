@@ -17,6 +17,53 @@ workspace "AstralCanvas"
         system "macosx"
 
     include("dependencies/glfw")
+    
+    project "Astral.Canvas.Dynamic"
+        kind "SharedLib"
+        language "C++"
+        rtti "Off"
+        cppdialect "C++14"
+        exceptionhandling "Off"
+        staticruntime "Off"
+        targetdir "bin/%{cfg.buildcfg}"
+        includedirs {
+            "include", 
+            "dependencies/glfw/include", 
+            "c-interface/include",
+            "Astral.Core",
+            "Astral.Json"
+        }
+        links {"GLFW", "Astral.Canvas"}
+
+        files { 
+            "c-interface/src/*.cpp",
+            "Astral.Json/Json.cpp"
+        }
+
+        defines "EXPORT_DYNAMIC_LIBRARY"
+
+        filter "system:windows"
+            systemversion "latest"
+            includedirs "%{VULKAN_SDK}/Include"
+            links { "%{VULKAN_SDK}/Lib/vulkan-1.lib" }
+            defines { "ASTRALCANVAS_VULKAN" }
+            ignoredefaultlibraries {"libcmt", "libcmtd"}
+
+        filter "system:macosx"
+            defines { "ASTRALCANVAS_METAL", "_GLFW_COCOA" }
+
+        filter "system:linux"
+            links { "%{VULKAN_SDK}/Lib/vulkan-1.lib" }
+            includedirs "%{VULKAN_SDK}/Include"
+            defines { "ASTRALCANVAS_VULKAN" }
+            
+        filter "configurations:Debug"
+            defines { "DEBUG" }
+            symbols "On"
+
+        filter "configurations:Release"
+            defines { "NDEBUG" }
+            optimize "On"
 
     project "Astral.Canvas"
         kind "StaticLib"
@@ -24,7 +71,7 @@ workspace "AstralCanvas"
         rtti "Off"
         cppdialect "C++14"
         exceptionhandling "Off"
-        staticruntime "off"
+        staticruntime "Off"
         targetdir "bin/%{cfg.buildcfg}"
         includedirs {
             "include", 
@@ -73,4 +120,4 @@ workspace "AstralCanvas"
 
     include("Test")
 
-    include("BindingsGenerator")
+    include("c-examples/Triangle")

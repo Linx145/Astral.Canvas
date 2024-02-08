@@ -285,33 +285,4 @@ void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, VkIma
 
     AstralCanvasVk_EndTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, transientCmdBuffer);
 }
-
-/*VkFramebuffer AstralCanvasVk_GetOrCreateRenderTarget(AstralVulkanGPU *gpu, RenderTarget *renderTarget, RenderProgram *forProgram)
-{
-    VkFramebufferCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    createInfo.width = renderTarget->width;
-    createInfo.height = renderTarget->height;
-    createInfo.layers = 1;
-
-    VkImageView imageViews[2];
-    imageViews[0] = (VkImageView)renderTarget->backendTexture.imageView;
-
-    createInfo.attachmentCount = 1;
-    if (renderTarget->depthBuffer.imageHandle != NULL)
-    {
-        createInfo.attachmentCount = 2;
-        imageViews[1] = (VkImageView)renderTarget->depthBuffer.imageView;
-    }
-
-    if (renderTarget->isBackbuffer)
-    {
-
-    }
-    else
-    {
-        
-    }
-    
-}*/
 #endif
