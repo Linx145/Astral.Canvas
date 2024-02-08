@@ -158,6 +158,13 @@ namespace AstralCanvas
         MouseButton_Right,
         MouseButton_Middle
     };
+    enum KeyState
+    {
+        KeyState_None,
+        KeyState_Released,
+        KeyState_Pressed,
+        KeyState_Repeat
+    };
     struct ControllerState
     {
         /// Whether this controller is connected
@@ -182,13 +189,6 @@ namespace AstralCanvas
             other->R2DownAmount = R2DownAmount;
             memcpy(other->buttonStates, buttonStates, sizeof(bool) * CONTROLLER_BUTTONS);
         }
-    };
-    enum KeyState
-    {
-        KeyState_None,
-        KeyState_Released,
-        KeyState_Pressed,
-        KeyState_Repeat
     };
     struct KeyStateStatus
     {
