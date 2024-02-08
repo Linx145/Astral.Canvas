@@ -18,7 +18,7 @@ extern "C"
     DynamicFunction bool AstralCanvasRenderTarget_GetUseStatus(AstralCanvasRenderTarget ptr);
     DynamicFunction void AstralCanvasRenderTarget_SetUseStatus(AstralCanvasRenderTarget ptr, bool hasBeenUsedBefore);
     DynamicFunction AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateFromTextures(AstralCanvasTexture2D thisBackendTexture, AstralCanvasTexture2D thisDepthBuffer, bool isBackbuffer);
-    DynamicFunction AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateFromHandle(u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, AstralCanvas_ImageFormat depthFormat);
+    DynamicFunction AstralCanvasRenderTarget AstralCanvasRenderTarget_Create(u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, AstralCanvas_ImageFormat depthFormat);
     DynamicFunction void AstralCanvasRenderTarget_Deinit(AstralCanvasRenderTarget ptr);
 
 #ifdef __cplusplus

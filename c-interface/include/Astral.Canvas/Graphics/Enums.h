@@ -9,7 +9,7 @@ extern "C"
 typedef enum
 {
     AstralCanvas_ShaderType_VertexFragment,
-    ShaderType_Compute
+    AstralCanvas_ShaderType_Compute
 } AstralCanvas_ShaderType;
 typedef enum
 {

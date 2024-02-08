@@ -21,7 +21,6 @@ Astral.Shaderc/dependencies/**.so
 Astral.Shaderc/dependencies/**.dll
 dependencies/glfw/*
 !dependencies/glfw/premake5.lua
-Bindings
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

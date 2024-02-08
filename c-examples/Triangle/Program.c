@@ -87,15 +87,15 @@ void Initialize()
     VertexPositionColor vertices[3] =
     {
         {
-            {-1.0f, 1.0f, 0.0f, 0.0f}, //position xyz
+            {-1.0f, 1.0f, 0.0f, 0.0f}, //position xyz + padding
             {1.0f, 0.0f, 0.0f, 1.0f} //color rgba
         },
         {
-            {1.0f, 1.0f, 0.0f, 0.0f}, //position xyz
+            {1.0f, 1.0f, 0.0f, 0.0f}, //position xyz + padding
             {0.0f, 1.0f, 0.0f, 1.0f} //color rgba
         },
         {
-            {0.0f, -1.0f, 0.0f, 0.0f}, //position xyz
+            {0.0f, -1.0f, 0.0f, 0.0f}, //position xyz + padding
             {0.0f, 0.0f, 1.0f, 1.0f} //color rgba
         }
     };

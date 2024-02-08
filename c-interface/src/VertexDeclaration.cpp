@@ -11,7 +11,7 @@ exportC AstralCanvas_VertexInputRate AstralCanvasVertexDeclaration_GetInputRate(
 }
 exportC void AstralCanvasVertexDeclaration_GetElements(AstralCanvasVertexDeclaration ptr, usize* outputCount, AstralCanvasVertexElement *outputData)
 {
-    if (outputData == NULL)
+    if (outputData != NULL)
     {
         for (usize i = 0; i < ((AstralCanvas::VertexDeclaration *)ptr)->elements.count; i++)
         {

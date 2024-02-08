@@ -43,7 +43,7 @@ exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateFromTextures(Ast
         GetDefaultAllocator()->Free(thisDepthBuffer);
     return result;
 }
-exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateFromHandle(u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, AstralCanvas_ImageFormat depthFormat)
+exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_Create(u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, AstralCanvas_ImageFormat depthFormat)
 {
     AstralCanvasRenderTarget result = GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::RenderTarget));
     *((AstralCanvas::RenderTarget *)result) = AstralCanvas::RenderTarget(width, height, (AstralCanvas::ImageFormat)imageFormat, (AstralCanvas::ImageFormat)depthFormat);
