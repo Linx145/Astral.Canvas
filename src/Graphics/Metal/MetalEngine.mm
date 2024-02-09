@@ -1,6 +1,7 @@
 #ifdef ASTRALCANVAS_METAL
 #include "Graphics/Metal/MetalEngine.h"
 #include "Graphics/Metal/MetalInstanceData.h"
+#include "GLFW/glfw3.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -20,22 +21,21 @@ bool AstralCanvasMetal_Initialize(IAllocator *allocator, AstralCanvas::Window* w
     swapchain.opaque = YES;
     AstralCanvasMetal_SetSwapchain(swapchain);
 
-    NSWindow *nswindow = glfwGetCocoaWindow(window->handle);
+    NSWindow *nswindow = glfwGetCocoaWindow((GLFWwindow*)window->handle);
     nswindow.contentView.layer = swapchain;
     nswindow.contentView.wantsLayer = YES;
     
     semaphore = dispatch_semaphore_create(1);
-    
+
+    AstralCanvasMetal_InitDepthStates();
+    AstralCanvasMetal_RecreateDepthBuffers(window->resolution.X, window->resolution.Y);
     return true;
 }
 void AstralCanvasMetal_BeginDraw()
 {
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
     
-    CAMetalLayer *layer = AstralCanvasMetal_GetSwapchain();
-    
-    id<CAMetalDrawable> currentSwapchainSurface = [layer nextDrawable];
-    //id<MTLTexture> currentSwapchainTexture = currentSwapchainSurface.texture;
+    id<CAMetalDrawable> currentSwapchainSurface = AstralCanvasMetal_NextDrawable();
     
     AstralCanvasMetal_SetCurrentSwapchainTexture(currentSwapchainSurface);
 

@@ -67,8 +67,6 @@ namespace AstralCanvas
                 this->graphicsDevice = AstralCanvas::Graphics();
                 this->graphicsDevice.ClipArea = this->windows.ptr[0].AsRectangle();
                 this->graphicsDevice.Viewport = this->windows.ptr[0].AsRectangle();
-
-				this->graphicsDevice.usedShaders = collections::hashset<AstralCanvas::Shader*>(this->allocator, &PointerHash<AstralCanvas::Shader>, &PointerEql<AstralCanvas::Shader>);
 				break;
             }
 #endif
@@ -82,6 +80,7 @@ namespace AstralCanvas
             default:
                 THROW_ERR("Unrecognised backend");
         }
+        this->graphicsDevice.usedShaders = collections::hashset<AstralCanvas::Shader*>(this->allocator, &PointerHash<AstralCanvas::Shader>, &PointerEql<AstralCanvas::Shader>);
 		return true;
 	}
 	void Application::Run(ApplicationUpdateFunction updateFunc, ApplicationUpdateFunction drawFunc, ApplicationInitFunction initFunc, ApplicationDeinitFunction deinitFunc)

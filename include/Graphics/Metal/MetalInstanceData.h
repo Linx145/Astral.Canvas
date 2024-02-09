@@ -17,4 +17,13 @@ void AstralCanvasMetal_SetCurrentSwapchainTexture(id<CAMetalDrawable> texture);
 
 id<MTLCommandBuffer> AstralCanvasMetal_GetMainCmdBuffer();
 void AstralCanvasMetal_SetMainCmdBuffer(id<MTLCommandBuffer> buffer);
+
+id<MTLDepthStencilState> AstralCanvasMetal_GetDepthTestDisabledWriteDisabled();
+id<MTLDepthStencilState> AstralCanvasMetal_GetDepthTestEnabledWriteDisabled();
+id<MTLDepthStencilState> AstralCanvasMetal_GetDepthTestEnabledWriteEnabled();
+id<MTLDepthStencilState> AstralCanvasMetal_GetDepthTestDisabledWriteEnabled();
+void AstralCanvasMetal_InitDepthStates();
+void AstralCanvasMetal_RecreateDepthBuffers(usize frameWidth, usize frameHeight);
+id<CAMetalDrawable> AstralCanvasMetal_NextDrawable();
+void *AstralCanvasMetal_GetDepthBackbuffer();
 #endif

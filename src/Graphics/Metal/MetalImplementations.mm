@@ -51,18 +51,24 @@ void* AstralCanvasMetal_StartRenderProgram(AstralCanvas::RenderProgram *program,
     if (program->handle != NULL)
     {
         id<CAMetalDrawable> surface = nil;
+        id<MTLTexture> depthBuffer = nil;
         if (target == NULL)
         {
             surface = AstralCanvasMetal_GetCurrentSwapchainTexture();
+            depthBuffer = (id<MTLTexture>)((AstralCanvas::Texture2D*)AstralCanvasMetal_GetDepthBackbuffer())->imageHandle;
         }
         else
         {
             surface = (id<CAMetalDrawable>)target->renderTargetHandle;
+            depthBuffer = (id<MTLTexture>)target->depthBuffer.imageHandle;
         }
+        
         MTLRenderPassDescriptor** array = (MTLRenderPassDescriptor**)program->handle;
         MTLRenderPassDescriptor* currentPass = array[currentRenderPass]; //todo
         currentPass.colorAttachments[0].texture = surface.texture;
         currentPass.colorAttachments[0].clearColor = MTLClearColorMake(color.R * ONE_OVER_255, color.G * ONE_OVER_255, color.B * ONE_OVER_255, color.A * ONE_OVER_255);
+        currentPass.depthAttachment.texture = depthBuffer;
+        currentPass.depthAttachment.clearDepth = 1.0f;
         
         id<MTLCommandBuffer> mainCmdBuffer = AstralCanvasMetal_GetMainCmdBuffer();
         id<MTLRenderCommandEncoder> encoder = [mainCmdBuffer renderCommandEncoderWithDescriptor:currentPass];
@@ -87,7 +93,7 @@ void AstralCanvasMetal_DestroyRenderProgram(AstralCanvas::RenderProgram *program
             MTLRenderPassDescriptor *descriptor = (MTLRenderPassDescriptor *)((MTLRenderPassDescriptor**)program->handle)[i];
             [descriptor release];
         }
-        program->allocator->Free((void**)&program->handle);
+        program->allocator->Free(program->handle);
     }
 }
 
@@ -157,6 +163,32 @@ void AstralCanvasMetal_UseRenderPipeline(void *commandEncoder, AstralCanvas::Ren
     id<MTLRenderPipelineState> pipelineState = (id<MTLRenderPipelineState>)pipeline->GetOrCreateFor(renderProgram, renderPassToUse);
 
     [encoder setRenderPipelineState:pipelineState];
+    if (pipeline->depthTest)
+    {
+        if (pipeline->depthWrite)
+        {
+            //test enabled, write enabled
+            [encoder setDepthStencilState:AstralCanvasMetal_GetDepthTestEnabledWriteEnabled()];
+        }
+        else
+        {
+            //test enabled, write disabled
+            [encoder setDepthStencilState:AstralCanvasMetal_GetDepthTestEnabledWriteDisabled()];
+        }
+    }
+    else
+    {
+        if (pipeline->depthWrite)
+        {
+            //test disabled, write enabled
+            [encoder setDepthStencilState:AstralCanvasMetal_GetDepthTestDisabledWriteEnabled()];
+        }
+        else
+        {
+            //test disabled, write disabled
+            [encoder setDepthStencilState:AstralCanvasMetal_GetDepthTestDisabledWriteDisabled()];
+        }
+    }
 
     /*MTLViewport metalViewport;
     metalViewport.width = viewport.Width;
@@ -321,7 +353,13 @@ void AstralCanvasMetal_CreateTexture(AstralCanvas::Texture2D *texture)
     descriptor.pixelFormat = AstralCanvasMetal_FromImageFormat(texture->imageFormat);
     descriptor.width = texture->width;
     descriptor.height = texture->height;
+    descriptor.storageMode = MTLStorageModePrivate;
     descriptor.depth = 1;
+    if (texture->usedForRenderTarget)
+    {
+        descriptor.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite;
+    }
+    else descriptor.usage = MTLTextureUsageShaderRead;
     
     id<MTLTexture> handle = [AstralCanvasMetal_GetCurrentGPU() newTextureWithDescriptor:descriptor];
     

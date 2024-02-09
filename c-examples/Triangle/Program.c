@@ -58,8 +58,8 @@ void Draw(float deltaTime)
 char* ReadFile(const char* path)
 {
     char *result = NULL;
-    FILE *fs;
-    if (fopen_s(&fs, path, "r") == 0)
+    FILE *fs = fopen(path, "r");
+    if (fs != NULL)
     {
         usize size = 0;
         while (fgetc(fs) != EOF)
@@ -105,7 +105,7 @@ void Initialize()
     AstralCanvasVertexBuffer_SetData(vertexBuffer, vertices, 3);
     AstralCanvasIndexBuffer_SetData(indexBuffer, (u8*)indices, sizeof(u16) * 3);
 
-    char *fileData = ReadFile("C:/Users/Linus/source/repos/SomnialGametech/Astral.Canvas/c-examples/Triangle/bin/Debug/Triangle.shaderobj");
+    char *fileData = ReadFile("Triangle.shaderobj");
 
     if (fileData == NULL)
     {
@@ -151,6 +151,6 @@ void Deinitialize()
 int main()
 {
     AstralCanvasApplication application = AstralCanvasApplication_Init("Triangle Demo", "My Engine", 0, 0, 0.0f);
-    AstralCanvasApplication_AddWindow(application, 1920, 1080, true);
+    AstralCanvasApplication_AddWindow(application, 1024, 768, true);
     AstralCanvasApplication_Run(application, &Update, &Draw, &Initialize, &Deinitialize);
 }

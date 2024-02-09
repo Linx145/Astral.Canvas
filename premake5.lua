@@ -33,7 +33,7 @@ workspace "AstralCanvas"
             "Astral.Core",
             "Astral.Json"
         }
-        links {"GLFW", "Astral.Canvas"}
+        links {"GLFW", "Astral.Canvas", "Cocoa.framework", "IOKit.framework", "Metal.framework", "MetalKit.framework", "QuartzCore.framework"}
 
         files { 
             "c-interface/src/*.cpp",
