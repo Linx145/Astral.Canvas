@@ -36,3 +36,12 @@ exportC void AstralCanvasWindow_Deinit(AstralCanvasWindow ptr)
 {
     ((AstralCanvas::Window *)ptr)->deinit();
 }
+
+exportC void AstralCanvasWindow_SetTitle(AstralCanvasWindow ptr, const char *title)
+{
+    if (((AstralCanvas::Window *)ptr)->windowTitle.buffer != NULL)
+    {
+        ((AstralCanvas::Window *)ptr)->windowTitle.deinit();
+    }
+    ((AstralCanvas::Window *)ptr)->SetWindowTitle(string(GetDefaultAllocator(), title));
+}

@@ -150,5 +150,9 @@ namespace AstralCanvas
 		return false;
 	}
 
-	
+	void Window::SetWindowTitle(string title)
+	{
+		glfwSetWindowTitle((GLFWwindow*)handle, title.buffer);
+		windowTitle = title;
+	}
 }

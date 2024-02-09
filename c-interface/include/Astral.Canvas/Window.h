@@ -26,6 +26,7 @@ extern "C"
     DynamicFunction void AstralCanvasWindow_SetPosition(AstralCanvasWindow ptr, AstralCanvasPoint2 position);
     DynamicFunction AstralCanvasRectangle AstralCanvasWindow_AsRectangle(AstralCanvasWindow ptr);
     DynamicFunction void AstralCanvasWindow_Deinit(AstralCanvasWindow ptr);
+    DynamicFunction void AstralCanvasWindow_SetTitle(AstralCanvasWindow ptr, const char *title);
 #ifdef __cplusplus
 }
 #endif
