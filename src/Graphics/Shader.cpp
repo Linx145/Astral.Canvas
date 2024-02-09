@@ -342,7 +342,6 @@ namespace AstralCanvas
     }
     void Shader::deinit()
     {
-        this->shaderVariables.deinit();
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN

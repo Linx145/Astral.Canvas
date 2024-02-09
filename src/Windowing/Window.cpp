@@ -1,5 +1,6 @@
 #include "Windowing/Window.hpp"
 #include <stdio.h>
+#include "GLFW/glfw3.h"
 
 using namespace Maths;
 
@@ -16,6 +17,10 @@ namespace AstralCanvas
 		this->windowInputState = {};
 	}
 
+	void Window::deinit()
+	{
+		glfwDestroyWindow((GLFWwindow*)this->handle);
+	}
 	/// Called when the window is minimized, otherwise known as iconified
 	void WindowMinimized(GLFWwindow* window, i32 iconified)
 	{

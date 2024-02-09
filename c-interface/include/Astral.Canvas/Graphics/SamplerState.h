@@ -11,10 +11,6 @@ extern "C"
 
     DynamicFunction AstralCanvasSamplerState AstralCanvasSamplerState_Init(AstralCanvas_SampleMode thisSampleMode, AstralCanvas_RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel);
     DynamicFunction void AstralCanvasSamplerState_Deinit(AstralCanvasSamplerState ptr);
-    DynamicFunction AstralCanvasSamplerState AstralCanvasSampler_GetPointClamp();
-    DynamicFunction AstralCanvasSamplerState AstralCanvasSampler_GetLinearClamp();
-    DynamicFunction AstralCanvasSamplerState AstralCanvasSampler_GetPointWrap();
-    DynamicFunction AstralCanvasSamplerState AstralCanvasSampler_GetLinearWrap();
 
 #ifdef __cplusplus
 }

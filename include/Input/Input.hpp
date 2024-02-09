@@ -89,4 +89,25 @@ namespace AstralCanvas
     {
         return Input_GetWindow()->windowInputState.controllerStates[controllerIndex].rightStickAxis;
     }
+
+    inline bool Input_ControllerIsL2Pressed(const u32 controllerIndex)
+    {
+        return Input_GetWindow()->windowInputState.controllerStates[controllerIndex].L2DownAmount > 0.1f
+        && Input_GetWindow()->windowInputState.oldControllerStates[controllerIndex].L2DownAmount < 0.1f;
+    }
+    inline bool Input_ControllerIsR2Pressed(const u32 controllerIndex)
+    {
+        return Input_GetWindow()->windowInputState.controllerStates[controllerIndex].R2DownAmount > 0.1f
+        && Input_GetWindow()->windowInputState.oldControllerStates[controllerIndex].R2DownAmount < 0.1f;
+    }
+    inline bool Input_ControllerIsL2Released(const u32 controllerIndex)
+    {
+        return Input_GetWindow()->windowInputState.controllerStates[controllerIndex].L2DownAmount < 0.1f
+        && Input_GetWindow()->windowInputState.oldControllerStates[controllerIndex].L2DownAmount > 0.1f;
+    }
+    inline bool Input_ControllerIsR2Released(const u32 controllerIndex)
+    {
+        return Input_GetWindow()->windowInputState.controllerStates[controllerIndex].R2DownAmount < 0.1f
+        && Input_GetWindow()->windowInputState.oldControllerStates[controllerIndex].R2DownAmount > 0.1f;
+    }
 }

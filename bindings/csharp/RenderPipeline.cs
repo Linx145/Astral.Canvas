@@ -57,7 +57,7 @@ namespace Astral.Canvas
             }
             fixed (IntPtr* ptr = vertexHandles)
             {
-                handle = AstralCanvas.RenderPipeline_Init(shader.handle, pipelineCullMode, pipelinePrimitiveType, pipelineBlendState, testDepth, writeToDepth, (IntPtr)ptr, (UIntPtr)vertexDeclarations.Length);
+                handle = AstralCanvas.RenderPipeline_Init(shader.handle, pipelineCullMode, pipelinePrimitiveType, pipelineBlendState, testDepth, writeToDepth, ptr, (UIntPtr)vertexDeclarations.Length);
             }
             this.cullMode = pipelineCullMode;
             this.primitiveType = pipelinePrimitiveType;

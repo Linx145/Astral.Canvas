@@ -3,7 +3,6 @@
 #include "sparseset.hpp"
 #include "Maths/Vec2.hpp"
 #include "string.h"
-#include "GLFW/glfw3.h"
 
 #define CONTROLLER_BUTTONS 15
 
@@ -210,6 +209,7 @@ namespace AstralCanvas
 
         inline InputState()
         {
+            textInputCharacter = 0;
             oldControllerStates[0] = {};
             oldControllerStates[1] = {};
             oldControllerStates[2] = {};
@@ -229,6 +229,7 @@ namespace AstralCanvas
         }
         inline InputState(IAllocator *allocator)
         {
+            textInputCharacter = 0;
             oldControllerStates[0] = {};
             oldControllerStates[1] = {};
             oldControllerStates[2] = {};
@@ -279,34 +280,12 @@ namespace AstralCanvas
         {
             mouseStatuses.Insert((usize)button, {true, KeyState_Released});
         }
-        inline bool IsControllerConnected(usize index)
-        {
-            return glfwJoystickPresent(index);
-        }
-        inline ControllerState GetControllerState(usize index)
-        {
-            ControllerState result{};
+        bool IsControllerConnected(usize index);
 
-            GLFWgamepadstate state;
-            if (glfwGetGamepadState(index, &state) != GLFW_FALSE)
-            {
-                result.connected = true;
-                result.leftStickAxis = Maths::Vec2(state.axes[0], state.axes[1]);
-                result.rightStickAxis = Maths::Vec2(state.axes[2], state.axes[3]);
-                result.L2DownAmount = state.axes[4];
-                result.R2DownAmount = state.axes[5];
+        ControllerState GetControllerState(usize index);
 
-                for (usize i = 0; i < 15; i++)
-                {
-                    result.buttonStates[i] = state.buttons[i] == GLFW_PRESS;
-                }
-            }
-            return result;
-        }
-        inline void SetMousePosition(GLFWwindow *window, Maths::Vec2 position)
-        {
-            glfwSetCursorPos(window, (double)position.X, (double)position.Y);
-        }
+        void SetMousePosition(void *windowPtr, Maths::Vec2 position);
+
         inline void ResetPerFrameInputStates()
         {
             textInputCharacter = '\0';

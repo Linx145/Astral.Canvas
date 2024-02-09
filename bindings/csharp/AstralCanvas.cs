@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text.Unicode;
 
@@ -217,6 +218,8 @@ namespace Astral.Canvas
         public static extern void Graphics_UseRenderPipeline(IntPtr ptr, IntPtr pipeline);
         [DllImport(dllPath, EntryPoint = "AstralCanvasGraphics_AwaitGraphicsIdle", CallingConvention = CallingConvention.Winapi)]
         public static extern void Graphics_AwaitGraphicsIdle(IntPtr ptr);
+
+
         [DllImport(dllPath, EntryPoint = "AstralCanvasGraphics_SetShaderVariable", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Ansi)]
         public static extern void Graphics_SetShaderVariable(IntPtr ptr, string variableName, IntPtr data, UIntPtr size);
         [DllImport(dllPath, EntryPoint = "AstralCanvasGraphics_SetShaderVariableTexture", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Ansi)]
@@ -227,6 +230,8 @@ namespace Astral.Canvas
         public static extern void Graphics_SetShaderVariableSampler(IntPtr ptr, string variableName, IntPtr sampler);
         [DllImport(dllPath, EntryPoint = "AstralCanvasGraphics_SetShaderVariableSamplers", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Ansi)]
         public static extern void Graphics_SetShaderVariableSamplers(IntPtr ptr, string variableName, IntPtr samplers, UIntPtr count);
+
+
         [DllImport(dllPath, EntryPoint = "AstralCanvasGraphics_SendUpdatedUniforms", CallingConvention = CallingConvention.Winapi)]
         public static extern void Graphics_SendUpdatedUniforms(IntPtr ptr);
         [DllImport(dllPath, EntryPoint = "AstralCanvasGraphics_DrawIndexedPrimitives", CallingConvention = CallingConvention.Winapi)]
@@ -249,14 +254,82 @@ namespace Astral.Canvas
         [DllImport(dllPath, EntryPoint = "AstralCanvasRenderPipeline_Deinit", CallingConvention = CallingConvention.Winapi)]
         public static extern void RenderPipeline_Deinit(IntPtr ptr);
         [DllImport(dllPath, EntryPoint = "AstralCanvasRenderPipeline_Init", CallingConvention = CallingConvention.Winapi)]
-        public static extern IntPtr RenderPipeline_Init(
+        public static extern unsafe IntPtr RenderPipeline_Init(
             IntPtr pipelineShader,
             CullMode pipelineCullMode,
             PrimitiveType pipelinePrimitiveType,
             BlendState pipelineBlendState,
             bool testDepth,
             bool writeToDepth,
-            IntPtr vertexDeclarations,
+            IntPtr* vertexDeclarations,
             UIntPtr vertexDeclarationCount);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_IsKeyDown", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_IsKeyDown(Keys key);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_IsKeyPressed", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_IsKeyPressed(Keys key);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_IsKeyReleased", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_IsKeyReleased(Keys key);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_IsMouseDown", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_IsMouseDown(MouseButtons button);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_IsMousePressed", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_IsMousePressed(MouseButtons button);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_IsMouseReleased", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_IsMouseReleased(MouseButtons button);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_SimulateMousePress", CallingConvention = CallingConvention.Winapi)]
+        public static extern void Input_SimulateMousePress(MouseButtons button);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_SimulateMouseRelease", CallingConvention = CallingConvention.Winapi)]
+        public static extern void Input_SimulateMouseRelease(MouseButtons button);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerIsButtonDown", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_ControllerIsButtonDown(uint controllerIndex, ControllerButtons button);
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerIsButtonPress", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_ControllerIsButtonPress(uint controllerIndex, ControllerButtons button);
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerIsButtonRelease", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_ControllerIsButtonRelease(uint controllerIndex, ControllerButtons button);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerIsR2Down", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_ControllerIsR2Down(uint controllerIndex);
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerGetR2DownAmount", CallingConvention = CallingConvention.Winapi)]
+        public static extern float Input_ControllerGetR2DownAmount(uint controllerIndex);
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerIsL2Down", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_ControllerIsL2Down(uint controllerIndex);
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerGetL2DownAmount", CallingConvention = CallingConvention.Winapi)]
+        public static extern float Input_ControllerGetL2DownAmount(uint controllerIndex);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerIsConnected", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_ControllerIsConnected(uint controllerIndex);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_GetLeftStickAxis", CallingConvention = CallingConvention.Winapi)]
+        public static extern Vector2 Input_GetLeftStickAxis(uint controllerIndex);
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_GetRightStickAxis", CallingConvention = CallingConvention.Winapi)]
+        public static extern Vector2 Input_GetRightStickAxis(uint controllerIndex);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerIsL2Pressed", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_ControllerIsL2Pressed(uint controllerIndex);
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerIsR2Pressed", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_ControllerIsR2Pressed(uint controllerIndex);
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerIsL2Released", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_ControllerIsL2Released(uint controllerIndex);
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_ControllerIsR2Released", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool Input_ControllerIsR2Released(uint controllerIndex);
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_GetMousePosition", CallingConvention = CallingConvention.Winapi)]
+        public static extern Vector2 Input_GetMousePosition();
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_SetMousePosition", CallingConvention = CallingConvention.Winapi)]
+        public static extern void Input_SetMousePosition(Vector2 position);
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_GetMouseScroll", CallingConvention = CallingConvention.Winapi)]
+        public static extern Vector2 Input_GetMouseScroll();
+
+        [DllImport(dllPath, EntryPoint = "AstralCanvasInput_AwaitInputChar", CallingConvention = CallingConvention.Winapi)]
+        public static extern uint Input_AwaitInputChar();
+
     }
 }

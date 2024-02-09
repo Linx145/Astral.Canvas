@@ -2,6 +2,7 @@
 #include "Graphics/Vulkan/VulkanSwapchain.hpp"
 #include "Maths/Util.hpp"
 #include "ErrorHandling.hpp"
+#include "GLFW/glfw3.h"
 
 using namespace AstralCanvas;
 
@@ -87,7 +88,7 @@ bool AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
         {
             i32 width;
             i32 height;
-            glfwGetFramebufferSize(swapchain->window->handle, &width, &height);
+            glfwGetFramebufferSize((GLFWwindow*)swapchain->window->handle, &width, &height);
             extents.width = Maths::Clamp(details.capabilities.minImageExtent.width, details.capabilities.maxImageExtent.width, width);
             extents.height = Maths::Clamp(details.capabilities.minImageExtent.height, details.capabilities.maxImageExtent.height, height);
         }

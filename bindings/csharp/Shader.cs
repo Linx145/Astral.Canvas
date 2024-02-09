@@ -13,7 +13,11 @@ namespace Astral.Canvas
         public unsafe Shader(ShaderType shaderType, string jsonString)
         {
             IntPtr temp = IntPtr.Zero;
-            AstralCanvas.Shader_FromString(shaderType, jsonString, &temp);
+            int result = AstralCanvas.Shader_FromString(shaderType, jsonString, &temp);
+            if (result != 0 || temp == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Error loading shader with error code " + result.ToString());
+            }
 
             handle = temp;
         }
@@ -43,6 +47,13 @@ namespace Astral.Canvas
             get
             {
                 return AstralCanvas.Shader_GetType(handle);
+            }
+        }
+        public IntPtr pipelineLayout
+        {
+            get
+            {
+                return AstralCanvas.Shader_GetPipelineLayout(handle);
             }
         }
         public void Dispose()

@@ -39,7 +39,7 @@ namespace AstralCanvas
 		if (WindowInit(this->allocator, &result, width, height, resizeable))
 		{
 			windows.Add(result);
-			glfwSetWindowUserPointer(result.handle, &windows.ptr[windows.count - 1]);
+			glfwSetWindowUserPointer((GLFWwindow*)result.handle, &windows.ptr[windows.count - 1]);
 			return true;
 		}
 		return false;
@@ -67,7 +67,9 @@ namespace AstralCanvas
                 this->graphicsDevice = AstralCanvas::Graphics();
                 this->graphicsDevice.ClipArea = this->windows.ptr[0].AsRectangle();
                 this->graphicsDevice.Viewport = this->windows.ptr[0].AsRectangle();
-                break;
+
+				this->graphicsDevice.usedShaders = collections::hashset<AstralCanvas::Shader*>(this->allocator, &PointerHash<AstralCanvas::Shader>, &PointerEql<AstralCanvas::Shader>);
+				break;
             }
 #endif
 #ifdef ASTRALCANVAS_METAL
@@ -102,7 +104,7 @@ namespace AstralCanvas
 			shouldStop = true;
 			for (usize i = 0; i < windows.count; i++)
 			{
-				if (!glfwWindowShouldClose(windows.ptr[i].handle))
+				if (!glfwWindowShouldClose((GLFWwindow*)windows.ptr[i].handle))
 				{
 					windows.ptr[i].windowInputState.ResetPerFrameInputStates();
 					shouldStop = false;
@@ -139,6 +141,17 @@ namespace AstralCanvas
 				graphicsDevice.currentRenderPipeline = NULL;
 				graphicsDevice.currentRenderProgram = NULL;
 				graphicsDevice.currentRenderTarget = NULL;
+				for (usize i = 0; i < graphicsDevice.usedShaders.bucketsCount; i++)
+				{
+					if (graphicsDevice.usedShaders.buckets[i].initialized)
+					{
+						for (usize j = 0; j < graphicsDevice.usedShaders.buckets[i].entries.count; j++)
+						{
+							graphicsDevice.usedShaders.buckets[i].entries.ptr[j]->descriptorForThisDrawCall = 0;
+						}
+						graphicsDevice.usedShaders.buckets[i].entries.Clear();
+					}
+				}
 				switch (AstralCanvas::GetActiveBackend())
 				{
 					#ifdef ASTRALCANVAS_VULKAN
@@ -162,6 +175,8 @@ namespace AstralCanvas
 			}
 			endTime = (float)glfwGetTime();
 		}
+
+		this->graphicsDevice.usedShaders.deinit();
 
 		//await rendering process shutdown
 		switch (AstralCanvas::GetActiveBackend())

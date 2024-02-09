@@ -2,9 +2,9 @@
 
 namespace Astral.Canvas
 {
-    public class SamplerState
+    public class SamplerState : IDisposable
     {
-        public readonly IntPtr handle;
+        public IntPtr handle { get; private set; }
         public readonly SampleMode sampleMode;
         public readonly bool isAnisotropic;
         public readonly RepeatMode repeatMode;
@@ -38,12 +38,21 @@ namespace Astral.Canvas
             this.anisotropyLevel = anisotropyLevel;
         }
 
-        public static readonly SamplerState PointClamp = new SamplerState(AstralCanvas.Sampler_GetPointClamp(), SampleMode.Point, RepeatMode.ClampToEdgeColor, false, 0f);
+        public void Dispose()
+        {
+            if (handle != IntPtr.Zero)
+            {
+                AstralCanvas.SamplerState_Deinit(handle);
+            }
+            handle = IntPtr.Zero;
+        }
+
+        /*public static readonly SamplerState PointClamp = new SamplerState(AstralCanvas.Sampler_GetPointClamp(), SampleMode.Point, RepeatMode.ClampToEdgeColor, false, 0f);
 
         public static readonly SamplerState LinearClamp = new SamplerState(AstralCanvas.Sampler_GetLinearClamp(), SampleMode.Linear, RepeatMode.ClampToEdgeColor, false, 0f);
 
         public static readonly SamplerState PointWrap = new SamplerState(AstralCanvas.Sampler_GetPointWrap(), SampleMode.Point, RepeatMode.Repeat, false, 0f);
 
-        public static readonly SamplerState LinearWrap = new SamplerState(AstralCanvas.Sampler_GetLinearWrap(), SampleMode.Linear, RepeatMode.Repeat, false, 0f);
+        public static readonly SamplerState LinearWrap = new SamplerState(AstralCanvas.Sampler_GetLinearWrap(), SampleMode.Linear, RepeatMode.Repeat, false, 0f);*/
     }
 }

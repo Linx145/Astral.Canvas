@@ -10,7 +10,7 @@ typedef struct
 {
     float X;
     float Y;
-} AstralCanvasJoystickAxis;
+} AstralCanvasVector2;
 
 typedef enum
 {
@@ -193,11 +193,19 @@ DynamicFunction bool AstralCanvasInput_ControllerIsR2Down(const u32 controllerIn
 DynamicFunction float AstralCanvasInput_ControllerGetR2DownAmount(const u32 controllerIndex);
 DynamicFunction bool AstralCanvasInput_ControllerIsL2Down(const u32 controllerIndex);
 DynamicFunction float AstralCanvasInput_ControllerGetL2DownAmount(const u32 controllerIndex);
-
+DynamicFunction bool AstralCanvasInput_ControllerIsL2Pressed(const u32 controllerIndex);
+DynamicFunction bool AstralCanvasInput_ControllerIsR2Pressed(const u32 controllerIndex);
+DynamicFunction bool AstralCanvasInput_ControllerIsL2Released(const u32 controllerIndex);
+DynamicFunction bool AstralCanvasInput_ControllerIsR2Released(const u32 controllerIndex);
 DynamicFunction bool AstralCanvasInput_ControllerIsConnected(const u32 controllerIndex);
+DynamicFunction AstralCanvasVector2 AstralCanvasInput_GetLeftStickAxis(const u32 controllerIndex);
+DynamicFunction AstralCanvasVector2 AstralCanvasInput_GetRightStickAxis(const u32 controllerIndex);
 
-DynamicFunction AstralCanvasJoystickAxis AstralCanvasInput_GetLeftStickAxis(const u32 controllerIndex);
-DynamicFunction AstralCanvasJoystickAxis AstralCanvasInput_GetRightStickAxis(const u32 controllerIndex);
+DynamicFunction AstralCanvasVector2 AstralCanvasInput_GetMousePosition();
+DynamicFunction void AstralCanvasInput_SetMousePosition(AstralCanvasVector2 position);
+DynamicFunction AstralCanvasVector2 AstralCanvasInput_GetMouseScroll();
+
+DynamicFunction u32 AstralCanvasInput_AwaitInputChar();
 
 #ifdef __cplusplus
 }

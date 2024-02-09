@@ -48,7 +48,7 @@ bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validat
 	}
 	printf("Created vulkan instance\n");
 
-	if (glfwCreateWindowSurface(AstralCanvasVk_GetInstance(), window->handle, NULL, (VkSurfaceKHR*)&window->windowSurfaceHandle) != VK_SUCCESS)
+	if (glfwCreateWindowSurface(AstralCanvasVk_GetInstance(), (GLFWwindow*)window->handle, NULL, (VkSurfaceKHR*)&window->windowSurfaceHandle) != VK_SUCCESS)
 	{
 		printf("Failed to create window surface!\n");
 		return false;

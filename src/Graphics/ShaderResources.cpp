@@ -32,12 +32,12 @@ namespace AstralCanvas
                     else if (this->uniforms.ptr[i].type == ShaderResourceType_Sampler)
                     {
                         //dont free samplers here
-                        this->allocator->Free((void**)&this->uniforms.ptr[i].stagingData.ptr[j].samplerInfos);
+                        this->allocator->Free(this->uniforms.ptr[i].stagingData.ptr[j].samplerInfos);
                     }
                     else if (this->uniforms.ptr[i].type == ShaderResourceType_Texture)
                     {
                         //dont free textures here
-                        this->allocator->Free((void**)&this->uniforms.ptr[i].stagingData.ptr[j].imageInfos);
+                        this->allocator->Free(this->uniforms.ptr[i].stagingData.ptr[j].imageInfos);
                     }
                 }
                 this->uniforms.ptr[i].variableName.deinit();

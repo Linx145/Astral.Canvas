@@ -41,5 +41,44 @@ namespace Astral.Canvas
         {
             AstralCanvas.Graphics_DrawIndexedPrimitives(handle, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
         }
+
+        public unsafe void SetShaderVariables<T>(string variableName, ReadOnlySpan<T> span) where T : unmanaged
+        {
+            fixed (T* ptr = span)
+            {
+                AstralCanvas.Graphics_SetShaderVariable(handle, variableName, (IntPtr)ptr, (UIntPtr)span.Length);
+            }
+        }
+        public unsafe void SetShaderVariable<T>(string variableName, T data) where T : unmanaged
+        {
+            T* ptr = &data;
+            AstralCanvas.Graphics_SetShaderVariable(handle, variableName, (IntPtr)ptr, (UIntPtr)sizeof(T));
+        }
+        public unsafe void SetShaderVariableTexture(string variableName, Texture2D texture)
+        {
+            AstralCanvas.Graphics_SetShaderVariableTexture(handle, variableName, texture.handle);
+        }
+        public unsafe void SetShaderVariableTextures(string variableName, ReadOnlySpan<Texture2D> textures)
+        {
+            IntPtr* ptrs = stackalloc IntPtr[textures.Length];
+            for (int i = 0; i < textures.Length; i++)
+            {
+                ptrs[i] = textures[i].handle;
+            }
+            AstralCanvas.Graphics_SetShaderVariableTextures(handle, variableName, (IntPtr)ptrs, (UIntPtr)textures.Length);
+        }
+        public unsafe void SetShaderVariableSampler(string variableName, SamplerState sampler)
+        {
+            AstralCanvas.Graphics_SetShaderVariableSampler(handle, variableName, sampler.handle);
+        }
+        public unsafe void SetShaderVariableSamplers(string variableName, ReadOnlySpan<SamplerState> samplers)
+        {
+            IntPtr* ptrs = stackalloc IntPtr[samplers.Length];
+            for (int i = 0; i < samplers.Length; i++)
+            {
+                ptrs[i] = samplers[i].handle;
+            }
+            AstralCanvas.Graphics_SetShaderVariableSamplers(handle, variableName, (IntPtr)ptrs, (UIntPtr)samplers.Length);
+        }
     }
 }

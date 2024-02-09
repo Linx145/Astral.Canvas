@@ -1,6 +1,6 @@
 #include "Graphics/Graphics.hpp"
-
 #include "Graphics/CurrentBackend.hpp"
+#include "hash.hpp"
 
 #ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
@@ -195,7 +195,7 @@ namespace AstralCanvas
     }
     void Graphics::UseRenderPipeline(RenderPipeline *pipeline)
     {
-        if (this->currentRenderPipeline == NULL && this->currentRenderProgram != NULL)
+        if (this->currentRenderProgram != NULL)
         {
             switch (GetActiveBackend())
             {
@@ -238,6 +238,7 @@ namespace AstralCanvas
                     break;
             }
             this->currentRenderPipeline = pipeline;
+            this->usedShaders.Add(pipeline->shader);
         }
     }
     void Graphics::SetShaderVariable(const char* variableName, void* ptr, usize size)

@@ -7,6 +7,7 @@
 #include "Graphics/IndexBuffer.hpp"
 #include "Graphics/RenderTarget.hpp"
 #include "Graphics/SamplerState.hpp"
+#include "hashset.hpp"
 
 namespace AstralCanvas
 {
@@ -16,6 +17,8 @@ namespace AstralCanvas
         u32 currentRenderPass;
         RenderTarget *currentRenderTarget;
         RenderPipeline *currentRenderPipeline;
+        collections::hashset<Shader*> usedShaders;
+
         const IndexBuffer *currentIndexBuffer;
         
         void* currentCommandEncoderInstance;

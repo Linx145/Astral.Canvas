@@ -14,7 +14,7 @@ exportC void AstralCanvasSamplerState_Deinit(AstralCanvasSamplerState ptr)
     GetDefaultAllocator()->Free(ptr);
 }
 
-exportC AstralCanvasSamplerState AstralCanvasSampler_GetPointClamp()
+/*exportC AstralCanvasSamplerState AstralCanvasSampler_GetPointClamp()
 {
     return AstralCanvas::SamplerGetPointClamp();
 }
@@ -29,4 +29,4 @@ exportC AstralCanvasSamplerState AstralCanvasSampler_GetPointWrap()
 exportC AstralCanvasSamplerState AstralCanvasSampler_GetLinearWrap()
 {
     return AstralCanvas::SamplerGetLinearWrap();
-}
+}*/

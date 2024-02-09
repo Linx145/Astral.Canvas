@@ -1,5 +1,6 @@
 #include "Astral.Canvas/Window.h"
 #include "Windowing/Window.hpp"
+#include "GLFW/glfw3.h"
 
 exportC AstralCanvasPoint2 AstralCanvasWindow_GetResolution(AstralCanvasWindow ptr)
 {
@@ -8,7 +9,7 @@ exportC AstralCanvasPoint2 AstralCanvasWindow_GetResolution(AstralCanvasWindow p
 
 exportC void AstralCanvasWindow_SetResolution(AstralCanvasWindow ptr, AstralCanvasPoint2 resolution)
 {
-    glfwSetWindowSize(((AstralCanvas::Window *)ptr)->handle, resolution.X, resolution.Y);
+    glfwSetWindowSize((GLFWwindow*)((AstralCanvas::Window *)ptr)->handle, resolution.X, resolution.Y);
     ((AstralCanvas::Window *)ptr)->resolution.X = resolution.X;
     ((AstralCanvas::Window *)ptr)->resolution.Y = resolution.Y;
 }
@@ -20,7 +21,7 @@ exportC AstralCanvasPoint2 AstralCanvasWindow_GetPosition(AstralCanvasWindow ptr
 
 exportC void AstralCanvasWindow_SetPosition(AstralCanvasWindow ptr, AstralCanvasPoint2 position)
 {
-    glfwSetWindowPos(((AstralCanvas::Window *)ptr)->handle, position.X, position.Y);
+    glfwSetWindowPos((GLFWwindow*)((AstralCanvas::Window *)ptr)->handle, position.X, position.Y);
     ((AstralCanvas::Window *)ptr)->position.X = position.X;
     ((AstralCanvas::Window *)ptr)->position.Y = position.Y;
 }

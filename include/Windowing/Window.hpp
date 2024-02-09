@@ -8,7 +8,7 @@ namespace AstralCanvas
 {
 	struct Window
 	{
-		GLFWwindow* handle;
+		void* handle;
 		Maths::Point2 resolution;
 		Maths::Point2 position;
 		InputState windowInputState;
@@ -16,10 +16,7 @@ namespace AstralCanvas
 		void *windowSurfaceHandle;
 
 		Window();
-		inline void deinit()
-		{
-			glfwDestroyWindow(handle);
-		}
+		void deinit();
 		inline Maths::Rectangle AsRectangle()
 		{
 			return Maths::Rectangle(0, 0, resolution.X, resolution.Y);
