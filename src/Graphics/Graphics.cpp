@@ -97,6 +97,37 @@ namespace AstralCanvas
             currentRenderTarget = target;
         }
     }
+    void Graphics::SetClipArea(Maths::Rectangle newClipArea)
+    {
+        this->ClipArea = newClipArea;
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
+
+                VkRect2D clip;
+                clip.extent.width = this->ClipArea.Width;
+                clip.extent.height = this->ClipArea.Height;
+                clip.offset.x = this->ClipArea.X;
+                clip.offset.y = this->ClipArea.Y;
+                vkCmdSetScissor(cmdBuffer, 0, 1, &clip);
+                break;
+            }
+            #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_SetClipArea(newClipArea);
+                break;
+            }
+            #endif
+            default:
+                THROW_ERR("Unimplemented backend: Graphics SetClipArea");
+                break;
+        }
+    }
     void Graphics::StartRenderProgram(RenderProgram *program, const Color clearColor)
     {
         this->currentRenderProgram = program;
@@ -146,26 +177,32 @@ namespace AstralCanvas
                 info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
                 info.framebuffer = (VkFramebuffer)renderTarget->renderTargetHandle;
                 info.renderPass = (VkRenderPass)program->handle;
-                VkClearValue clearValues[2];
-                
-                clearValues[0].color.float32[0] = clearColor.R * ONE_OVER_255;
-                clearValues[0].color.float32[1] = clearColor.G * ONE_OVER_255;
-                clearValues[0].color.float32[2] = clearColor.B * ONE_OVER_255;
-                clearValues[0].color.float32[3] = clearColor.A * ONE_OVER_255;
 
-                clearValues[1].depthStencil.depth = 1.0f;
-                clearValues[1].depthStencil.stencil = 255;
+                //clear values
+                //arbitrarily large number
+                VkClearValue clearValues[32];
 
-                RenderProgramImageAttachment attachment = this->currentRenderProgram->attachments.ptr[this->currentRenderProgram->renderPasses.ptr[0].colorAttachmentIndices.data[0]];
-                if (attachment.clearColor)
+                info.clearValueCount = this->currentRenderProgram->attachments.count;
+                info.pClearValues = clearValues;
+                for (usize i = 0; i < this->currentRenderProgram->attachments.count; i++)
                 {
-                    info.pClearValues = clearValues;
-                    info.clearValueCount = 1;
+                    clearValues[i] = {};
+                    RenderProgramImageAttachment attachment = this->currentRenderProgram->attachments.ptr[i];
+
+                    if (attachment.clearColor && attachment.imageFormat < ImageFormat_DepthNone)
+                    {
+                        clearValues[i].color.float32[0] = clearColor.R * ONE_OVER_255;
+                        clearValues[i].color.float32[1] = clearColor.G * ONE_OVER_255;
+                        clearValues[i].color.float32[2] = clearColor.B * ONE_OVER_255;
+                        clearValues[i].color.float32[3] = clearColor.A * ONE_OVER_255;
+                    }
+                    else if (attachment.clearDepth && attachment.imageFormat > ImageFormat_DepthNone)
+                    {
+                        clearValues[i].depthStencil.depth = 1.0f;
+                        clearValues[i].depthStencil.stencil = 255;
+                    }
                 }
-                if (this->currentRenderProgram->renderPasses.ptr[0].depthAttachmentIndex != -1)
-                {
-                    info.clearValueCount++;
-                }
+
                 info.renderArea.offset.x = 0;
                 info.renderArea.offset.y = 0;
                 info.renderArea.extent.width = renderTarget->width;
@@ -435,6 +472,7 @@ namespace AstralCanvas
             }
         }
     }
+    void Graphics:: //todo: set descriptor set
     void Graphics::SendUpdatedUniforms()
     {
         if (currentRenderPipeline->shader->uniformsHasBeenSet)

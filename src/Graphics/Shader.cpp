@@ -143,6 +143,38 @@ namespace AstralCanvas
                 }
             }
         }
+        JsonElement *inputAttachments = json->GetProperty("inputAttachments");
+        if (inputAttachments != NULL)
+        {
+            for (usize i = 0; i < inputAttachments->arrayElements.length; i++)
+            {
+                string name = inputAttachments->arrayElements.data[i].GetProperty("name")->GetString(results->allocator);
+                u32 index = inputAttachments->arrayElements.data[i].GetProperty("index")->GetUint32();
+                u32 set = inputAttachments->arrayElements.data[i].GetProperty("set")->GetUint32();
+                u32 binding = inputAttachments->arrayElements.data[i].GetProperty("binding")->GetUint32();
+
+                ShaderResource *resource = results->uniforms.Get(binding);
+                if (resource != NULL && resource->variableName.buffer != NULL)
+                {
+                    resource->accessedBy = (ShaderInputAccessedBy)((u32)resource->accessedBy | (u32)accessedByShaderOfType);
+                    name.deinit();
+                }
+                else
+                {
+                    ShaderResource newResource;
+                    newResource.binding = binding;
+                    newResource.set = set;
+                    newResource.variableName = name;
+                    newResource.inputAttachmentIndex = index;
+                    newResource.accessedBy = accessedByShaderOfType;
+                    newResource.type = ShaderResourceType_InputAttachment;
+                    newResource.size = 0;
+                    newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
+                    results->uniforms.Insert((usize)binding, newResource);
+                    //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
+                }
+            }
+        }
     }
     i32 Shader::GetVariableBinding(const char* variableName)
     {
@@ -159,9 +191,9 @@ namespace AstralCanvas
         }
         return -1;
     }
-    void Shader::CheckDescriptorSetAvailability()
+    void Shader::CheckDescriptorSetAvailability(bool forceAddNewDescriptor)
     {
-        if (descriptorForThisDrawCall >= descriptorSets.count)
+        if (descriptorForThisDrawCall >= descriptorSets.count || forceAddNewDescriptor)
         {
             switch (GetActiveBackend())
             {
@@ -197,6 +229,7 @@ namespace AstralCanvas
                                 newMutableState.ownsUniformBuffer = true;
                                 break;
                             }
+                            case ShaderResourceType_InputAttachment:
                             case ShaderResourceType_Texture:
                             {
                                 newMutableState.textures = collections::Array<Texture2D*>(this->allocator, max(resource->arrayLength, 1));
@@ -261,6 +294,20 @@ namespace AstralCanvas
 
                     switch (this->shaderVariables.uniforms.ptr[i].type)
                     {
+                        case ShaderResourceType_InputAttachment:
+                        {
+                            VkDescriptorImageInfo imageInfo{};
+                            imageInfo.sampler = NULL;
+                            imageInfo.imageLayout = (VkImageLayout)toMutate->textures.data[0]->imageLayout; //(VkImageLayout)toMutate->textures.data[i]->imageLayout;
+                            imageInfo.imageView = (VkImageView)toMutate->textures.data[0]->imageView;
+                            ((VkDescriptorImageInfo*)toMutate->imageInfos)[0] = imageInfo;
+
+                            setWrite.dstArrayElement = 0;
+                            setWrite.descriptorCount = toMutate->textures.length;
+                            setWrite.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+                            setWrite.pImageInfo = (VkDescriptorImageInfo*)toMutate->imageInfos;
+                            break;
+                        }
                         case ShaderResourceType_Uniform:
                         {
                             UniformBuffer buffer = toMutate->ub;
@@ -314,6 +361,10 @@ namespace AstralCanvas
                             break;
                         }
                         case ShaderResourceType_StructuredBuffer:
+                        {
+                            break;
+                        }
+                        default:
                         {
                             break;
                         }

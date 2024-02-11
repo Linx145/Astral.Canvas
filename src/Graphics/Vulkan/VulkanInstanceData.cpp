@@ -36,7 +36,7 @@ bool AstralCanvasVk_ValidationLayersIsEnabled()
 {
     return AstralCanvasVk_validationLayers;
 }
-void AstralCanvasVk_ValidationLayersGetEnabled(bool value)
+void AstralCanvasVk_ValidationLayersSetEnabled(bool value)
 {
     AstralCanvasVk_validationLayers = value;
 }

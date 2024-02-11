@@ -28,7 +28,7 @@ namespace AstralCanvas
         collections::vector<void *> descriptorSets;
 
         i32 GetVariableBinding(const char* variableName);
-        void CheckDescriptorSetAvailability();
+        void CheckDescriptorSetAvailability(bool forceAddNewDescriptor = false);
         void SyncUniformsWithGPU(void *commandEncoder);
 
         Shader();

@@ -73,3 +73,12 @@ exportC void AstralCanvasGraphics_NextRenderPass(AstralCanvasGraphics ptr)
 {
     ((AstralCanvas::Graphics *)ptr)->NextRenderPass();
 }
+exportC AstralCanvasClipArea AstralCanvasGraphics_GetClipArea(AstralCanvasGraphics ptr)
+{
+    Maths::Rectangle rect = ((AstralCanvas::Graphics *)ptr)->ClipArea;
+    return {rect.X, rect.Y, rect.Width, rect.Height};
+}
+exportC void AstralCanvasGraphics_SetClipArea(AstralCanvasGraphics ptr, i32 x, i32 y, i32 w, i32 h)
+{
+    ((AstralCanvas::Graphics *)ptr)->SetClipArea({x, y, w, h});
+}

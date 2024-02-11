@@ -44,6 +44,8 @@ void AstralCanvasMetal_DestroyTexture(AstralCanvas::Texture2D *texture);
 void AstralCanvasMetal_CreateSampler(AstralCanvas::SamplerState *sampler);
 void AstralCanvasMetal_DestroySampler(AstralCanvas::SamplerState *sampler);
 
+void AstralCanvasMetal_SetClipArea(Maths::Rectangle clipArea);
+
 void AstralCanvasMetal_AddUniformDescriptorSets(AstralCanvas::Shader *shader);
 void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::Shader *shader);
 #endif

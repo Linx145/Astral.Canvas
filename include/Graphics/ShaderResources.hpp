@@ -39,7 +39,11 @@ namespace AstralCanvas
         u32 binding;
         ShaderResourceType type;
         ShaderInputAccessedBy accessedBy;
-        u32 arrayLength;
+        union
+        {
+            u32 arrayLength;
+            u32 inputAttachmentIndex;
+        };
         u32 size;
 
         /// A collection of all data that is awaiting submission

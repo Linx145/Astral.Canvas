@@ -13,7 +13,13 @@
 extern "C"
 {
 #endif
-
+    typedef struct
+    {
+        i32 X;
+        i32 Y;
+        i32 width;
+        i32 height;
+    } AstralCanvasClipArea;
     typedef void *AstralCanvasGraphics;
 
     DynamicFunction AstralCanvasRenderProgram AstralCanvasGraphics_GetCurrentRenderProgram(AstralCanvasGraphics ptr);
@@ -34,6 +40,8 @@ extern "C"
     DynamicFunction void AstralCanvasGraphics_SendUpdatedUniforms(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_DrawIndexedPrimitives(AstralCanvasGraphics ptr, u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance);
     DynamicFunction void AstralCanvasGraphics_NextRenderPass(AstralCanvasGraphics ptr);
+    DynamicFunction AstralCanvasClipArea AstralCanvasGraphics_GetClipArea(AstralCanvasGraphics ptr);
+    DynamicFunction void AstralCanvasGraphics_SetClipArea(AstralCanvasGraphics ptr, i32 x, i32 y, i32 w, i32 h);
 
 #ifdef __cplusplus
 }

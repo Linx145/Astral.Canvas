@@ -33,7 +33,7 @@ workspace "AstralCanvas"
             "Astral.Core",
             "Astral.Json"
         }
-        links {"GLFW", "Astral.Canvas", "Cocoa.framework", "IOKit.framework", "Metal.framework", "MetalKit.framework", "QuartzCore.framework"}
+        links {"GLFW", "Astral.Canvas"}
 
         files { 
             "c-interface/src/*.cpp",
@@ -50,6 +50,7 @@ workspace "AstralCanvas"
             ignoredefaultlibraries {"libcmt", "libcmtd"}
 
         filter "system:macosx"
+            links {"Cocoa.framework", "IOKit.framework", "Metal.framework", "MetalKit.framework", "QuartzCore.framework"}
             defines { "ASTRALCANVAS_METAL", "_GLFW_COCOA" }
 
         filter "system:linux"

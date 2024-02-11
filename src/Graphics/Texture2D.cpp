@@ -21,6 +21,28 @@ namespace AstralCanvas
         {
             return;
         }
+        if (this->imageFormat == ImageFormat_BackbufferFormat)
+        {
+            switch (GetActiveBackend())
+            {
+#ifdef ASTRALCANVAS_VULKAN
+                case Backend_Vulkan:
+                {
+                    this->imageFormat = AstralCanvasVk_GetCurrentSwapchain()->imageFormat;
+                    break;
+                }
+#endif
+#ifdef ASTRALCANVAS_METAL
+                case Backend_Metal:
+                {
+                    this->imageFormat = AstralCanvasMetal_GetSwapchainFormat();
+                    break;
+                }
+#endif
+                default:
+                    break;
+            }
+        }
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
@@ -40,6 +62,11 @@ namespace AstralCanvas
                     createInfo.mipLevels = this->mipLevels;
                     createInfo.arrayLayers = 1;
                     createInfo.format = AstralCanvasVk_FromImageFormat(this->imageFormat);
+                    if (createInfo.format == VK_FORMAT_UNDEFINED)
+                    {
+                        fprintf(stderr, "image format: %i\n", (i32)this->imageFormat);
+                        THROW_ERR("Image format is undefined\n");
+                    }
                     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
                     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                     if (this->imageFormat >= ImageFormat_DepthNone)
@@ -50,7 +77,7 @@ namespace AstralCanvas
                     {
                         if (this->usedForRenderTarget)
                         {
-                            createInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+                            createInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                         }
                         else
                         {
@@ -240,7 +267,7 @@ namespace AstralCanvas
         result.Construct();
         return result;
     }
-    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, SamplerState *samplerState, bool usedForRenderTarget)
+    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget)
     {
         Texture2D result = {};
         result.width = width;

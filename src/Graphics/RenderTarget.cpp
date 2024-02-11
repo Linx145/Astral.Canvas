@@ -99,7 +99,7 @@ namespace AstralCanvas
     RenderTarget::RenderTarget(IAllocator *allocator, u32 width, u32 height, collections::Array<Texture2D> texturesToUse)
     {
         this->allocator = allocator;
-        this->textures = textures;
+        this->textures = texturesToUse;
         this->width = width;
         this->height = height;
         this->constructed = false;
@@ -132,7 +132,7 @@ namespace AstralCanvas
         this->renderTargetHandle = NULL;
         u8 *bytes = (u8*)calloc(width * height, 4);
         usize textureLength = 1;
-        Texture2D backendTexture = CreateTextureFromData(bytes, width, height, imageFormat, SamplerGetPointClamp(), true);
+        Texture2D backendTexture = CreateTextureFromData(bytes, width, height, imageFormat, true);
         Texture2D depthBuffer{};
 
         if (depthFormat > ImageFormat_DepthNone)
@@ -142,7 +142,7 @@ namespace AstralCanvas
                 depthFormat = ImageFormat_Depth32;
             }
             textureLength++;
-            depthBuffer = CreateTextureFromData(NULL, width, height, depthFormat, SamplerGetPointClamp(), true);
+            depthBuffer = CreateTextureFromData(NULL, width, height, depthFormat, true);
         }
         free(bytes);
 

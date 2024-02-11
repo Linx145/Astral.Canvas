@@ -19,7 +19,8 @@ namespace AstralCanvas
         ShaderResourceType_Uniform,
         ShaderResourceType_Sampler,
         ShaderResourceType_Texture,
-        ShaderResourceType_StructuredBuffer
+        ShaderResourceType_StructuredBuffer,
+        ShaderResourceType_InputAttachment
     };
     enum Blend
     {

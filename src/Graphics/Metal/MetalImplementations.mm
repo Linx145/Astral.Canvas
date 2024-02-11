@@ -1,4 +1,4 @@
-#ifdef MACOS
+#ifdef ASTRALCANVAS_METAL
 #import "Graphics/Metal/MetalImplementations.h"
 #import "Metal/Metal.h"
 #import "Graphics/Metal/MetalInstanceData.h"
@@ -552,5 +552,17 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
             }
         }
     }
+}
+void AstralCanvasMetal_SetClipArea(Maths::Rectangle clipArea)
+{
+    id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)commandEncoder;
+
+    MTLScissorRect metalScissorRect;
+    metalScissorRect.width = clipArea.Width;
+    metalScissorRect.height = clipArea.Height;
+    metalScissorRect.x = clipArea.X;
+    metalScissorRect.y = clipArea.Y;
+    
+    [encoder setScissorRect:metalScissorRect];
 }
 #endif

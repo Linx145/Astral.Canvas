@@ -10,7 +10,7 @@ exportC void AstralCanvasVertexDeclaration_AddElement(AstralCanvasVertexDeclarat
 }
 exportC AstralCanvasVertexDeclaration AstralCanvasVertexDeclaration_Create(usize size, AstralCanvas_VertexInputRate vertexInputRate)
 {
-    AstralCanvas::VertexDeclaration *result = (AstralCanvas::VertexDeclaration *)GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::VertexDeclaration*));
+    AstralCanvas::VertexDeclaration *result = (AstralCanvas::VertexDeclaration *)GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::VertexDeclaration));
     *result = AstralCanvas::VertexDeclaration(GetDefaultAllocator(), size, (AstralCanvas::VertexInputRate)vertexInputRate);
     return result;
 }

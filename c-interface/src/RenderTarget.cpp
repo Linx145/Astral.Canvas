@@ -1,5 +1,6 @@
 #include "Astral.Canvas/Graphics/RenderTarget.h"
 #include "Graphics/RenderTarget.hpp"
+#include "stdio.h"
 
 exportC AstralCanvasTexture2D AstralCanvasRenderTarget_GetTexture(AstralCanvasRenderTarget ptr, usize index)
 {

@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Astral.Shaderc", "Astral.Sh
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AstralCanvasTest", "Test\AstralCanvasTest.vcxproj", "{C816414D-B40F-609F-DD41-4524C9993FAB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthTesting", "c-examples\DepthTesting\DepthTesting.vcxproj", "{38A5B3B4-2408-4359-CD8D-7B0FB9CF0EDC}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFW", "dependencies\glfw\GLFW.vcxproj", "{154B857C-0182-860D-AA6E-6C109684020F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Triangle", "c-examples\Triangle\Triangle.vcxproj", "{DB3AC344-C707-1E50-F020-0CF8DC4C53DE}"
@@ -41,6 +43,10 @@ Global
 		{C816414D-B40F-609F-DD41-4524C9993FAB}.Debug|x64.Build.0 = Debug|x64
 		{C816414D-B40F-609F-DD41-4524C9993FAB}.Release|x64.ActiveCfg = Release|x64
 		{C816414D-B40F-609F-DD41-4524C9993FAB}.Release|x64.Build.0 = Release|x64
+		{38A5B3B4-2408-4359-CD8D-7B0FB9CF0EDC}.Debug|x64.ActiveCfg = Debug|x64
+		{38A5B3B4-2408-4359-CD8D-7B0FB9CF0EDC}.Debug|x64.Build.0 = Debug|x64
+		{38A5B3B4-2408-4359-CD8D-7B0FB9CF0EDC}.Release|x64.ActiveCfg = Release|x64
+		{38A5B3B4-2408-4359-CD8D-7B0FB9CF0EDC}.Release|x64.Build.0 = Release|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Debug|x64.ActiveCfg = Debug|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Debug|x64.Build.0 = Debug|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Release|x64.ActiveCfg = Release|x64

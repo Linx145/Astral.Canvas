@@ -28,6 +28,7 @@ namespace AstralCanvas
 
         Graphics();
 
+        void SetClipArea(Maths::Rectangle newClipArea);
         void SetVertexBuffer(const VertexBuffer *vb, u32 bindingPoint = 0);
         void SetIndexBuffer(const IndexBuffer *indexBuffer);
         void SetRenderTarget(RenderTarget *target);

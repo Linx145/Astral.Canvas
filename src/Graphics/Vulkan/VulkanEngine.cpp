@@ -14,14 +14,16 @@ VkBool32 AstralCanvasVk_ErrorCallback(
 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 	void* pUserData)
 {
-	if (messageSeverity | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-	{
-		THROW_ERR(pCallbackData->pMessage);
-	}
-	else
-	{
-		LOG_WARNING(pCallbackData->pMessage);
-	}
+	THROW_ERR(pCallbackData->pMessage);
+	exit(1);
+	// if (messageSeverity | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+	// {
+	// 	THROW_ERR(pCallbackData->pMessage);
+	// }
+	// else
+	// {
+	// 	LOG_WARNING(pCallbackData->pMessage);
+	// }
 	return VK_FALSE;
 }
 

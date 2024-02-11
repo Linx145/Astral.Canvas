@@ -1,5 +1,6 @@
 #include "Astral.Canvas/Graphics/RenderProgram.h"
 #include "Graphics/RenderProgram.hpp"
+#include "string.h"
 
 exportC AstralCanvasRenderProgram AstralCanvasRenderProgram_Init()
 {
@@ -20,6 +21,10 @@ exportC AstralCanvasRenderPass AstralCanvasRenderProgram_AddRenderPasses(AstralC
     collections::Array<i32> array = collections::Array<i32>(((AstralCanvas::RenderProgram *)ptr)->allocator, colorAttachmentIDsCount);
     return ((AstralCanvas::RenderProgram *)ptr)->AddRenderPass(array, depthAttachmentID);
 }
+exportC AstralCanvasRenderPass AstralCanvasRenderProgram_GetRenderPass(AstralCanvasRenderProgram ptr, usize index)
+{
+    return ((AstralCanvas::RenderProgram *)ptr)->renderPasses.Get(index);
+}
 exportC void AstralCanvasRenderProgram_Construct(AstralCanvasRenderProgram ptr)
 {
     ((AstralCanvas::RenderProgram *)ptr)->Construct();
@@ -28,7 +33,22 @@ exportC void AstralCanvasRenderProgram_Deinit(AstralCanvasRenderProgram ptr)
 {
     ((AstralCanvas::RenderProgram *)ptr)->deinit();
 }
-exportC void AstralCanvasRenderProgramAttachment_AddInput(AstralCanvasRenderPass ptr, i32 inputIndex)
+exportC void AstralCanvasRenderPass_AddInput(AstralCanvasRenderPass ptr, i32 inputIndex)
 {
     ((AstralCanvas::RenderPass *)ptr)->AddInput(inputIndex);
+}
+exportC void AstralCanvasRenderPass_GetColorAttachments(AstralCanvasRenderPass ptr, i32 *attachmentIndices, usize* numAttachments)
+{
+    if (numAttachments != NULL)
+    {
+        *numAttachments = ((AstralCanvas::RenderPass *)ptr)->colorAttachmentIndices.length;
+    }
+    if (attachmentIndices != NULL)
+    {
+        memcpy(attachmentIndices, ((AstralCanvas::RenderPass *)ptr)->colorAttachmentIndices.data, sizeof(i32) * ((AstralCanvas::RenderPass *)ptr)->colorAttachmentIndices.length);
+    }
+}
+exportC i32 AstralCanvasRenderPass_GetDepthAttachments(AstralCanvasRenderPass ptr)
+{
+    return ((AstralCanvas::RenderPass *)ptr)->depthAttachmentIndex;
 }

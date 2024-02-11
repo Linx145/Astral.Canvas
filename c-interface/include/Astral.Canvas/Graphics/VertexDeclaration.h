@@ -11,10 +11,10 @@ extern "C"
         AstralCanvas_VertexElementFormat format;
         usize offset;
     } AstralCanvasVertexElement;
-
+    
     typedef void *AstralCanvasVertexDeclaration;
 
-    DynamicFunction void AstralCanvasVertexDeclaration_AddElement(AstralCanvasVertexElement element);
+    DynamicFunction void AstralCanvasVertexDeclaration_AddElement(AstralCanvasVertexDeclaration declaration, AstralCanvasVertexElement element);
     DynamicFunction AstralCanvasVertexDeclaration AstralCanvasVertexDeclaration_Create(usize size, AstralCanvas_VertexInputRate vertexInputRate);
     DynamicFunction usize AstralCanvasVertexDeclaration_GetElementSize(AstralCanvasVertexDeclaration ptr);
     DynamicFunction AstralCanvas_VertexInputRate AstralCanvasVertexDeclaration_GetInputRate(AstralCanvasVertexDeclaration ptr);
