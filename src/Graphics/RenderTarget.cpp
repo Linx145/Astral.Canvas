@@ -23,8 +23,12 @@ namespace AstralCanvas
                 {
                     vkDestroyFramebuffer(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkFramebuffer)this->renderTargetHandle, NULL);
                 }
-                this->backendTexture.deinit();
-                this->depthBuffer.deinit();
+                break;
+            }
+            #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
                 break;
             }
             #endif
@@ -32,6 +36,11 @@ namespace AstralCanvas
                 THROW_ERR("Unimplemented backend: RenderTarget deinit");
                 break;
         }
+        for (usize i = 0; i < this->textures.length; i++)
+        {
+            this->textures.data[i].deinit();
+        }
+        this->textures.deinit();
         this->isDisposed = true;
     }
     void RenderTarget::Construct(RenderProgram *renderProgram)
@@ -51,14 +60,13 @@ namespace AstralCanvas
                 createInfo.height = this->height;
                 createInfo.flags = 0;
                 createInfo.layers = 1;
-                createInfo.attachmentCount = 1;
-                if (this->depthBuffer.imageView != NULL)
+                createInfo.attachmentCount = renderProgram->attachments.count;
+
+                VkImageView *imageViews = (VkImageView*)malloc(createInfo.attachmentCount * sizeof(VkImageView));
+                for (usize i = 0; i < createInfo.attachmentCount; i++)
                 {
-                    createInfo.attachmentCount = 2;
+                    imageViews[i] = (VkImageView)this->textures.data[i].imageView;
                 }
-                VkImageView imageViews[2] = {};
-                imageViews[0] = (VkImageView)this->backendTexture.imageView;
-                imageViews[1] = (VkImageView)this->depthBuffer.imageView;
                 createInfo.pAttachments = imageViews;
 
                 //createInfo requires a renderpass to set what renderpass the framebuffer is
@@ -69,6 +77,16 @@ namespace AstralCanvas
                 createInfo.renderPass = (VkRenderPass)renderProgram->handle;
 
                 vkCreateFramebuffer(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &createInfo, NULL, (VkFramebuffer*)&this->renderTargetHandle);
+
+                free(imageViews);
+                break;
+            }
+            #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                //metal doesnt require a dedicated framebuffer handle 
+                //like Vulkan, so we don't have to do anything
                 break;
             }
             #endif
@@ -78,10 +96,24 @@ namespace AstralCanvas
         }
         this->constructed = true;
     }
-    RenderTarget::RenderTarget(Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer)
+    RenderTarget::RenderTarget(IAllocator *allocator, u32 width, u32 height, collections::Array<Texture2D> texturesToUse)
     {
-        this->backendTexture = thisBackendTexture;
-        this->depthBuffer = thisDepthBuffer;
+        this->allocator = allocator;
+        this->textures = textures;
+        this->width = width;
+        this->height = height;
+        this->constructed = false;
+        this->isDisposed = false;
+        this->hasBeenUsedBefore = false;
+        this->isBackbuffer = false;
+        this->renderTargetHandle = NULL;
+    }
+    RenderTarget::RenderTarget(IAllocator *allocator, Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer)
+    {
+        this->allocator = allocator;
+        this->textures = collections::Array<Texture2D>(allocator, 2);
+        this->textures.data[0] = thisBackendTexture;
+        this->textures.data[1] = thisDepthBuffer;
         this->width = thisBackendTexture.width;
         this->height = thisBackendTexture.height;
         this->constructed = false;
@@ -90,24 +122,33 @@ namespace AstralCanvas
         this->isBackbuffer = isBackbuffer;
         this->renderTargetHandle = NULL;
     }
-    RenderTarget::RenderTarget(u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat)
+    RenderTarget::RenderTarget(IAllocator *allocator, u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat)
     {
+        this->allocator = allocator;
         this->width = width;
         this->height = height;
         this->constructed = false;
         this->isDisposed = false;
         this->renderTargetHandle = NULL;
         u8 *bytes = (u8*)calloc(width * height, 4);
-        this->backendTexture = CreateTextureFromData(bytes, width, height, imageFormat, SamplerGetPointClamp(), true);
-        
-        if (depthFormat != ImageFormat_DepthNone && depthFormat != ImageFormat_Undefined)
+        usize textureLength = 1;
+        Texture2D backendTexture = CreateTextureFromData(bytes, width, height, imageFormat, SamplerGetPointClamp(), true);
+        Texture2D depthBuffer{};
+
+        if (depthFormat > ImageFormat_DepthNone)
         {
-            this->depthBuffer = CreateTextureFromData(NULL, width, height, depthFormat, SamplerGetPointClamp(), true);
-        }
-        else
-        {
-            this->depthBuffer = {};
+            if (depthFormat == ImageFormat_BackbufferFormat)
+            {
+                depthFormat = ImageFormat_Depth32;
+            }
+            textureLength++;
+            depthBuffer = CreateTextureFromData(NULL, width, height, depthFormat, SamplerGetPointClamp(), true);
         }
         free(bytes);
+
+        this->textures = collections::Array<Texture2D>(allocator, textureLength);
+        this->textures.data[0] = backendTexture;
+        if (textureLength == 2)
+            this->textures.data[1] = depthBuffer;
     }
 }

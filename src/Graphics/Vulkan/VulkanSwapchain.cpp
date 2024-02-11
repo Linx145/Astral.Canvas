@@ -156,7 +156,7 @@ void AstralCanvasVk_SwapchainRecreateRendertargets(AstralVulkanSwapchain* swapch
         Texture2D backingTexture = CreateTextureFromHandle(swapchain->imageHandles.data[i], swapchain->imageExtents.width, swapchain->imageExtents.height, swapchain->imageFormat, true);
         Texture2D backingDepthbuffer = CreateTextureFromData(NULL, swapchain->imageExtents.width, swapchain->imageExtents.height, swapchain->depthFormat, NULL, true);
 
-        swapchain->renderTargets.data[i] = RenderTarget(backingTexture, backingDepthbuffer, true);
+        swapchain->renderTargets.data[i] = RenderTarget(swapchain->allocator, backingTexture, backingDepthbuffer, true);
     }
 
     //free(depthBufferData);

@@ -92,7 +92,7 @@ namespace AstralCanvas
     }
     void Graphics::SetRenderTarget(RenderTarget *target)
     {
-        if (currentRenderPipeline == NULL)
+        if (currentRenderProgram == NULL)
         {
             currentRenderTarget = target;
         }
@@ -112,7 +112,31 @@ namespace AstralCanvas
                     renderTarget = &swapchain->renderTargets.data[swapchain->currentImageIndex];
                 }
 
-                AstralCanvasVk_TransitionTextureLayout(AstralCanvasVk_GetCurrentGPU(), &renderTarget->backendTexture, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                AstralCanvasVkTextureToTransition *textures = (AstralCanvasVkTextureToTransition*)malloc(sizeof(AstralCanvasVkTextureToTransition) * renderTarget->textures.length);
+                for (usize i = 0; i < renderTarget->textures.length; i++)
+                {
+                    textures[i].texture = &renderTarget->textures.data[i];
+                    if (renderTarget->textures.data[i].imageFormat > ImageFormat_DepthNone)
+                    {
+                        if (renderTarget->textures.data[i].imageFormat == ImageFormat_Depth24Stencil8
+                        || renderTarget->textures.data[i].imageFormat == ImageFormat_Depth16Stencil8)
+                        {
+                            textures[i].aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+                        }
+                        else
+                        {
+                            textures[i].aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
+                        }
+                        textures[i].newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                    }
+                    else
+                    {
+                        textures[i].aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+                        textures[i].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    }
+                }
+                AstralCanvasVk_TransitionTextureLayouts(AstralCanvasVk_GetCurrentGPU(), textures, renderTarget->textures.length);
+                free(textures);
 
                 VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
 
@@ -160,6 +184,37 @@ namespace AstralCanvas
             }
 #endif
             default:
+                break;
+        }
+    }
+    void Graphics::NextRenderPass()
+    {
+        currentRenderPass += 1;
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
+                
+                vkCmdNextSubpass(cmdBuffer, VK_SUBPASS_CONTENTS_INLINE);
+                break;
+            }
+            #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal
+            {
+                if (currentCommandEncoderInstance != NULL)
+                {
+                    //apparently this is how it works
+                    AstralCanvasMetal_EndRenderProgram(this->currentCommandEncoderInstance);
+                    StartRenderProgram(this->currentRenderProgram, COLOR_TRANSPARENT);
+                }
+                break;
+            }
+            #endif
+            default:
+                THROW_ERR("Unimplemented backend: RenderProgram NextRenderPass");
                 break;
         }
     }

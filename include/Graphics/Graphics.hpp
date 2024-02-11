@@ -32,6 +32,7 @@ namespace AstralCanvas
         void SetIndexBuffer(const IndexBuffer *indexBuffer);
         void SetRenderTarget(RenderTarget *target);
         void StartRenderProgram(RenderProgram *program, const Color clearColor);
+        void NextRenderPass();
         void EndRenderProgram();
         void UseRenderPipeline(RenderPipeline *pipeline);
 

@@ -100,16 +100,26 @@ void AstralCanvasVk_EndTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvas
     queueToUse->commandPoolMutex.ExitLock();
 }
 
-void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, Texture2D *texture, VkImageAspectFlags aspectFlags, VkImageLayout newLayout)
+void AstralCanvasVk_TransitionTextureLayouts(AstralVulkanGPU *gpu, AstralCanvasVkTextureToTransition* textures, usize numTextures)
+{
+    AstralCanvasVkCommandQueue *cmdQueue = &gpu->DedicatedGraphicsQueue;
+    VkCommandBuffer cmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, cmdQueue, true);
+    for (usize i = 0; i < numTextures; i++)
+    {
+        AstralCanvasVk_TransitionTextureLayout(gpu, cmdBuffer, textures[i].texture, textures[i].aspectFlags, textures[i].newLayout);
+    }
+    AstralCanvasVk_EndTransientCommandBuffer(gpu, cmdQueue, cmdBuffer);
+}
+void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, VkCommandBuffer commandBufferToUse, Texture2D *texture, VkImageAspectFlags aspectFlags, VkImageLayout newLayout)
 {
     if (texture->imageLayout == (u32)newLayout)
     {
         return;
     }
-    AstralCanvasVk_TransitionImageLayout(gpu, (VkImage)texture->imageHandle, texture->mipLevels, aspectFlags, (VkImageLayout)texture->imageLayout, newLayout);
+    AstralCanvasVk_TransitionImageLayout(gpu, commandBufferToUse, (VkImage)texture->imageHandle, texture->mipLevels, aspectFlags, (VkImageLayout)texture->imageLayout, newLayout);
     texture->imageLayout = newLayout;
 }
-void AstralCanvasVk_TransitionImageLayout(AstralVulkanGPU *gpu, VkImage imageHandle, u32 mipLevels, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout)
+void AstralCanvasVk_TransitionImageLayout(AstralVulkanGPU *gpu, VkCommandBuffer commandBufferToUse, VkImage imageHandle, u32 mipLevels, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
     VkImageMemoryBarrier memBarrier = {};
     memBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -128,7 +138,11 @@ void AstralCanvasVk_TransitionImageLayout(AstralVulkanGPU *gpu, VkImage imageHan
     VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 
     AstralCanvasVkCommandQueue *cmdQueue = &gpu->DedicatedGraphicsQueue;
-    VkCommandBuffer cmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, cmdQueue, true);
+    VkCommandBuffer cmdBuffer = commandBufferToUse;
+    if (commandBufferToUse == NULL)
+    {
+        cmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, cmdQueue, true);
+    }
 
     if (cmdBuffer != NULL)
     {
@@ -237,7 +251,12 @@ void AstralCanvasVk_TransitionImageLayout(AstralVulkanGPU *gpu, VkImage imageHan
         vkCmdPipelineBarrier(cmdBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &memBarrier);
         cmdQueue->commandPoolMutex.ExitLock();
 
-        AstralCanvasVk_EndTransientCommandBuffer(gpu, cmdQueue, cmdBuffer);
+        //only end and submit the buffer if the user did not provide one.
+        //If the user did, then it's their role to end and submit
+        if (commandBufferToUse == NULL)
+        {
+            AstralCanvasVk_EndTransientCommandBuffer(gpu, cmdQueue, cmdBuffer);
+        }
     }
 }
 void AstralCanvasVk_CopyBufferToBuffer(AstralVulkanGPU *gpu, VkBuffer from, VkBuffer to, usize copySize)

@@ -16,6 +16,11 @@ namespace AstralCanvas
     IAllocator dynamicProgramCacheAllocator = {};
     collections::hashmap<RenderProgramSignature, RenderProgram> dynamicProgramCache;
 
+    RenderPass *RenderPass::AddInput(i32 input)
+    {
+        this->readsAttachments.Add(input);
+        return this;
+    }
     RenderProgram::RenderProgram()
     {
         this->attachments = collections::vector<RenderProgramImageAttachment>();
@@ -66,17 +71,19 @@ namespace AstralCanvas
 
         return result;
     }
-    void RenderProgram::AddRenderPass(collections::Array<i32> colorAttachmentIDs, i32 depthAttachmentID)
+    RenderPass *RenderProgram::AddRenderPass(collections::Array<i32> colorAttachmentIDs, i32 depthAttachmentID)
     {
         this->renderPasses.Add(
             {
                 colorAttachmentIDs,
                 depthAttachmentID,
-                this
+                this,
+                collections::vector<i32>(this->allocator)
             }
         );
+        return this->renderPasses.Get(this->renderPasses.count - 1);
     }
-    void RenderProgram::AddRenderPass(i32 colorAttachmentID, i32 depthAttachmentID)
+    RenderPass *RenderProgram::AddRenderPass(i32 colorAttachmentID, i32 depthAttachmentID)
     {
         collections::Array<i32> colorAttachmentIDs = collections::Array<i32>(this->allocator, 1);
         colorAttachmentIDs.data[0] = colorAttachmentID;
@@ -85,9 +92,11 @@ namespace AstralCanvas
             {
                 colorAttachmentIDs,
                 depthAttachmentID,
-                this
+                this,
+                collections::vector<i32>(this->allocator)
             }
         );
+        return this->renderPasses.Get(this->renderPasses.count - 1);
     }
     void RenderProgram::Construct()
     {
@@ -113,13 +122,24 @@ namespace AstralCanvas
                     subpassDescriptions[i] = {};
                     subpassDescriptions[i].flags = 0;
 
-                    //input attachments are currently unused
-                    subpassDescriptions[i].inputAttachmentCount = 0;
-                    subpassDescriptions[i].pInputAttachments = NULL;
+                    u32 startCount;
+                    subpassDescriptions[i].inputAttachmentCount = renderPassData.readsAttachments.count;
+                    if (renderPassData.readsAttachments.count > 0)
+                    {
+                        startCount = (u32)subpassDescriptionAttachmentRefs.count;
+                        for (usize i = 0; i < renderPassData.readsAttachments.count; i++)
+                        {
+                            VkAttachmentReference attachmentRef;
+                            attachmentRef.attachment = (u32)renderPassData.readsAttachments.ptr[i];
+                            attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                            subpassDescriptionAttachmentRefs.Add(attachmentRef);
+                        }
+                        subpassDescriptions->pInputAttachments = &subpassDescriptionAttachmentRefs.ptr[startCount];
+                    }
 
                     //references to the color attachments
                     //can have multiple color attachments (The shader can read from multiple input buffers)
-                    u32 startCount = (u32)subpassDescriptionAttachmentRefs.count;
+                    startCount = (u32)subpassDescriptionAttachmentRefs.count;
                     for (usize j = 0; j < renderPassData.colorAttachmentIndices.length; j++)
                     {
                         VkAttachmentReference ref;
@@ -275,6 +295,7 @@ namespace AstralCanvas
                 for (usize i = 0; i < this->renderPasses.count; i++)
                 {
                     this->renderPasses.ptr[i].colorAttachmentIndices.deinit();
+                    this->renderPasses.ptr[i].readsAttachments.deinit();
                 }
                 this->renderPasses.deinit();
                 vkDestroyRenderPass(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkRenderPass)this->handle, NULL);

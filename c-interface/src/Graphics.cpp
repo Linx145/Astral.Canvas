@@ -69,3 +69,7 @@ exportC void AstralCanvasGraphics_DrawIndexedPrimitives(AstralCanvasGraphics ptr
 {
     ((AstralCanvas::Graphics *)ptr)->DrawIndexedPrimitives(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
+exportC void AstralCanvasGraphics_NextRenderPass(AstralCanvasGraphics ptr)
+{
+    ((AstralCanvas::Graphics *)ptr)->NextRenderPass();
+}

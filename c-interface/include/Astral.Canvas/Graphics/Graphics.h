@@ -33,6 +33,7 @@ extern "C"
     DynamicFunction void AstralCanvasGraphics_SetShaderVariableSamplers(AstralCanvasGraphics ptr, const char* variableName, AstralCanvasSamplerState *samplers, usize count);
     DynamicFunction void AstralCanvasGraphics_SendUpdatedUniforms(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_DrawIndexedPrimitives(AstralCanvasGraphics ptr, u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance);
+    DynamicFunction void AstralCanvasGraphics_NextRenderPass(AstralCanvasGraphics ptr);
 
 #ifdef __cplusplus
 }

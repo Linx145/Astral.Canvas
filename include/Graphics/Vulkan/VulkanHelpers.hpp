@@ -11,6 +11,13 @@
 #include "Graphics/RenderPipeline.hpp"
 #include "ErrorHandling.hpp"
 
+struct AstralCanvasVkTextureToTransition
+{
+    AstralCanvas::Texture2D *texture;
+    VkImageAspectFlags aspectFlags;
+    VkImageLayout newLayout;
+};
+
 VkBuffer AstralCanvasVk_CreateResourceBuffer(AstralVulkanGPU *gpu, usize size, VkBufferUsageFlags usageFlags);
 
 VkCommandBuffer AstralCanvasVk_CreateTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvasVkCommandQueue *queueToUse, bool alsoBeginBuffer);
@@ -19,8 +26,10 @@ void AstralCanvasVk_EndTransientCommandBuffer(AstralVulkanGPU *gpu, AstralCanvas
 void AstralCanvasVk_CopyBufferToBuffer(AstralVulkanGPU *gpu, VkBuffer from, VkBuffer to, usize copySize);
 
 void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, VkImage imageHandle, u32 width, u32 height);
-void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, AstralCanvas::Texture2D *texture, VkImageAspectFlags aspectFlags, VkImageLayout newLayout);
-void AstralCanvasVk_TransitionImageLayout(AstralVulkanGPU *gpu, VkImage imageHandle, u32 mipLevels, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout);
+
+void AstralCanvasVk_TransitionTextureLayouts(AstralVulkanGPU *gpu, AstralCanvasVkTextureToTransition* textures, usize numTextures);
+void AstralCanvasVk_TransitionTextureLayout(AstralVulkanGPU *gpu, VkCommandBuffer commandBufferToUse, AstralCanvas::Texture2D *texture, VkImageAspectFlags aspectFlags, VkImageLayout newLayout);
+void AstralCanvasVk_TransitionImageLayout(AstralVulkanGPU *gpu, VkCommandBuffer commandBufferToUse, VkImage imageHandle, u32 mipLevels, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 inline AstralCanvas::MemoryAllocation AstralCanvasVk_AllocateMemoryForImage(VkImage image, VmaMemoryUsage memoryUsage, VkMemoryPropertyFlagBits memoryProperties)
 {

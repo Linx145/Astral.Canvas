@@ -1,6 +1,19 @@
 #include "Astral.Canvas/Graphics/VertexDeclaration.h"
 #include "Graphics/VertexDeclarations.hpp"
 
+exportC void AstralCanvasVertexDeclaration_AddElement(AstralCanvasVertexDeclaration declaration, AstralCanvasVertexElement element)
+{
+    AstralCanvas::VertexElement newElement;
+    newElement.format = (AstralCanvas::VertexElementFormat)element.format;
+    newElement.offset = element.offset;
+    ((AstralCanvas::VertexDeclaration *)declaration)->elements.Add(newElement);
+}
+exportC AstralCanvasVertexDeclaration AstralCanvasVertexDeclaration_Create(usize size, AstralCanvas_VertexInputRate vertexInputRate)
+{
+    AstralCanvas::VertexDeclaration *result = (AstralCanvas::VertexDeclaration *)GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::VertexDeclaration*));
+    *result = AstralCanvas::VertexDeclaration(GetDefaultAllocator(), size, (AstralCanvas::VertexInputRate)vertexInputRate);
+    return result;
+}
 exportC usize AstralCanvasVertexDeclaration_GetElementSize(AstralCanvasVertexDeclaration ptr)
 {
     return ((AstralCanvas::VertexDeclaration *)ptr)->size;
