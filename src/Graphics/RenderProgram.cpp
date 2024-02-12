@@ -1,6 +1,7 @@
 #include "Graphics/RenderProgram.hpp"
 #include "Graphics/CurrentBackend.hpp"
 #include "ErrorHandling.hpp"
+#include "ArenaAllocator.hpp"
 #include "hashmap.hpp"
 
 #ifdef ASTRALCANVAS_VULKAN
@@ -16,6 +17,11 @@ namespace AstralCanvas
     IAllocator dynamicProgramCacheAllocator = {};
     collections::hashmap<RenderProgramSignature, RenderProgram> dynamicProgramCache;
 
+    RenderPass *RenderPass::AddInput(i32 input)
+    {
+        this->readsAttachments.Add(input);
+        return this;
+    }
     RenderProgram::RenderProgram()
     {
         this->attachments = collections::vector<RenderProgramImageAttachment>();
@@ -66,17 +72,19 @@ namespace AstralCanvas
 
         return result;
     }
-    void RenderProgram::AddRenderPass(collections::Array<i32> colorAttachmentIDs, i32 depthAttachmentID)
+    RenderPass *RenderProgram::AddRenderPass(collections::Array<i32> colorAttachmentIDs, i32 depthAttachmentID)
     {
         this->renderPasses.Add(
             {
                 colorAttachmentIDs,
                 depthAttachmentID,
-                this
+                this,
+                collections::vector<i32>(this->allocator)
             }
         );
+        return this->renderPasses.Get(this->renderPasses.count - 1);
     }
-    void RenderProgram::AddRenderPass(i32 colorAttachmentID, i32 depthAttachmentID)
+    RenderPass *RenderProgram::AddRenderPass(i32 colorAttachmentID, i32 depthAttachmentID)
     {
         collections::Array<i32> colorAttachmentIDs = collections::Array<i32>(this->allocator, 1);
         colorAttachmentIDs.data[0] = colorAttachmentID;
@@ -85,9 +93,11 @@ namespace AstralCanvas
             {
                 colorAttachmentIDs,
                 depthAttachmentID,
-                this
+                this,
+                collections::vector<i32>(this->allocator)
             }
         );
+        return this->renderPasses.Get(this->renderPasses.count - 1);
     }
     void RenderProgram::Construct()
     {
@@ -102,9 +112,7 @@ namespace AstralCanvas
                     return;
                 }
 
-                IAllocator defaultAllocator = GetCAllocator();
-                //use a single vector of VkAttachmentReferences with slices given to each VkSubpassDescription for simplicity
-                collections::vector<VkAttachmentReference> subpassDescriptionAttachmentRefs = collections::vector<VkAttachmentReference>(&defaultAllocator);
+                ArenaAllocator arena = ArenaAllocator(GetDefaultAllocator());
                 VkSubpassDescription *subpassDescriptions = (VkSubpassDescription*)malloc(sizeof(VkSubpassDescription) * program->renderPasses.count);
                 
                 for (usize i = 0; i < program->renderPasses.count; i++)
@@ -113,36 +121,50 @@ namespace AstralCanvas
                     subpassDescriptions[i] = {};
                     subpassDescriptions[i].flags = 0;
 
-                    //input attachments are currently unused
-                    subpassDescriptions[i].inputAttachmentCount = 0;
-                    subpassDescriptions[i].pInputAttachments = NULL;
-
-                    //references to the color attachments
-                    //can have multiple color attachments (The shader can read from multiple input buffers)
-                    u32 startCount = (u32)subpassDescriptionAttachmentRefs.count;
-                    for (usize j = 0; j < renderPassData.colorAttachmentIndices.length; j++)
+                    //input attachments
+                    if (renderPassData.readsAttachments.count > 0)
                     {
-                        VkAttachmentReference ref;
-                        ref.attachment = renderPassData.colorAttachmentIndices.data[j];
-                        ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                        
-                        subpassDescriptionAttachmentRefs.Add(ref);
+                        VkAttachmentReference *references = (VkAttachmentReference *)arena.asAllocator.Allocate(sizeof(VkAttachmentReference)
+                        * renderPassData.readsAttachments.count);
+                        for (usize j = 0; j < renderPassData.readsAttachments.count; j++)
+                        {
+                            VkAttachmentReference attachmentRef;
+                            attachmentRef.attachment = (u32)renderPassData.readsAttachments.ptr[j];
+                            attachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+                            references[j] = attachmentRef;
+                        }
+                        subpassDescriptions[i].inputAttachmentCount = (u32)renderPassData.readsAttachments.count;
+                        subpassDescriptions[i].pInputAttachments = references;
                     }
 
-                    subpassDescriptions[i].colorAttachmentCount = (u32)renderPassData.colorAttachmentIndices.length;
-                    subpassDescriptions[i].pColorAttachments = &subpassDescriptionAttachmentRefs.ptr[startCount];
+                    //output color attachments
+                    //can have multiple color attachments (The shader can write to multiple input buffers)
+                    if (renderPassData.colorAttachmentIndices.length > 0)
+                    {
+                        VkAttachmentReference *references = (VkAttachmentReference *)arena.asAllocator.Allocate(sizeof(VkAttachmentReference)
+                        * renderPassData.colorAttachmentIndices.length);
+                        for (usize j = 0; j < renderPassData.colorAttachmentIndices.length; j++)
+                        {
+                            VkAttachmentReference ref;
+                            ref.attachment = renderPassData.colorAttachmentIndices.data[j];
+                            ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                            
+                            references[j] = ref;
+                        }
+                        subpassDescriptions[i].colorAttachmentCount = (u32)renderPassData.colorAttachmentIndices.length;
+                        subpassDescriptions[i].pColorAttachments = references;
+                    }
 
-                    //lastly, depth attachment (if any)
+                    //output depth attachment (if any)
                     if (renderPassData.depthAttachmentIndex > -1)
                     {
-                        VkAttachmentReference ref;
-                        ref.attachment = renderPassData.depthAttachmentIndex;
-                        ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-                        subpassDescriptionAttachmentRefs.Add(ref);
+                        VkAttachmentReference *references = (VkAttachmentReference *)arena.asAllocator.Allocate(sizeof(VkAttachmentReference));
+                        references->attachment = renderPassData.depthAttachmentIndex;
+                        references->layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-                        subpassDescriptions[i].pDepthStencilAttachment = &subpassDescriptionAttachmentRefs.ptr[subpassDescriptionAttachmentRefs.count - 1];
+                        subpassDescriptions[i].pDepthStencilAttachment = references;
                     }
-
                     //no clue what these are AKA dont need them rn
                     subpassDescriptions[i].preserveAttachmentCount = 0;
                     subpassDescriptions[i].pResolveAttachments = NULL;
@@ -244,7 +266,7 @@ namespace AstralCanvas
                 free(subpassDependencies);
                 free(attachmentDescriptions);
                 free(subpassDescriptions);
-                subpassDescriptionAttachmentRefs.deinit();
+                arena.deinit();
 
                 break;
             }
@@ -275,6 +297,7 @@ namespace AstralCanvas
                 for (usize i = 0; i < this->renderPasses.count; i++)
                 {
                     this->renderPasses.ptr[i].colorAttachmentIndices.deinit();
+                    this->renderPasses.ptr[i].readsAttachments.deinit();
                 }
                 this->renderPasses.deinit();
                 vkDestroyRenderPass(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkRenderPass)this->handle, NULL);

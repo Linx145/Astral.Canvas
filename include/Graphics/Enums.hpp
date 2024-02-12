@@ -19,7 +19,8 @@ namespace AstralCanvas
         ShaderResourceType_Uniform,
         ShaderResourceType_Sampler,
         ShaderResourceType_Texture,
-        ShaderResourceType_StructuredBuffer
+        ShaderResourceType_StructuredBuffer,
+        ShaderResourceType_InputAttachment
     };
     enum Blend
     {
@@ -64,6 +65,9 @@ namespace AstralCanvas
     enum ImageFormat
     {
         ImageFormat_Undefined,
+        /// Sets the image format to whatever the format of the backbuffer is
+        ImageFormat_BackbufferFormat,
+
         ImageFormat_R8G8B8A8Unorm,
         ImageFormat_R8G8B8A8SNorm,
         ImageFormat_R8G8B8A8Srgb,
@@ -78,10 +82,7 @@ namespace AstralCanvas
         ImageFormat_Depth16, 
         ImageFormat_Depth16Stencil8, 
         ImageFormat_Depth24Stencil8, 
-        ImageFormat_Depth32,
-
-        /// Sets the image format to whatever the format of the backbuffer is
-        ImageFormat_BackbufferFormat
+        ImageFormat_Depth32
     };
 
     enum SampleMode

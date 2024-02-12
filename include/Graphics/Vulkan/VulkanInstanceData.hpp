@@ -11,7 +11,7 @@ VkDebugUtilsMessengerEXT AstralCanvasVk_GetDebugMessenger();
 void AstralCanvasVk_SetDebugMessenger(VkDebugUtilsMessengerEXT messenger);
 
 bool AstralCanvasVk_ValidationLayersIsEnabled();
-void AstralCanvasVk_ValidationLayersGetEnabled(bool value);
+void AstralCanvasVk_ValidationLayersSetEnabled(bool value);
 
 VkInstance AstralCanvasVk_GetInstance();
 void AstralCanvasVk_SetInstance(VkInstance instance);

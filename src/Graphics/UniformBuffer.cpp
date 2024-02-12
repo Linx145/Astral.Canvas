@@ -77,7 +77,7 @@ namespace AstralCanvas
                 if (this->memoryAllocation.vkAllocation != NULL)
                 {
                     vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), this->memoryAllocation.vkAllocation);
-                    printf("Freed uniform buffer memory\n");
+                    //printf("Freed uniform buffer memory\n");
                 }
                 break;
             }

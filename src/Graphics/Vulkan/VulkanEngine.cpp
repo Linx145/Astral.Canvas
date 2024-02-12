@@ -14,14 +14,16 @@ VkBool32 AstralCanvasVk_ErrorCallback(
 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 	void* pUserData)
 {
-	if (messageSeverity | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-	{
-		THROW_ERR(pCallbackData->pMessage);
-	}
-	else
-	{
-		LOG_WARNING(pCallbackData->pMessage);
-	}
+	THROW_ERR(pCallbackData->pMessage);
+	exit(1);
+	// if (messageSeverity | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+	// {
+	// 	THROW_ERR(pCallbackData->pMessage);
+	// }
+	// else
+	// {
+	// 	LOG_WARNING(pCallbackData->pMessage);
+	// }
 	return VK_FALSE;
 }
 
@@ -128,19 +130,20 @@ bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validat
 	AstralCanvasVk_SetMainCmdBuffer(mainCmdBuffer);
 
 	u32 maxUniformDescriptors = ASTRALVULKAN_MAX_DESCRIPTOR_SETS;
-	VkDescriptorPoolSize poolSizes[3];
+	VkDescriptorPoolSize poolSizes[4];
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 	poolSizes[0].descriptorCount = maxUniformDescriptors;
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_SAMPLER;
 	poolSizes[1].descriptorCount = maxUniformDescriptors;
 	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	poolSizes[2].descriptorCount = maxUniformDescriptors;
+	poolSizes[3].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	poolSizes[3].descriptorCount = maxUniformDescriptors;
 
 	VkDescriptorPoolCreateInfo poolCreateInfo{};
 	poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolCreateInfo.maxSets = 1;
 	poolCreateInfo.pPoolSizes = poolSizes;
-	poolCreateInfo.poolSizeCount = 3;
+	poolCreateInfo.poolSizeCount = 4;
 	poolCreateInfo.maxSets = maxUniformDescriptors;
 
 	VkDescriptorPool mainPool;
@@ -387,7 +390,7 @@ void AstralCanvasVk_EndDraw()
 
 	gpu->DedicatedGraphicsQueue.queueMutex.EnterLock();
 	VkResult presentResults = vkQueuePresentKHR(gpu->DedicatedGraphicsQueue.queue, &presentInfo);
-	swapchain->renderTargets.data[swapchain->currentImageIndex].backendTexture.imageLayout = (u32)VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	swapchain->renderTargets.data[swapchain->currentImageIndex].textures.data[0].imageLayout = (u32)VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	gpu->DedicatedGraphicsQueue.queueMutex.ExitLock();
 
 	if (presentResults == VK_ERROR_OUT_OF_DATE_KHR || onResized)

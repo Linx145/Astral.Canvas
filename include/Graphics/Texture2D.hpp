@@ -23,8 +23,6 @@ namespace AstralCanvas
         u32 mipLevels;
         /// How much data comprises a pixel in the image, and what the data stands for
         ImageFormat imageFormat;
-        /// The behaviour of shaders when sampling this texture. Included here as a reference for convenience
-        SamplerState *samplerState;
         /// Whether the texture owns the handle. 
         /// This is false for when creating aliases to other textures, 
         /// or to a texture owned by a swapchain. When false, deinit() will not dispose the image handle
@@ -44,6 +42,6 @@ namespace AstralCanvas
         void Construct();
     };
     Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget);
-    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, SamplerState *samplerState, bool usedForRenderTarget);
+    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget);
     Texture2D CreateTextureFromFile(const char *fileName);
 }

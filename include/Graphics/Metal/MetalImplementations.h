@@ -1,11 +1,12 @@
 #pragma once
-#ifdef MACOS
+#ifdef ASTRALCANVAS_METAL
 #include "Linxc.h"
 #include "string.hpp"
 #include "Graphics/RenderProgram.hpp"
 #include "Graphics/RenderTarget.hpp"
 #include "Graphics/RenderPipeline.hpp"
 #include "Graphics/VertexBuffer.hpp"
+#include "Graphics/InstanceBuffer.hpp"
 #include "Graphics/IndexBuffer.hpp"
 #include "Graphics/Texture2D.hpp"
 #include "Graphics/Color.hpp"
@@ -26,7 +27,10 @@ void *AstralCanvasMetal_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipel
 void AstralCanvasMetal_DestroyRenderPipeline(void *pipeline);
 void AstralCanvasMetal_UseRenderPipeline(void *commandEncoder, AstralCanvas::RenderPipeline *pipeline, AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse, Maths::Rectangle viewport, Maths::Rectangle clipArea);
 
-void AstralCanvasMetal_CreateVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer, void* verticesData, usize count);
+void AstralCanvasMetal_CreateVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer);
+void AstralCanvasMetal_CreateInstanceBuffer(AstralCanvas::InstanceBuffer *instanceBuffer);
+void AstralCanvasMetal_SetVertexData(AstralCanvas::VertexBuffer *vertexBuffer, void *data, usize count);
+void AstralCanvasMetal_SetInstanceData(AstralCanvas::InstanceBuffer *instanceBuffer, void *data, usize count);
 void AstralCanvasMetal_SetVertexBuffer(void *commandEncoder, const AstralCanvas::VertexBuffer *vertexBuffer, u32 bindingPoint);
 void AstralCanvasMetal_DestroyVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer);
 
@@ -43,6 +47,8 @@ void AstralCanvasMetal_CreateTexture(AstralCanvas::Texture2D *texture);
 void AstralCanvasMetal_DestroyTexture(AstralCanvas::Texture2D *texture);
 void AstralCanvasMetal_CreateSampler(AstralCanvas::SamplerState *sampler);
 void AstralCanvasMetal_DestroySampler(AstralCanvas::SamplerState *sampler);
+
+void AstralCanvasMetal_SetClipArea(Maths::Rectangle clipArea);
 
 void AstralCanvasMetal_AddUniformDescriptorSets(AstralCanvas::Shader *shader);
 void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::Shader *shader);

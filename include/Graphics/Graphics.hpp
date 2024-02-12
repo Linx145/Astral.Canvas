@@ -4,6 +4,7 @@
 #include "Graphics/RenderProgram.hpp"
 #include "Graphics/RenderPipeline.hpp"
 #include "Graphics/VertexBuffer.hpp"
+#include "Graphics/InstanceBuffer.hpp"
 #include "Graphics/IndexBuffer.hpp"
 #include "Graphics/RenderTarget.hpp"
 #include "Graphics/SamplerState.hpp"
@@ -28,10 +29,13 @@ namespace AstralCanvas
 
         Graphics();
 
+        void SetClipArea(Maths::Rectangle newClipArea);
         void SetVertexBuffer(const VertexBuffer *vb, u32 bindingPoint = 0);
+        void SetInstanceBuffer(const InstanceBuffer *instanceBuffer, u32 bindingPoint = 0);
         void SetIndexBuffer(const IndexBuffer *indexBuffer);
         void SetRenderTarget(RenderTarget *target);
         void StartRenderProgram(RenderProgram *program, const Color clearColor);
+        void NextRenderPass();
         void EndRenderProgram();
         void UseRenderPipeline(RenderPipeline *pipeline);
 
@@ -44,7 +48,7 @@ namespace AstralCanvas
         void SetShaderVariableSamplers(const char* variableName, SamplerState **samplers, usize count);
 
         void SendUpdatedUniforms();
-
+        
         void DrawIndexedPrimitives(u32 indexCount, u32 instanceCount, u32 firstIndex = 0, u32 vertexOffset = 0, u32 firstInstance = 0);
     };
 }

@@ -32,7 +32,11 @@ struct AstralShadercResource
     string variableName;
     u32 set;
     u32 binding;
-    u32 arrayLength;
+    union
+    {
+        u32 arrayLength;
+        u32 inputAttachmentIndex;
+    };
 };
 
 struct AstralShadercShaderVariables
@@ -40,24 +44,28 @@ struct AstralShadercShaderVariables
     collections::Array<AstralShadercUniform> uniforms;
     collections::Array<AstralShadercResource> textures;
     collections::Array<AstralShadercResource> samplers;
+    collections::Array<AstralShadercResource> inputAttachments;
 
     inline AstralShadercShaderVariables()
     {
         uniforms = collections::Array<AstralShadercUniform>();
         textures = collections::Array<AstralShadercResource>();
         samplers = collections::Array<AstralShadercResource>();
+        inputAttachments = collections::Array<AstralShadercResource>();
     }
     inline AstralShadercShaderVariables(IAllocator *allocator)
     {
         uniforms = collections::Array<AstralShadercUniform>(allocator);
         textures = collections::Array<AstralShadercResource>(allocator);
         samplers = collections::Array<AstralShadercResource>(allocator);
+        inputAttachments = collections::Array<AstralShadercResource>(allocator);
     }
     inline void deinit()
     {
         uniforms.deinit();
         textures.deinit();
         samplers.deinit();
+        inputAttachments.deinit();
     }
 };
 
@@ -389,6 +397,20 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
         else resourceData.arrayLength = 0;
 
         shaderVariables->samplers.data[i] = resourceData;
+    }
+
+    spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SUBPASS_INPUT, &allResources, &resourcesCount);
+
+    shaderVariables->inputAttachments = collections::Array<AstralShadercResource>(allocator, resourcesCount);
+    for (usize i = 0; i < resourcesCount; i++)
+    {
+        AstralShadercResource resourceData{};
+        resourceData.binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
+        resourceData.set = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
+        resourceData.inputAttachmentIndex = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationInputAttachmentIndex);
+        resourceData.variableName = string(allocator, allResources[i].name);
+
+        shaderVariables->inputAttachments.data[i] = resourceData;
     }
 
     return true;
@@ -750,6 +772,31 @@ inline void AstralShaderc_WriteShaderData(SomnialJson::JsonWriter *writer, colle
         writer->WriteEndArray();
     }
 
+    if (variables->inputAttachments.length > 0)
+    {
+        writer->WritePropertyName("inputAttachments");
+        writer->WriteStartArray();
+        for (usize i = 0; i < variables->inputAttachments.length; i++)
+        {
+            writer->WriteStartObject();
+
+            writer->WritePropertyName("name");
+            writer->WriteString(variables->inputAttachments.data[i].variableName.buffer);
+
+            writer->WritePropertyName("index");
+            writer->WriteUintValue(variables->inputAttachments.data[i].inputAttachmentIndex);
+
+            writer->WritePropertyName("set");
+            writer->WriteUintValue(variables->inputAttachments.data[i].set);
+
+            writer->WritePropertyName("binding");
+            writer->WriteUintValue(variables->inputAttachments.data[i].binding);
+
+            writer->WriteEndObject();
+        }
+        writer->WriteEndArray();
+    }
+
     writer->WritePropertyName("spirv");
     writer->WriteStartArray();
     for (usize i = 0; i < spirv.count; i++)
@@ -761,7 +808,12 @@ inline void AstralShaderc_WriteShaderData(SomnialJson::JsonWriter *writer, colle
     if (msl.buffer != NULL)
     {
         writer->WritePropertyName("msl");
-        writer->WriteString(msl.buffer);        
+        //need to replace all " with \"
+        string formatted1 = ReplaceCharWithString(GetDefaultAllocator(), msl.buffer, '"', "\\\"");
+        string formatted2 = ReplaceCharWithString(GetDefaultAllocator(), formatted1.buffer, '\n', "\\n");
+        formatted1.deinit();
+        writer->WriteString(formatted2.buffer);
+        formatted2.deinit();
     }
 }
 inline bool AstralShaderc_WriteToFile(IAllocator *allocator, string filePath, AstralShadercCompileResult *compiledShader)

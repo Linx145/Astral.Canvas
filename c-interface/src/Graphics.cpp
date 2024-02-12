@@ -17,6 +17,10 @@ exportC void AstralCanvasGraphics_SetVertexBuffer(AstralCanvasGraphics ptr, cons
 {
     ((AstralCanvas::Graphics *)ptr)->SetVertexBuffer((const AstralCanvas::VertexBuffer*)vb, bindingPoint);
 }
+exportC void AstralCanvasGraphics_SetInstanceBuffer(AstralCanvasGraphics ptr, const AstralCanvasInstanceBuffer instanceBuffer, u32 bindingPoint)
+{
+    ((AstralCanvas::Graphics *)ptr)->SetInstanceBuffer((const AstralCanvas::InstanceBuffer*)instanceBuffer, bindingPoint);
+}
 exportC void AstralCanvasGraphics_SetIndexBuffer(AstralCanvasGraphics ptr, const AstralCanvasIndexBuffer indexBuffer)
 {
     ((AstralCanvas::Graphics *)ptr)->SetIndexBuffer((const AstralCanvas::IndexBuffer*)indexBuffer);
@@ -68,4 +72,17 @@ exportC void AstralCanvasGraphics_SendUpdatedUniforms(AstralCanvasGraphics ptr)
 exportC void AstralCanvasGraphics_DrawIndexedPrimitives(AstralCanvasGraphics ptr, u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance)
 {
     ((AstralCanvas::Graphics *)ptr)->DrawIndexedPrimitives(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+}
+exportC void AstralCanvasGraphics_NextRenderPass(AstralCanvasGraphics ptr)
+{
+    ((AstralCanvas::Graphics *)ptr)->NextRenderPass();
+}
+exportC AstralCanvasClipArea AstralCanvasGraphics_GetClipArea(AstralCanvasGraphics ptr)
+{
+    Maths::Rectangle rect = ((AstralCanvas::Graphics *)ptr)->ClipArea;
+    return {rect.X, rect.Y, rect.Width, rect.Height};
+}
+exportC void AstralCanvasGraphics_SetClipArea(AstralCanvasGraphics ptr, i32 x, i32 y, i32 w, i32 h)
+{
+    ((AstralCanvas::Graphics *)ptr)->SetClipArea({x, y, w, h});
 }

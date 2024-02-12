@@ -64,6 +64,30 @@ namespace AstralCanvas
                 break;
         }
     }
+    void Graphics::SetInstanceBuffer(const InstanceBuffer *instanceBuffer, u32 bindingPoint)
+    {
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
+
+                vkCmdBindVertexBuffers(cmdBuffer, bindingPoint, 1, (VkBuffer*)&instanceBuffer->handle, &bindBufferNoOffsets);
+                break;
+            }
+            #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_SetInstanceBuffer(this->currentCommandEncoderInstance, instanceBuffer, bindingPoint);
+                break;
+            }
+#endif
+            default:
+                break;
+        }
+    }
     void Graphics::SetIndexBuffer(const IndexBuffer *indexBuffer)
     {
         switch (GetActiveBackend())
@@ -92,9 +116,40 @@ namespace AstralCanvas
     }
     void Graphics::SetRenderTarget(RenderTarget *target)
     {
-        if (currentRenderPipeline == NULL)
+        if (currentRenderProgram == NULL)
         {
             currentRenderTarget = target;
+        }
+    }
+    void Graphics::SetClipArea(Maths::Rectangle newClipArea)
+    {
+        this->ClipArea = newClipArea;
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
+
+                VkRect2D clip;
+                clip.extent.width = this->ClipArea.Width;
+                clip.extent.height = this->ClipArea.Height;
+                clip.offset.x = this->ClipArea.X;
+                clip.offset.y = this->ClipArea.Y;
+                vkCmdSetScissor(cmdBuffer, 0, 1, &clip);
+                break;
+            }
+            #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_SetClipArea(newClipArea);
+                break;
+            }
+            #endif
+            default:
+                THROW_ERR("Unimplemented backend: Graphics SetClipArea");
+                break;
         }
     }
     void Graphics::StartRenderProgram(RenderProgram *program, const Color clearColor)
@@ -112,7 +167,31 @@ namespace AstralCanvas
                     renderTarget = &swapchain->renderTargets.data[swapchain->currentImageIndex];
                 }
 
-                AstralCanvasVk_TransitionTextureLayout(AstralCanvasVk_GetCurrentGPU(), &renderTarget->backendTexture, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                AstralCanvasVkTextureToTransition *textures = (AstralCanvasVkTextureToTransition*)malloc(sizeof(AstralCanvasVkTextureToTransition) * renderTarget->textures.length);
+                for (usize i = 0; i < renderTarget->textures.length; i++)
+                {
+                    textures[i].texture = &renderTarget->textures.data[i];
+                    if (renderTarget->textures.data[i].imageFormat > ImageFormat_DepthNone)
+                    {
+                        if (renderTarget->textures.data[i].imageFormat == ImageFormat_Depth24Stencil8
+                        || renderTarget->textures.data[i].imageFormat == ImageFormat_Depth16Stencil8)
+                        {
+                            textures[i].aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+                        }
+                        else
+                        {
+                            textures[i].aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
+                        }
+                        textures[i].newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                    }
+                    else
+                    {
+                        textures[i].aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+                        textures[i].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    }
+                }
+                AstralCanvasVk_TransitionTextureLayouts(AstralCanvasVk_GetCurrentGPU(), textures, renderTarget->textures.length);
+                free(textures);
 
                 VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
 
@@ -122,26 +201,32 @@ namespace AstralCanvas
                 info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
                 info.framebuffer = (VkFramebuffer)renderTarget->renderTargetHandle;
                 info.renderPass = (VkRenderPass)program->handle;
-                VkClearValue clearValues[2];
-                
-                clearValues[0].color.float32[0] = clearColor.R * ONE_OVER_255;
-                clearValues[0].color.float32[1] = clearColor.G * ONE_OVER_255;
-                clearValues[0].color.float32[2] = clearColor.B * ONE_OVER_255;
-                clearValues[0].color.float32[3] = clearColor.A * ONE_OVER_255;
 
-                clearValues[1].depthStencil.depth = 1.0f;
-                clearValues[1].depthStencil.stencil = 255;
+                //clear values
+                //arbitrarily large number
+                VkClearValue clearValues[32];
 
-                RenderProgramImageAttachment attachment = this->currentRenderProgram->attachments.ptr[this->currentRenderProgram->renderPasses.ptr[0].colorAttachmentIndices.data[0]];
-                if (attachment.clearColor)
+                info.clearValueCount = this->currentRenderProgram->attachments.count;
+                info.pClearValues = clearValues;
+                for (usize i = 0; i < this->currentRenderProgram->attachments.count; i++)
                 {
-                    info.pClearValues = clearValues;
-                    info.clearValueCount = 1;
+                    clearValues[i] = {};
+                    RenderProgramImageAttachment attachment = this->currentRenderProgram->attachments.ptr[i];
+
+                    if (attachment.clearColor && attachment.imageFormat < ImageFormat_DepthNone)
+                    {
+                        clearValues[i].color.float32[0] = clearColor.R * ONE_OVER_255;
+                        clearValues[i].color.float32[1] = clearColor.G * ONE_OVER_255;
+                        clearValues[i].color.float32[2] = clearColor.B * ONE_OVER_255;
+                        clearValues[i].color.float32[3] = clearColor.A * ONE_OVER_255;
+                    }
+                    else if (attachment.clearDepth && attachment.imageFormat > ImageFormat_DepthNone)
+                    {
+                        clearValues[i].depthStencil.depth = 1.0f;
+                        clearValues[i].depthStencil.stencil = 255;
+                    }
                 }
-                if (this->currentRenderProgram->renderPasses.ptr[0].depthAttachmentIndex != -1)
-                {
-                    info.clearValueCount++;
-                }
+
                 info.renderArea.offset.x = 0;
                 info.renderArea.offset.y = 0;
                 info.renderArea.extent.width = renderTarget->width;
@@ -163,6 +248,37 @@ namespace AstralCanvas
                 break;
         }
     }
+    void Graphics::NextRenderPass()
+    {
+        currentRenderPass += 1;
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
+                
+                vkCmdNextSubpass(cmdBuffer, VK_SUBPASS_CONTENTS_INLINE);
+                break;
+            }
+            #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal
+            {
+                if (currentCommandEncoderInstance != NULL)
+                {
+                    //apparently this is how it works
+                    AstralCanvasMetal_EndRenderProgram(this->currentCommandEncoderInstance);
+                    StartRenderProgram(this->currentRenderProgram, COLOR_TRANSPARENT);
+                }
+                break;
+            }
+            #endif
+            default:
+                THROW_ERR("Unimplemented backend: RenderProgram NextRenderPass");
+                break;
+        }
+    }
     void Graphics::EndRenderProgram()
     {
         if (this->currentRenderProgram != NULL)
@@ -175,6 +291,38 @@ namespace AstralCanvas
                     VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
 
                     vkCmdEndRenderPass(cmdBuffer);
+
+                    //
+                    RenderTarget *renderTarget = currentRenderTarget;
+                    if (renderTarget == NULL)
+                    {
+                        AstralVulkanSwapchain *swapchain = AstralCanvasVk_GetCurrentSwapchain();
+                        renderTarget = &swapchain->renderTargets.data[swapchain->currentImageIndex];
+                    }
+                    if (renderTarget != NULL)
+                    {
+                        for (usize i = 0; i < currentRenderProgram->attachments.count; i++)
+                        {
+                            if (renderTarget->textures.data[i].imageFormat < ImageFormat_DepthNone)
+                            {
+                                u64 finalImageLayout;
+                                RenderProgramImageAttachment attachmentData = currentRenderProgram->attachments.ptr[i];
+                                if (attachmentData.outputType == RenderPassOutput_ToNextPass)// || i < program->attachments.count - 1)
+                                {
+                                    finalImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                                }
+                                else if (attachmentData.outputType == RenderPassOutput_ToRenderTarget)
+                                {
+                                    finalImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                                }
+                                else
+                                {
+                                    finalImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                                }
+                                renderTarget->textures.data[i].imageLayout = finalImageLayout;
+                            }  
+                        }
+                    }
                     break;
                 }
                 #endif
@@ -263,7 +411,6 @@ namespace AstralCanvas
                     currentRenderPipeline->shader->uniformsHasBeenSet = true;
                     variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].mutated = true;
                     variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].ub.SetData(ptr, size);
-                    break;
                 }
             }
         }
@@ -319,9 +466,10 @@ namespace AstralCanvas
                     currentRenderPipeline->shader->uniformsHasBeenSet = true;
                     variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].mutated = true;
                     variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].textures.data[0] = texture;
-                    break;
+                    return;
                 }
             }
+            fprintf(stderr, "Variable of name %s not found\n", variableName);
         }
     }
     void Graphics::SetShaderVariableSamplers(const char* variableName, SamplerState **samplers, usize count)
@@ -380,6 +528,7 @@ namespace AstralCanvas
             }
         }
     }
+    
     void Graphics::SendUpdatedUniforms()
     {
         if (currentRenderPipeline->shader->uniformsHasBeenSet)

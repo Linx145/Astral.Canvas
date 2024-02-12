@@ -143,6 +143,40 @@ namespace AstralCanvas
                 }
             }
         }
+        JsonElement *inputAttachments = json->GetProperty("inputAttachments");
+        if (inputAttachments != NULL)
+        {
+            for (usize i = 0; i < inputAttachments->arrayElements.length; i++)
+            {
+                string name = inputAttachments->arrayElements.data[i].GetProperty("name")->GetString(results->allocator);
+                u32 index = inputAttachments->arrayElements.data[i].GetProperty("index")->GetUint32();
+                u32 set = inputAttachments->arrayElements.data[i].GetProperty("set")->GetUint32();
+                u32 binding = inputAttachments->arrayElements.data[i].GetProperty("binding")->GetUint32();
+
+                ShaderResource *resource = results->uniforms.Get(binding);
+                if (resource != NULL && resource->variableName.buffer != NULL)
+                {
+                    resource->accessedBy = (ShaderInputAccessedBy)((u32)resource->accessedBy | (u32)accessedByShaderOfType);
+                    name.deinit();
+                }
+                else
+                {
+                    //printf("Added input attachment: %s at binding %u, index %u\n", name.buffer, binding, index);
+                    ShaderResource newResource;
+                    newResource.binding = binding;
+                    newResource.set = set;
+                    newResource.variableName = name;
+                    newResource.arrayLength = 0;
+                    newResource.inputAttachmentIndex = index;
+                    newResource.accessedBy = accessedByShaderOfType;
+                    newResource.type = ShaderResourceType_InputAttachment;
+                    newResource.size = 0;
+                    newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
+                    results->uniforms.Insert((usize)binding, newResource);
+                    //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
+                }
+            }
+        }
     }
     i32 Shader::GetVariableBinding(const char* variableName)
     {
@@ -159,9 +193,9 @@ namespace AstralCanvas
         }
         return -1;
     }
-    void Shader::CheckDescriptorSetAvailability()
+    void Shader::CheckDescriptorSetAvailability(bool forceAddNewDescriptor)
     {
-        if (descriptorForThisDrawCall >= descriptorSets.count)
+        if (descriptorForThisDrawCall >= descriptorSets.count || forceAddNewDescriptor)
         {
             switch (GetActiveBackend())
             {
@@ -195,6 +229,12 @@ namespace AstralCanvas
                             {
                                 newMutableState.ub = UniformBuffer(resource->size);
                                 newMutableState.ownsUniformBuffer = true;
+                                break;
+                            }
+                            case ShaderResourceType_InputAttachment:
+                            {
+                                newMutableState.textures = collections::Array<Texture2D*>(this->allocator, 1);
+                                newMutableState.imageInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
                                 break;
                             }
                             case ShaderResourceType_Texture:
@@ -261,6 +301,20 @@ namespace AstralCanvas
 
                     switch (this->shaderVariables.uniforms.ptr[i].type)
                     {
+                        case ShaderResourceType_InputAttachment:
+                        {
+                            VkDescriptorImageInfo imageInfo{};
+                            imageInfo.sampler = NULL;
+                            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //(VkImageLayout)toMutate->textures.data[i]->imageLayout;
+                            imageInfo.imageView = (VkImageView)toMutate->textures.data[0]->imageView;
+                            ((VkDescriptorImageInfo*)toMutate->imageInfos)[0] = imageInfo;
+
+                            setWrite.dstArrayElement = 0;
+                            setWrite.descriptorCount = toMutate->textures.length;
+                            setWrite.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+                            setWrite.pImageInfo = (VkDescriptorImageInfo*)toMutate->imageInfos;
+                            break;
+                        }
                         case ShaderResourceType_Uniform:
                         {
                             UniformBuffer buffer = toMutate->ub;
@@ -314,6 +368,10 @@ namespace AstralCanvas
                             break;
                         }
                         case ShaderResourceType_StructuredBuffer:
+                        {
+                            break;
+                        }
+                        default:
                         {
                             break;
                         }
@@ -495,10 +553,14 @@ namespace AstralCanvas
                                 layoutBinding.pImmutableSamplers = NULL;
 
                                 bindings.data[resource.binding] = layoutBinding;
+                                //printf("resource %s at binding %u of descriptor type %i, count %u with stage flags %i\n", resource.variableName.buffer, resource.binding, layoutBinding.descriptorType, layoutBinding.descriptorCount, layoutBinding.stageFlags);
                             }
                             layoutInfo.pBindings = bindings.data;
 
-                            vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout);
+                            if (vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout) != VK_SUCCESS)
+                            {
+                                fprintf(stderr, "Error creating descriptor set layout\n");
+                            }
                         }
                     }
                     else

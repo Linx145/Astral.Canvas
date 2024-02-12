@@ -56,7 +56,10 @@ struct string
 
     inline void deinit()
     {
-        this->allocator->FREEPTR(buffer);
+        if (buffer != NULL)
+        {
+            this->allocator->FREEPTR(buffer);
+        }
     }
     bool eql(const char *other)
     {
@@ -371,6 +374,50 @@ inline string ReplaceChar(IAllocator *allocator, const char* input, char toRepla
     }
     
     buffer[inputLength - 1] = '\0';
+
+    str.buffer = buffer;
+    return str;
+}
+inline string ReplaceCharWithString(IAllocator *allocator, const char* input, char toReplace, const char* replaceWith)
+{
+    usize replaceWithLength = strlen(replaceWith);
+    if (replaceWithLength == 1)
+    {
+        return ReplaceChar(allocator, input, toReplace, replaceWith[0]);
+    }
+    usize inputLength = strlen(input) + 1;
+    usize lengthDiff = replaceWithLength - 1;
+    usize outputLength = inputLength;
+
+    for (usize i = 0; i < inputLength - 1; i++)
+    {
+        if (input[i] == toReplace)
+        {
+            outputLength += lengthDiff;
+        }
+    }
+
+    string str = string(allocator);
+    char* buffer = (char*)allocator->Allocate(outputLength);
+    str.length = outputLength;
+
+    usize at = 0;
+    for (usize i = 0; i < inputLength; i++)
+    {
+        if (input[i] == toReplace)
+        {
+            strcpy(&buffer[at], replaceWith);
+            at += replaceWithLength;
+            //buffer[i] = toReplace;
+        }
+        else 
+        {
+            buffer[at] = input[i];
+            at += 1;
+        }
+    }
+    
+    buffer[outputLength - 1] = '\0';
 
     str.buffer = buffer;
     return str;

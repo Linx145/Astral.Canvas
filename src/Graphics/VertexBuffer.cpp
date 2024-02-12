@@ -55,6 +55,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+            #ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_CreateVertexBuffer(this);
+                break;
+            }
+            #endif
             default:
                 break;
         }
@@ -90,7 +97,7 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
-                AstralCanvasMetal_CreateVertexBuffer(this, verticesData, count);
+                AstralCanvasMetal_SetVertexData(this, verticesData, count);
                 break;
             }
             #endif

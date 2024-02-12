@@ -1,6 +1,7 @@
 #pragma once
 #include "Linxc.h"
 #include "Astral.Canvas/Graphics/IndexBuffer.h"
+#include "Astral.Canvas/Graphics/InstanceBuffer.h"
 #include "Astral.Canvas/Graphics/VertexBuffer.h"
 #include "Astral.Canvas/Graphics/RenderTarget.h"
 #include "Astral.Canvas/Graphics/Texture2D.h"
@@ -13,13 +14,20 @@
 extern "C"
 {
 #endif
-
+    typedef struct
+    {
+        i32 X;
+        i32 Y;
+        i32 width;
+        i32 height;
+    } AstralCanvasClipArea;
     typedef void *AstralCanvasGraphics;
 
     DynamicFunction AstralCanvasRenderProgram AstralCanvasGraphics_GetCurrentRenderProgram(AstralCanvasGraphics ptr);
     DynamicFunction AstralCanvasRenderTarget AstralCanvasGraphics_GetCurrentRenderTarget(AstralCanvasGraphics ptr);
     DynamicFunction u32 AstralCanvasGraphics_GetCurrentRenderProgramPass(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_SetVertexBuffer(AstralCanvasGraphics ptr, const AstralCanvasVertexBuffer vb, u32 bindingPoint);
+    DynamicFunction void AstralCanvasGraphics_SetInstanceBuffer(AstralCanvasGraphics ptr, const AstralCanvasInstanceBuffer instanceBuffer, u32 bindingPoint);
     DynamicFunction void AstralCanvasGraphics_SetIndexBuffer(AstralCanvasGraphics ptr, const AstralCanvasIndexBuffer indexBuffer);
     DynamicFunction void AstralCanvasGraphics_SetRenderTarget(AstralCanvasGraphics ptr, AstralCanvasRenderTarget target);
     DynamicFunction void AstralCanvasGraphics_StartRenderProgram(AstralCanvasGraphics ptr, AstralCanvasRenderProgram program, AstralCanvasColor clearColor);
@@ -33,6 +41,9 @@ extern "C"
     DynamicFunction void AstralCanvasGraphics_SetShaderVariableSamplers(AstralCanvasGraphics ptr, const char* variableName, AstralCanvasSamplerState *samplers, usize count);
     DynamicFunction void AstralCanvasGraphics_SendUpdatedUniforms(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_DrawIndexedPrimitives(AstralCanvasGraphics ptr, u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance);
+    DynamicFunction void AstralCanvasGraphics_NextRenderPass(AstralCanvasGraphics ptr);
+    DynamicFunction AstralCanvasClipArea AstralCanvasGraphics_GetClipArea(AstralCanvasGraphics ptr);
+    DynamicFunction void AstralCanvasGraphics_SetClipArea(AstralCanvasGraphics ptr, i32 x, i32 y, i32 w, i32 h);
 
 #ifdef __cplusplus
 }

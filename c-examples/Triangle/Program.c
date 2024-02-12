@@ -4,6 +4,7 @@
 #include "Linxc.h"
 #include "Astral.Canvas/Application.h"
 #include "string.h"
+#include "Astral.Canvas/Input.h"
 
 typedef struct
 {
@@ -32,7 +33,18 @@ AstralCanvasRenderProgram renderProgram;
 
 void Update(float deltaTime)
 {
-
+    if (AstralCanvasInput_IsMousePressed(AstralCanvas_MouseButton_Left))
+    {
+        printf("Left mouse pressed!\n");
+    }
+    if (AstralCanvasInput_IsMousePressed(AstralCanvas_MouseButton_Right))
+    {
+        printf("Right mouse pressed!\n");
+    }
+    if (AstralCanvasInput_GetMouseScroll().Y != 0.0f)
+    {
+        printf("Scrolling vertically...\n");
+    }
 }
 void Draw(float deltaTime)
 {
@@ -105,7 +117,7 @@ void Initialize()
     AstralCanvasVertexBuffer_SetData(vertexBuffer, vertices, 3);
     AstralCanvasIndexBuffer_SetData(indexBuffer, (u8*)indices, sizeof(u16) * 3);
 
-    char *fileData = ReadFile("Triangle.shaderobj");
+    char *fileData = ReadFile("C:/Users/Linus/source/repos/Astral.Canvas/c-examples/Triangle/Triangle.shaderobj");
 
     if (fileData == NULL)
     {

@@ -172,6 +172,8 @@ inline VkDescriptorType AstralCanvasVk_FromResourceType(AstralCanvas::ShaderReso
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         case AstralCanvas::ShaderResourceType::ShaderResourceType_StructuredBuffer:
             return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        case AstralCanvas::ShaderResourceType::ShaderResourceType_InputAttachment:
+            return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
     }
 }
 inline VkShaderStageFlags AstralCanvasVk_FromAccessedBy(AstralCanvas::ShaderInputAccessedBy accessedBy)

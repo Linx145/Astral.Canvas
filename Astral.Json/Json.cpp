@@ -87,14 +87,26 @@ SomnialJson::JsonToken SomnialJson::JsonTokenizer::Next()
 
         while(currentIndex < length)
         {
-            if (fileContents[currentIndex] == '\"')
+            if (fileContents[currentIndex] == '\\')
             {
-                currentIndex++;
-                result.endIndex = currentIndex;
-                result.tokenType = JsonToken_StringLiteral;
-                break;
+                if ((currentIndex + 1 < length) && fileContents[currentIndex + 1] == '\"' || fileContents[currentIndex + 1] == '\\')
+                {
+                    currentIndex += 2;
+                }
+                else
+                    currentIndex += 1;
             }
-            currentIndex++;
+            else
+            {
+                if (fileContents[currentIndex] == '\"')
+                {
+                    currentIndex++;
+                    result.endIndex = currentIndex;
+                    result.tokenType = JsonToken_StringLiteral;
+                    break;
+                }
+                currentIndex++;
+            }
         }
     }
     else if (fileContents[currentIndex] == ':')

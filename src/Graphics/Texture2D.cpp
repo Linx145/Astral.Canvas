@@ -21,6 +21,28 @@ namespace AstralCanvas
         {
             return;
         }
+        if (this->imageFormat == ImageFormat_BackbufferFormat)
+        {
+            switch (GetActiveBackend())
+            {
+#ifdef ASTRALCANVAS_VULKAN
+                case Backend_Vulkan:
+                {
+                    this->imageFormat = AstralCanvasVk_GetCurrentSwapchain()->imageFormat;
+                    break;
+                }
+#endif
+#ifdef ASTRALCANVAS_METAL
+                case Backend_Metal:
+                {
+                    this->imageFormat = AstralCanvasMetal_GetSwapchainFormat();
+                    break;
+                }
+#endif
+                default:
+                    break;
+            }
+        }
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
@@ -40,6 +62,11 @@ namespace AstralCanvas
                     createInfo.mipLevels = this->mipLevels;
                     createInfo.arrayLayers = 1;
                     createInfo.format = AstralCanvasVk_FromImageFormat(this->imageFormat);
+                    if (createInfo.format == VK_FORMAT_UNDEFINED)
+                    {
+                        fprintf(stderr, "image format: %i\n", (i32)this->imageFormat);
+                        THROW_ERR("Image format is undefined\n");
+                    }
                     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
                     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                     if (this->imageFormat >= ImageFormat_DepthNone)
@@ -50,7 +77,7 @@ namespace AstralCanvas
                     {
                         if (this->usedForRenderTarget)
                         {
-                            createInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+                            createInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                         }
                         else
                         {
@@ -94,11 +121,11 @@ namespace AstralCanvas
 
                         memcpy(stagingMemory.vkAllocationInfo.pMappedData, this->bytes, (usize)(this->width * this->height * 4));
 
-                        AstralCanvasVk_TransitionImageLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                        AstralCanvasVk_TransitionImageLayout(gpu, NULL, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
                         AstralCanvasVk_CopyBufferToImage(gpu, stagingBuffer, (VkImage)this->imageHandle, this->width, this->height);
 
-                        AstralCanvasVk_TransitionImageLayout(gpu, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                        AstralCanvasVk_TransitionImageLayout(gpu, NULL, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
                         vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
 
@@ -112,12 +139,12 @@ namespace AstralCanvas
                 {
                     if (this->imageFormat >= ImageFormat_DepthNone)
                     {
-                        AstralCanvasVk_TransitionImageLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+                        AstralCanvasVk_TransitionImageLayout(gpu, NULL, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
                         this->imageLayout = (u64)VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
                     }
                     else 
                     {
-                        AstralCanvasVk_TransitionImageLayout(gpu, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                        AstralCanvasVk_TransitionImageLayout(gpu, NULL, image, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
                         this->imageLayout = (u64)VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                     }
                 }
@@ -240,7 +267,7 @@ namespace AstralCanvas
         result.Construct();
         return result;
     }
-    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, SamplerState *samplerState, bool usedForRenderTarget)
+    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget)
     {
         Texture2D result = {};
         result.width = width;

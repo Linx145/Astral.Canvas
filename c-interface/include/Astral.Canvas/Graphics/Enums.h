@@ -23,7 +23,8 @@ typedef enum
     AstralCanvas_ShaderResourceType_Uniform,
     AstralCanvas_ShaderResourceType_Sampler,
     AstralCanvas_ShaderResourceType_Texture,
-    AstralCanvas_ShaderResourceType_StructuredBuffer
+    AstralCanvas_ShaderResourceType_StructuredBuffer,
+    AstralCanvas_ShaderResourceType_InputAttachment
 } AstralCanvas_ShaderResourceType;
 typedef enum
 {
@@ -68,6 +69,7 @@ typedef enum
 typedef enum
 {
     AstralCanvas_ImageFormat_Undefined,
+    AstralCanvas_ImageFormat_BackbufferFormat,
     AstralCanvas_ImageFormat_R8G8B8A8Unorm,
     AstralCanvas_ImageFormat_R8G8B8A8SNorm,
     AstralCanvas_ImageFormat_R8G8B8A8Srgb,
@@ -81,8 +83,7 @@ typedef enum
     AstralCanvas_ImageFormat_Depth16, 
     AstralCanvas_ImageFormat_Depth16Stencil8, 
     AstralCanvas_ImageFormat_Depth24Stencil8, 
-    AstralCanvas_ImageFormat_Depth32,
-    AstralCanvas_ImageFormat_BackbufferFormat
+    AstralCanvas_ImageFormat_Depth32
 } AstralCanvas_ImageFormat;
 
 typedef enum

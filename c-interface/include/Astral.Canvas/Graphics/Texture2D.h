@@ -24,7 +24,7 @@ extern "C"
     DynamicFunction void *AstralCanvasTexture2D_GetImageView(AstralCanvasTexture2D ptr);
     DynamicFunction void AstralCanvasTexture2D_Deinit(AstralCanvasTexture2D ptr);
     DynamicFunction AstralCanvasTexture2D AstralCanvasTexture2D_FromHandle(void *handle, u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, bool usedForRenderTarget);
-    DynamicFunction AstralCanvasTexture2D AstralCanvasTexture2D_FromData(u8* data, u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, AstralCanvasSamplerState *samplerState, bool usedForRenderTarget);
+    DynamicFunction AstralCanvasTexture2D AstralCanvasTexture2D_FromData(u8* data, u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, bool usedForRenderTarget);
     DynamicFunction AstralCanvasTexture2D AstralCanvasTexture2D_FromFile(const char *fileName);
 #ifdef __cplusplus
 }

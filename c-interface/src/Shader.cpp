@@ -21,6 +21,10 @@ exportC i32 AstralCanvasShader_GetVariableBinding(AstralCanvasShader ptr, const 
 {
     return ((AstralCanvas::Shader *)ptr)->GetVariableBinding(varName);
 }
+exportC AstralCanvasShaderVariable AstralCanvasShader_GetVariableAt(AstralCanvasShader ptr, usize at)
+{
+    return ((AstralCanvas::Shader *)ptr)->shaderVariables.uniforms.Get(at);
+}
 exportC void AstralCanvasShader_Deinit(AstralCanvasShader ptr)
 {
     ((AstralCanvas::Shader *)ptr)->deinit();
@@ -37,4 +41,33 @@ exportC i32 AstralCanvasShader_FromString(AstralCanvas_ShaderType shaderType, co
 
     *result = shader;
     return errorLine;
+}
+
+exportC const char *AstralCanvasShaderVariable_GetName(AstralCanvasShaderVariable ptr)
+{
+    return ((AstralCanvas::ShaderResource*)ptr)->variableName.buffer;
+}
+exportC u32 AstralCanvasShaderVariable_GetSet(AstralCanvasShaderVariable ptr)
+{
+    return ((AstralCanvas::ShaderResource *)ptr)->set;
+}
+exportC u32 AstralCanvasShaderVariable_GetBinding(AstralCanvasShaderVariable ptr)
+{
+    return ((AstralCanvas::ShaderResource *)ptr)->binding;
+}
+exportC AstralCanvas_ShaderResourceType AstralCanvasShaderVariable_GetType(AstralCanvasShaderVariable ptr)
+{
+    return (AstralCanvas_ShaderResourceType)((AstralCanvas::ShaderResource *)ptr)->type;
+}
+exportC AstralCanvas_ShaderInputAccessedBy AstralCanvasShaderVariable_GetAccessedBy(AstralCanvasShaderVariable ptr)
+{
+    return (AstralCanvas_ShaderInputAccessedBy)((AstralCanvas::ShaderResource *)ptr)->accessedBy;
+}
+exportC u32 AstralCanvasShaderVariable_GetArrayLength(AstralCanvasShaderVariable ptr)
+{
+    return ((AstralCanvas::ShaderResource *)ptr)->arrayLength;
+}
+exportC u32 AstralCanvasShaderVariable_GetSize(AstralCanvasShaderVariable ptr)
+{
+    return ((AstralCanvas::ShaderResource *)ptr)->size;
 }

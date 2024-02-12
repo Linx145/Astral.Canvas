@@ -74,24 +74,39 @@ namespace AstralCanvas
 	void OnMouseInteracted(GLFWwindow *window, i32 button, i32 action, i32 mods)
 	{
 		Window *canvas = (Window*)glfwGetWindowUserPointer(window);
+
+		AstralCanvas::MouseButtons btn;
+		if (button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			btn = MouseButton_Left;
+		}
+		else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+		{
+			btn = MouseButton_Right;
+		}
+		else if (button == GLFW_MOUSE_BUTTON_MIDDLE)
+		{
+			btn = MouseButton_Middle;
+		}
+
 		if (action == GLFW_PRESS)
 		{
-			if (canvas->windowInputState.mouseStatuses.Get(button) == NULL || !canvas->windowInputState.mouseStatuses.Get(button)->status)
+			if (canvas->windowInputState.mouseStatuses.Get(btn) == NULL || !canvas->windowInputState.mouseStatuses.Get(btn)->status)
 			{
 				AstralCanvas::KeyStateStatus status;
 				status.perFrameState = AstralCanvas::KeyState_Pressed;
 				status.status = true;
-				canvas->windowInputState.mouseStatuses.Insert(button, status);
+				canvas->windowInputState.mouseStatuses.Insert(btn, status);
 			}
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			if (canvas->windowInputState.mouseStatuses.Get(button) != NULL && canvas->windowInputState.mouseStatuses.Get(button)->status)
+			if (canvas->windowInputState.mouseStatuses.Get(btn) != NULL && canvas->windowInputState.mouseStatuses.Get(btn)->status)
 			{
 				AstralCanvas::KeyStateStatus status;
 				status.perFrameState = AstralCanvas::KeyState_Released;
 				status.status = false;
-				canvas->windowInputState.mouseStatuses.Insert(button, status);
+				canvas->windowInputState.mouseStatuses.Insert(btn, status);
 			}
 		}
 	}

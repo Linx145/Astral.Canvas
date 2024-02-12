@@ -42,12 +42,16 @@ namespace AstralCanvas
     };
     struct RenderPass
     {
-        /// The index in the array of the pass' color attachment
+        /// The index in the array of the pass' color attachment, of which it will write to
         collections::Array<i32> colorAttachmentIndices;
         /// The index in the array of the pass' depth attachment. -1 if not applicable
         i32 depthAttachmentIndex;
         /// Which renderprogram this pass belongs to
         void *belongsToProgram;
+        /// Which attachments from previous passes does this pass read
+        collections::vector<i32> readsAttachments;
+
+        RenderPass *AddInput(i32 inputAttachment);
     };
     struct RenderProgram
     {
@@ -64,16 +68,12 @@ namespace AstralCanvas
         /// Adds a render pass to the render program. A render pass is a stage within the 
         /// program, defining how it can read the previous stage (if any)'s texture and how 
         /// it will output to the next stage, or to the result rendertarget.
-        void AddRenderPass(i32 colorAttachmentID, i32 depthAttachmentID);
-        void AddRenderPass(collections::Array<i32> colorAttachmentIDs, i32 depthAttachmentID);
+        RenderPass *AddRenderPass(i32 colorAttachmentID, i32 depthAttachmentID);
+        RenderPass *AddRenderPass(collections::Array<i32> colorAttachmentIDs, i32 depthAttachmentID);
         void Construct();
         void deinit();
         /// Begins the render program execution. Remember to call End()!
         void Begin();
-        /// Advances to the next render pass within the program. Therefore, all previously 
-        /// recorded commands would have been in the previous renderpass, and all thereafter 
-        /// will be in the aforementioned next pass.
-        void NextRenderPass();
     };
 
     RenderProgram *GetDynamicRenderProgram(IAllocator *allocator, ImageFormat imageFormat, ImageFormat depthFormat, bool mustClear, bool willDrawToWindow);

@@ -8,7 +8,7 @@
 
 namespace path
 {
-    string SwapExtension(IAllocator* allocator, string path, const char* newExtension)
+    inline string SwapExtension(IAllocator* allocator, string path, const char* newExtension)
     {
         usize dotPosition = path.length + 1; //impossible number
         usize finalDirPosition = path.length + 1;
@@ -41,7 +41,7 @@ namespace path
         }
     }
     //Including the '.'
-    string GetExtension(IAllocator *allocator, string path)
+    inline string GetExtension(IAllocator *allocator, string path)
     {
         usize dotPosition = path.length + 1; //impossible number
         usize finalDirPosition = path.length + 1;
@@ -69,7 +69,7 @@ namespace path
             return string();
         }
     }
-    string GetDirectory(IAllocator *allocator, string path)
+    inline string GetDirectory(IAllocator *allocator, string path)
     {
         option<usize> lastWindows = FindLast(path.buffer, '\\');
         option<usize> lastNormalFileSystem = FindLast(path.buffer, '/');
@@ -93,5 +93,24 @@ namespace path
         }
 
         return string(allocator, path.buffer, actualLastIndex);
+    }
+    inline string GetFileName(IAllocator *allocator, string path)
+    {
+        string replaced = ReplaceChar(GetDefaultAllocator(), path.buffer, '\\', '/');
+
+        option<usize> last = FindLast(replaced.buffer, '/');
+        usize actualLastIndex = 0;
+        if (last.present)
+        {
+            actualLastIndex = last.value;
+
+            replaced.deinit();
+
+            return string(allocator, path.buffer + actualLastIndex + 1, path.length - actualLastIndex - 1);
+        }
+
+        replaced.deinit();
+
+        return string(allocator, path.buffer);
     }
 }

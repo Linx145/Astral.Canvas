@@ -1,4 +1,4 @@
-#ifdef MACOS
+#ifdef ASTRALCANVAS_METAL
 #import "Graphics/Metal/MetalImplementations.h"
 #import "Metal/Metal.h"
 #import "Graphics/Metal/MetalInstanceData.h"
@@ -216,20 +216,47 @@ void AstralCanvasMetal_DestroyRenderPipeline(void *pipeline)
     [state release];
 }
 
-void AstralCanvasMetal_CreateVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer, void* verticesData, usize count)
+void AstralCanvasMetal_CreateVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer)
 {
-    if (vertexBuffer->handle != NULL)
-    {
-        vertexBuffer->deinit();
-    }
-    id<MTLDevice> gpu = AstralCanvasMetal_GetCurrentGPU();
-    id<MTLBuffer> buffer = [gpu newBufferWithBytes:verticesData length:(count * vertexBuffer->vertexType->size) options:MTLCPUCacheModeDefaultCache];
-    vertexBuffer->handle = buffer;
+    TODO
+    // if (vertexBuffer->handle != NULL)
+    // {
+    //     vertexBuffer->deinit();
+    // }
+    // id<MTLDevice> gpu = AstralCanvasMetal_GetCurrentGPU();
+    // id<MTLBuffer> buffer = [gpu newBufferWithBytes:verticesData length:(count * vertexBuffer->vertexType->size) options:MTLCPUCacheModeDefaultCache];
+    // vertexBuffer->handle = buffer;
+}
+void AstralCanvasMetal_CreateInstanceBuffer(AstralCanvas::InstanceBuffer *instanceBuffer)
+{
+    TODO
+    // if (instanceBuffer->handle != NULL)
+    // {
+    //     instanceBuffer->deinit();
+    // }
+    // id<MTLDevice> gpu = AstralCanvasMetal_GetCurrentGPU();
+    // id<MTLBuffer> buffer = [gpu newBufferWithBytes:instanceData length:(count * instanceBuffer->instanceSize) options:MTLCPUCacheModeDefaultCache];
+    // vertexBuffer->handle = buffer;
+}
+void AstralCanvasMetal_SetVertexData(AstralCanvas::VertexBuffer *vertexBuffer, void *data, usize count)
+{
+    TODO
+}
+void AstralCanvasMetal_SetInstanceData(AstralCanvas::InstanceBuffer *instanceBuffer, void *data, usize count)
+{
+    TODO
 }
 void AstralCanvasMetal_SetVertexBuffer(void *commandEncoder, const AstralCanvas::VertexBuffer *vertexBuffer, u32 bindingPoint)
 {
     id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)commandEncoder;
     id<MTLBuffer> buffer = (id<MTLBuffer>)vertexBuffer->handle;
+    
+    [encoder setVertexBuffer:buffer offset:0 atIndex:bindingPoint];
+}
+void AstralCanvasMetal_SetInstanceBuffer(void *commandEncoder, const AstralCanvas::InstanceBuffer *instanceBuffer, u32 bindingPoint)
+{
+    id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)commandEncoder;
+    id<MTLBuffer> buffer = (id<MTLBuffer>)instanceBuffer->handle;
     
     [encoder setVertexBuffer:buffer offset:0 atIndex:bindingPoint];
 }
@@ -561,5 +588,17 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
             }
         }
     }
+}
+void AstralCanvasMetal_SetClipArea(Maths::Rectangle clipArea)
+{
+    id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)commandEncoder;
+
+    MTLScissorRect metalScissorRect;
+    metalScissorRect.width = clipArea.Width;
+    metalScissorRect.height = clipArea.Height;
+    metalScissorRect.x = clipArea.X;
+    metalScissorRect.y = clipArea.Y;
+    
+    [encoder setScissorRect:metalScissorRect];
 }
 #endif

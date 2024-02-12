@@ -1,15 +1,17 @@
 #pragma once
 #include "Graphics/Texture2D.hpp"
 #include "Graphics/RenderProgram.hpp"
+#include "array.hpp"
 
 namespace AstralCanvas
 {
     struct RenderTarget
     {
-        /// The backend texture of the render target. All render targets have a texture that represents the rendered results itself
-        Texture2D backendTexture;
-        /// The depth buffer that stores draw depth (Z axis position) information when rendering to this render target
-        Texture2D depthBuffer;
+        IAllocator *allocator;
+        /// All textures that should be rendered to when using this render target. Normally
+        /// consists of a color texture and depth buffer, but you may need to attach
+        /// more in the case of more complex render programs.
+        collections::Array<Texture2D> textures;
         /// The width of the target. Equivalent to backendTexture.width
         u32 width;
         /// The height of the target. Equivalent to backendTexture.height
@@ -25,8 +27,9 @@ namespace AstralCanvas
         bool isDisposed;
         bool constructed;
 
-        RenderTarget(Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer);
-        RenderTarget(u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat);
+        RenderTarget(IAllocator *allocator, u32 width, u32 height, collections::Array<Texture2D> texturesToUse);
+        RenderTarget(IAllocator *allocator, Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer);
+        RenderTarget(IAllocator *allocator, u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat);
         void deinit();
         void Construct(AstralCanvas::RenderProgram *renderProgram);
     };
