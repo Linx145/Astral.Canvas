@@ -262,15 +262,15 @@ namespace AstralCanvas
 
         inline bool IsMouseDown(MouseButtons button)
         {
-            return mouseStatuses.Get((usize)button) != NULL && keyStatuses.Get((usize)button)->status;
+            return mouseStatuses.Get((usize)button) != NULL && mouseStatuses.Get((usize)button)->status;
         }
         inline bool IsMousePressed(MouseButtons button)
         {
-            return mouseStatuses.Get((usize)button) != NULL && keyStatuses.Get((usize)button)->perFrameState == KeyState_Pressed;
+            return mouseStatuses.Get((usize)button) != NULL && mouseStatuses.Get((usize)button)->perFrameState == KeyState_Pressed;
         }
         inline bool IsMouseReleased(MouseButtons button)
         {
-            return mouseStatuses.Get((usize)button) != NULL && keyStatuses.Get((usize)button)->perFrameState == KeyState_Released;
+            return mouseStatuses.Get((usize)button) != NULL && mouseStatuses.Get((usize)button)->perFrameState == KeyState_Released;
         }
         inline void SimulateMousePress(MouseButtons button)
         {

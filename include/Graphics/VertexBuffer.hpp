@@ -23,6 +23,4 @@ namespace AstralCanvas
         void Construct();
         void deinit();
     };
-
-    typedef VertexBuffer InstanceBuffer;
 }

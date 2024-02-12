@@ -161,10 +161,12 @@ namespace AstralCanvas
                 }
                 else
                 {
+                    //printf("Added input attachment: %s at binding %u, index %u\n", name.buffer, binding, index);
                     ShaderResource newResource;
                     newResource.binding = binding;
                     newResource.set = set;
                     newResource.variableName = name;
+                    newResource.arrayLength = 0;
                     newResource.inputAttachmentIndex = index;
                     newResource.accessedBy = accessedByShaderOfType;
                     newResource.type = ShaderResourceType_InputAttachment;
@@ -230,6 +232,11 @@ namespace AstralCanvas
                                 break;
                             }
                             case ShaderResourceType_InputAttachment:
+                            {
+                                newMutableState.textures = collections::Array<Texture2D*>(this->allocator, 1);
+                                newMutableState.imageInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
+                                break;
+                            }
                             case ShaderResourceType_Texture:
                             {
                                 newMutableState.textures = collections::Array<Texture2D*>(this->allocator, max(resource->arrayLength, 1));
@@ -298,7 +305,7 @@ namespace AstralCanvas
                         {
                             VkDescriptorImageInfo imageInfo{};
                             imageInfo.sampler = NULL;
-                            imageInfo.imageLayout = (VkImageLayout)toMutate->textures.data[0]->imageLayout; //(VkImageLayout)toMutate->textures.data[i]->imageLayout;
+                            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //(VkImageLayout)toMutate->textures.data[i]->imageLayout;
                             imageInfo.imageView = (VkImageView)toMutate->textures.data[0]->imageView;
                             ((VkDescriptorImageInfo*)toMutate->imageInfos)[0] = imageInfo;
 
@@ -546,10 +553,14 @@ namespace AstralCanvas
                                 layoutBinding.pImmutableSamplers = NULL;
 
                                 bindings.data[resource.binding] = layoutBinding;
+                                //printf("resource %s at binding %u of descriptor type %i, count %u with stage flags %i\n", resource.variableName.buffer, resource.binding, layoutBinding.descriptorType, layoutBinding.descriptorCount, layoutBinding.stageFlags);
                             }
                             layoutInfo.pBindings = bindings.data;
 
-                            vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout);
+                            if (vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout) != VK_SUCCESS)
+                            {
+                                fprintf(stderr, "Error creating descriptor set layout\n");
+                            }
                         }
                     }
                     else

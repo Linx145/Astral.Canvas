@@ -64,6 +64,30 @@ namespace AstralCanvas
                 break;
         }
     }
+    void Graphics::SetInstanceBuffer(const InstanceBuffer *instanceBuffer, u32 bindingPoint)
+    {
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
+
+                vkCmdBindVertexBuffers(cmdBuffer, bindingPoint, 1, (VkBuffer*)&instanceBuffer->handle, &bindBufferNoOffsets);
+                break;
+            }
+            #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                AstralCanvasMetal_SetInstanceBuffer(this->currentCommandEncoderInstance, instanceBuffer, bindingPoint);
+                break;
+            }
+#endif
+            default:
+                break;
+        }
+    }
     void Graphics::SetIndexBuffer(const IndexBuffer *indexBuffer)
     {
         switch (GetActiveBackend())
@@ -267,6 +291,38 @@ namespace AstralCanvas
                     VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
 
                     vkCmdEndRenderPass(cmdBuffer);
+
+                    //
+                    RenderTarget *renderTarget = currentRenderTarget;
+                    if (renderTarget == NULL)
+                    {
+                        AstralVulkanSwapchain *swapchain = AstralCanvasVk_GetCurrentSwapchain();
+                        renderTarget = &swapchain->renderTargets.data[swapchain->currentImageIndex];
+                    }
+                    if (renderTarget != NULL)
+                    {
+                        for (usize i = 0; i < currentRenderProgram->attachments.count; i++)
+                        {
+                            if (renderTarget->textures.data[i].imageFormat < ImageFormat_DepthNone)
+                            {
+                                u64 finalImageLayout;
+                                RenderProgramImageAttachment attachmentData = currentRenderProgram->attachments.ptr[i];
+                                if (attachmentData.outputType == RenderPassOutput_ToNextPass)// || i < program->attachments.count - 1)
+                                {
+                                    finalImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                                }
+                                else if (attachmentData.outputType == RenderPassOutput_ToRenderTarget)
+                                {
+                                    finalImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                                }
+                                else
+                                {
+                                    finalImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                                }
+                                renderTarget->textures.data[i].imageLayout = finalImageLayout;
+                            }  
+                        }
+                    }
                     break;
                 }
                 #endif
@@ -355,7 +411,6 @@ namespace AstralCanvas
                     currentRenderPipeline->shader->uniformsHasBeenSet = true;
                     variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].mutated = true;
                     variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].ub.SetData(ptr, size);
-                    break;
                 }
             }
         }
@@ -411,9 +466,10 @@ namespace AstralCanvas
                     currentRenderPipeline->shader->uniformsHasBeenSet = true;
                     variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].mutated = true;
                     variables->uniforms.ptr[i].stagingData.ptr[currentRenderPipeline->shader->descriptorForThisDrawCall].textures.data[0] = texture;
-                    break;
+                    return;
                 }
             }
+            fprintf(stderr, "Variable of name %s not found\n", variableName);
         }
     }
     void Graphics::SetShaderVariableSamplers(const char* variableName, SamplerState **samplers, usize count)
@@ -472,7 +528,7 @@ namespace AstralCanvas
             }
         }
     }
-    void Graphics:: //todo: set descriptor set
+    
     void Graphics::SendUpdatedUniforms()
     {
         if (currentRenderPipeline->shader->uniformsHasBeenSet)

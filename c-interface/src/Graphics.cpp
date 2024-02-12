@@ -17,6 +17,10 @@ exportC void AstralCanvasGraphics_SetVertexBuffer(AstralCanvasGraphics ptr, cons
 {
     ((AstralCanvas::Graphics *)ptr)->SetVertexBuffer((const AstralCanvas::VertexBuffer*)vb, bindingPoint);
 }
+exportC void AstralCanvasGraphics_SetInstanceBuffer(AstralCanvasGraphics ptr, const AstralCanvasInstanceBuffer instanceBuffer, u32 bindingPoint)
+{
+    ((AstralCanvas::Graphics *)ptr)->SetInstanceBuffer((const AstralCanvas::InstanceBuffer*)instanceBuffer, bindingPoint);
+}
 exportC void AstralCanvasGraphics_SetIndexBuffer(AstralCanvasGraphics ptr, const AstralCanvasIndexBuffer indexBuffer)
 {
     ((AstralCanvas::Graphics *)ptr)->SetIndexBuffer((const AstralCanvas::IndexBuffer*)indexBuffer);

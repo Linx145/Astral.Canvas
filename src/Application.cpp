@@ -100,16 +100,6 @@ namespace AstralCanvas
 
 			float deltaTime = endTime - startTime;
 
-			shouldStop = true;
-			for (usize i = 0; i < windows.count; i++)
-			{
-				if (!glfwWindowShouldClose((GLFWwindow*)windows.ptr[i].handle))
-				{
-					windows.ptr[i].windowInputState.ResetPerFrameInputStates();
-					shouldStop = false;
-				}
-			}
-
 			if (framesPerSecond < 1.0f || deltaTime >= 1.0f / framesPerSecond)
 			{
 				updateFunc(deltaTime);
@@ -132,6 +122,16 @@ namespace AstralCanvas
 #endif
 					default:
 						break;
+				}
+
+				shouldStop = true;
+				for (usize i = 0; i < windows.count; i++)
+				{
+					if (!glfwWindowShouldClose((GLFWwindow*)windows.ptr[i].handle))
+					{
+						windows.ptr[i].windowInputState.ResetPerFrameInputStates();
+						shouldStop = false;
+					}
 				}
 
 				drawFunc(deltaTime);

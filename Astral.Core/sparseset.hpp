@@ -64,7 +64,7 @@ namespace collections
                 }
                 if (ptr != NULL)
                 {
-                    allocator->FREEPTR(ptr);
+                    allocator->Free(ptr);
                 }
                 ptr = newPtr;
                 capacity = newCapacity;

@@ -165,7 +165,7 @@ namespace AstralCanvas
                 depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
                 depthStencilInfo.depthTestEnable = pipeline->depthTest;
                 depthStencilInfo.depthWriteEnable = pipeline->depthWrite;
-                depthStencilInfo.depthCompareOp = pipeline->depthTest ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_NEVER;
+                depthStencilInfo.depthCompareOp = pipeline->depthTest ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
                 depthStencilInfo.depthBoundsTestEnable = false;
                 depthStencilInfo.minDepthBounds = 0.0f;
                 depthStencilInfo.maxDepthBounds = 1.0f;
@@ -208,12 +208,12 @@ namespace AstralCanvas
                     pipelineLayoutCreateInfo.pPushConstantRanges = NULL;
                     pipelineLayoutCreateInfo.flags = 0;
 
-                    //u32 descriptorsCount = pipeline->shader->shaderVariables.samplers.length + pipeline->shader->shaderVariables.textures.length + pipeline->shader->shaderVariables.uniforms.length;
                     pipelineLayoutCreateInfo.setLayoutCount = 0;
                     if (pipeline->shader->shaderPipelineLayout != NULL)
                     {
                         pipelineLayoutCreateInfo.setLayoutCount = 1;
                         pipelineLayoutCreateInfo.pSetLayouts = (VkDescriptorSetLayout*)&pipeline->shader->shaderPipelineLayout;
+                        //printf("Creating shader pipeline layout\n");
                     }
 
                     if (vkCreatePipelineLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &pipelineLayoutCreateInfo, NULL, (VkPipelineLayout*)&pipeline->layout) != VK_SUCCESS)

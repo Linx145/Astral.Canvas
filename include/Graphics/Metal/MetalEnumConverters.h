@@ -1,4 +1,5 @@
 #pragma once
+#ifdef ASTRALCANVAS_METAL
 #import "Metal/Metal.h"
 #include "Graphics/Enums.hpp"
 
@@ -142,3 +143,4 @@ inline MTLVertexFormat AstralCanvasMetal_FromVertexElementFormat(AstralCanvas::V
             return MTLVertexFormatUInt;
     }
 }
+#endif

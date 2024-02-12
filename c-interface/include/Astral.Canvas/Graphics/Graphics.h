@@ -1,6 +1,7 @@
 #pragma once
 #include "Linxc.h"
 #include "Astral.Canvas/Graphics/IndexBuffer.h"
+#include "Astral.Canvas/Graphics/InstanceBuffer.h"
 #include "Astral.Canvas/Graphics/VertexBuffer.h"
 #include "Astral.Canvas/Graphics/RenderTarget.h"
 #include "Astral.Canvas/Graphics/Texture2D.h"
@@ -26,6 +27,7 @@ extern "C"
     DynamicFunction AstralCanvasRenderTarget AstralCanvasGraphics_GetCurrentRenderTarget(AstralCanvasGraphics ptr);
     DynamicFunction u32 AstralCanvasGraphics_GetCurrentRenderProgramPass(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_SetVertexBuffer(AstralCanvasGraphics ptr, const AstralCanvasVertexBuffer vb, u32 bindingPoint);
+    DynamicFunction void AstralCanvasGraphics_SetInstanceBuffer(AstralCanvasGraphics ptr, const AstralCanvasInstanceBuffer instanceBuffer, u32 bindingPoint);
     DynamicFunction void AstralCanvasGraphics_SetIndexBuffer(AstralCanvasGraphics ptr, const AstralCanvasIndexBuffer indexBuffer);
     DynamicFunction void AstralCanvasGraphics_SetRenderTarget(AstralCanvasGraphics ptr, AstralCanvasRenderTarget target);
     DynamicFunction void AstralCanvasGraphics_StartRenderProgram(AstralCanvasGraphics ptr, AstralCanvasRenderProgram program, AstralCanvasColor clearColor);

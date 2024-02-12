@@ -130,7 +130,7 @@ namespace AstralCanvas
                         {
                             VkAttachmentReference attachmentRef;
                             attachmentRef.attachment = (u32)renderPassData.readsAttachments.ptr[j];
-                            attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                            attachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
                             references[j] = attachmentRef;
                         }
