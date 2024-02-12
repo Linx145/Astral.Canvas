@@ -19,6 +19,7 @@ namespace AstralCanvas
         RenderTarget *currentRenderTarget;
         RenderPipeline *currentRenderPipeline;
         collections::hashset<Shader*> usedShaders;
+        Color clearColor;
 
         const IndexBuffer *currentIndexBuffer;
         

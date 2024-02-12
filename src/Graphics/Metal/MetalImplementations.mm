@@ -50,23 +50,26 @@ void* AstralCanvasMetal_StartRenderProgram(AstralCanvas::RenderProgram *program,
 {
     if (program->handle != NULL)
     {
-        id<CAMetalDrawable> surface = nil;
+        MTLRenderPassDescriptor** array = (MTLRenderPassDescriptor**)program->handle;
+        MTLRenderPassDescriptor* currentPass = array[currentRenderPass];
+
         id<MTLTexture> depthBuffer = nil;
         if (target == NULL)
         {
-            surface = AstralCanvasMetal_GetCurrentSwapchainTexture();
+            currentPass.colorAttachments[0].texture = (id<MTLTexture>)AstralCanvasMetal_GetCurrentSwapchainTexture().texture;
+            currentPass.colorAttachments[0].clearColor = MTLClearColorMake(color.R * ONE_OVER_255, color.G * ONE_OVER_255, color.B * ONE_OVER_255, color.A * ONE_OVER_255);
             depthBuffer = (id<MTLTexture>)((AstralCanvas::Texture2D*)AstralCanvasMetal_GetDepthBackbuffer())->imageHandle;
         }
         else
         {
-            surface = (id<CAMetalDrawable>)target->renderTargetHandle;
-            depthBuffer = (id<MTLTexture>)target->depthBuffer.imageHandle;
+            for (usize i = 0; i < program->renderPasses.ptr[currentRenderPass].colorAttachmentIndices.length; i++)
+            {
+                currentPass.colorAttachments[i].texture = (id<MTLTexture>)target->textures.data[program->renderPasses.ptr[currentRenderPass].colorAttachmentIndices.data[i]].imageHandle;
+                currentPass.colorAttachments[i].clearColor = MTLClearColorMake(color.R * ONE_OVER_255, color.G * ONE_OVER_255, color.B * ONE_OVER_255, color.A * ONE_OVER_255);
+            }
+            depthBuffer = (id<MTLTexture>)target->textures.data[program->renderPasses.ptr[currentRenderPass].depthAttachmentIndex].imageHandle;//(id<MTLTexture>)target->depthBuffer.imageHandle;
         }
         
-        MTLRenderPassDescriptor** array = (MTLRenderPassDescriptor**)program->handle;
-        MTLRenderPassDescriptor* currentPass = array[currentRenderPass]; //todo
-        currentPass.colorAttachments[0].texture = surface.texture;
-        currentPass.colorAttachments[0].clearColor = MTLClearColorMake(color.R * ONE_OVER_255, color.G * ONE_OVER_255, color.B * ONE_OVER_255, color.A * ONE_OVER_255);
         currentPass.depthAttachment.texture = depthBuffer;
         currentPass.depthAttachment.clearDepth = 1.0f;
         
@@ -101,6 +104,17 @@ void *AstralCanvasMetal_CreateRenderPipeline(AstralCanvas::RenderPipeline *pipel
 {
     if (pipeline->shader == NULL || pipeline->shader->shaderModule1 == NULL || pipeline->shader->shaderModule2 == NULL)
     {
+        if (pipeline->shader != NULL)
+        {
+            if (pipeline->shader->shaderModule1 == NULL)
+            {
+                printf("Pipeline missing first shader module\n");
+            }
+            if (pipeline->shader->shaderModule2 == NULL)
+            {
+                printf("Pipeline missing second shader module\n");
+            }
+        }
         THROW_ERR("Pipeline does not have a valid shader");
     }
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
@@ -218,33 +232,25 @@ void AstralCanvasMetal_DestroyRenderPipeline(void *pipeline)
 
 void AstralCanvasMetal_CreateVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer)
 {
-    TODO
-    // if (vertexBuffer->handle != NULL)
-    // {
-    //     vertexBuffer->deinit();
-    // }
-    // id<MTLDevice> gpu = AstralCanvasMetal_GetCurrentGPU();
-    // id<MTLBuffer> buffer = [gpu newBufferWithBytes:verticesData length:(count * vertexBuffer->vertexType->size) options:MTLCPUCacheModeDefaultCache];
-    // vertexBuffer->handle = buffer;
+    id<MTLDevice> gpu = AstralCanvasMetal_GetCurrentGPU();
+    id<MTLBuffer> buffer = [gpu newBufferWithLength:(vertexBuffer->vertexCount * vertexBuffer->vertexType->size) options:MTLCPUCacheModeDefaultCache];
+    vertexBuffer->handle = buffer;
 }
 void AstralCanvasMetal_CreateInstanceBuffer(AstralCanvas::InstanceBuffer *instanceBuffer)
 {
-    TODO
-    // if (instanceBuffer->handle != NULL)
-    // {
-    //     instanceBuffer->deinit();
-    // }
-    // id<MTLDevice> gpu = AstralCanvasMetal_GetCurrentGPU();
-    // id<MTLBuffer> buffer = [gpu newBufferWithBytes:instanceData length:(count * instanceBuffer->instanceSize) options:MTLCPUCacheModeDefaultCache];
-    // vertexBuffer->handle = buffer;
+    id<MTLDevice> gpu = AstralCanvasMetal_GetCurrentGPU();
+    id<MTLBuffer> buffer = [gpu newBufferWithLength:(instanceBuffer->instanceCount * instanceBuffer->instanceSize) options:MTLCPUCacheModeDefaultCache];
+    instanceBuffer->handle = buffer;
 }
 void AstralCanvasMetal_SetVertexData(AstralCanvas::VertexBuffer *vertexBuffer, void *data, usize count)
 {
-    TODO
+    id<MTLBuffer> buffer = (id<MTLBuffer>)vertexBuffer->handle;
+    memcpy(buffer.contents, data, vertexBuffer->vertexType->size * count);
 }
 void AstralCanvasMetal_SetInstanceData(AstralCanvas::InstanceBuffer *instanceBuffer, void *data, usize count)
 {
-    TODO
+    id<MTLBuffer> buffer = (id<MTLBuffer>)instanceBuffer->handle;
+    memcpy(buffer.contents, data, instanceBuffer->instanceSize * count);
 }
 void AstralCanvasMetal_SetVertexBuffer(void *commandEncoder, const AstralCanvas::VertexBuffer *vertexBuffer, u32 bindingPoint)
 {
@@ -265,6 +271,14 @@ void AstralCanvasMetal_DestroyVertexBuffer(AstralCanvas::VertexBuffer *vertexBuf
     if (vertexBuffer->handle != NULL)
     {
         id<MTLBuffer> buffer = (id<MTLBuffer>)vertexBuffer->handle;
+        [buffer release];
+    }
+}
+void AstralCanvasMetal_DestroyInstanceBuffer(AstralCanvas::InstanceBuffer *instanceBuffer)
+{
+    if (instanceBuffer->handle != NULL)
+    {
+        id<MTLBuffer> buffer = (id<MTLBuffer>)instanceBuffer->handle;
         [buffer release];
     }
 }
@@ -328,7 +342,8 @@ bool AstralCanvasMetal_CreateShaderProgram(string vertexSource, string fragmentS
     id<MTLFunction> vertexFunction = NULL;
     id<MTLFunction> fragmentFunction = NULL;
     
-    id<MTLLibrary> vertexShader = [gpu newLibraryWithSource:vertexNSString options:NULL error:NULL];
+    NSError *createVertexError;
+    id<MTLLibrary> vertexShader = [gpu newLibraryWithSource:vertexNSString options:NULL error:&createVertexError];
     if (vertexShader != NULL)
     {
         vertexFunction = [vertexShader newFunctionWithName:@"main0"];
@@ -336,11 +351,14 @@ bool AstralCanvasMetal_CreateShaderProgram(string vertexSource, string fragmentS
     }
     else 
     {
+        printf("Error creating vertex shader: %s\n", [createVertexError.description UTF8String]);
+        
         [vertexNSString release];
         return false;
     }
     
-    id<MTLLibrary> fragmentShader = [gpu newLibraryWithSource:fragmentNSString options:NULL error:NULL];
+    NSError *createFragmentError;
+    id<MTLLibrary> fragmentShader = [gpu newLibraryWithSource:fragmentNSString options:NULL error:&createFragmentError];
     if (fragmentShader != NULL)
     {
         fragmentFunction = [fragmentShader newFunctionWithName:@"main0"];
@@ -348,6 +366,8 @@ bool AstralCanvasMetal_CreateShaderProgram(string vertexSource, string fragmentS
     }
     else
     {
+        printf("Error creating fragment shader: %s\n", [createFragmentError.description UTF8String]);
+        
         [vertexNSString release];
         [fragmentNSString release];
         return false;
@@ -355,6 +375,7 @@ bool AstralCanvasMetal_CreateShaderProgram(string vertexSource, string fragmentS
     
     [vertexNSString release];
     [fragmentNSString release];
+    
     
     *vertexOut = (void*)vertexFunction;
     *fragmentOut = (void*)fragmentFunction;
@@ -589,7 +610,7 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
         }
     }
 }
-void AstralCanvasMetal_SetClipArea(Maths::Rectangle clipArea)
+void AstralCanvasMetal_SetClipArea(void *commandEncoder, Maths::Rectangle clipArea)
 {
     id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)commandEncoder;
 

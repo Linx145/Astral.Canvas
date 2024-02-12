@@ -32,7 +32,9 @@ void AstralCanvasMetal_CreateInstanceBuffer(AstralCanvas::InstanceBuffer *instan
 void AstralCanvasMetal_SetVertexData(AstralCanvas::VertexBuffer *vertexBuffer, void *data, usize count);
 void AstralCanvasMetal_SetInstanceData(AstralCanvas::InstanceBuffer *instanceBuffer, void *data, usize count);
 void AstralCanvasMetal_SetVertexBuffer(void *commandEncoder, const AstralCanvas::VertexBuffer *vertexBuffer, u32 bindingPoint);
+void AstralCanvasMetal_SetInstanceBuffer(void *commandEncoder, const AstralCanvas::InstanceBuffer *instanceBuffer, u32 bindingPoint);
 void AstralCanvasMetal_DestroyVertexBuffer(AstralCanvas::VertexBuffer *vertexBuffer);
+void AstralCanvasMetal_DestroyInstanceBuffer(AstralCanvas::InstanceBuffer *instanceBuffer);
 
 void AstralCanvasMetal_CreateUniformBuffer(AstralCanvas::UniformBuffer *uniformBuffer, void* uniformData, usize count);
 void AstralCanvasMetal_DestroyUniformBuffer(AstralCanvas::UniformBuffer *uniformBuffer);
@@ -48,7 +50,7 @@ void AstralCanvasMetal_DestroyTexture(AstralCanvas::Texture2D *texture);
 void AstralCanvasMetal_CreateSampler(AstralCanvas::SamplerState *sampler);
 void AstralCanvasMetal_DestroySampler(AstralCanvas::SamplerState *sampler);
 
-void AstralCanvasMetal_SetClipArea(Maths::Rectangle clipArea);
+void AstralCanvasMetal_SetClipArea(void *commandEncoder, Maths::Rectangle clipArea);
 
 void AstralCanvasMetal_AddUniformDescriptorSets(AstralCanvas::Shader *shader);
 void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::Shader *shader);

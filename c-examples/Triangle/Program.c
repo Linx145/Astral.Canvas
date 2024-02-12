@@ -117,7 +117,7 @@ void Initialize()
     AstralCanvasVertexBuffer_SetData(vertexBuffer, vertices, 3);
     AstralCanvasIndexBuffer_SetData(indexBuffer, (u8*)indices, sizeof(u16) * 3);
 
-    char *fileData = ReadFile("C:/Users/Linus/source/repos/Astral.Canvas/c-examples/Triangle/Triangle.shaderobj");
+    char *fileData = ReadFile("Triangle.shaderobj");
 
     if (fileData == NULL)
     {
@@ -126,7 +126,7 @@ void Initialize()
     }
 
     int errorCode = AstralCanvasShader_FromString(AstralCanvas_ShaderType_VertexFragment, fileData, &shader);
-    if (errorCode != 0)
+    if (errorCode != 0 || shader == NULL)
     {
         fprintf(stderr, "Failed to load shader, error: %i\n", errorCode);
         exit(1);

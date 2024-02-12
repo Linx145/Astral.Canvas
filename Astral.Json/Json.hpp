@@ -172,6 +172,38 @@ namespace SomnialJson
         }
         inline string GetString(IAllocator *allocator)
         {
+            collections::vector<CharSlice> charSlices = collections::vector<CharSlice>(GetDefaultAllocator());
+            usize start = 0;
+            for (usize i = 0; i < value.length - 1; i++)
+            {
+                if (value.buffer[i] == '\\' && i < value.length - 2)
+                {
+                    if (value.buffer[i + 1] == '\"')
+                    {
+                        charSlices.Add(CharSlice(value.buffer + start, i - start));
+                        charSlices.Add(CharSlice("\""));
+                        i++;
+                        start = i + 1;
+                    }
+                    else if (value.buffer[i + 1] == 'n')
+                    {
+                        charSlices.Add(CharSlice(value.buffer + start, i - start));
+                        charSlices.Add(CharSlice("\n"));
+                        i++;
+                        start = i + 1;
+                    }
+                }
+            }
+            if (start < value.length - 1)
+            {
+                charSlices.Add(CharSlice(value.buffer + start, value.length - 1 - start));
+            }
+            string result = ConcatFromCharSlices(allocator, charSlices.ptr, charSlices.count);
+            charSlices.deinit();
+            return result;
+        }
+        inline string GetStringRaw(IAllocator *allocator)
+        {
             return string(allocator, value.buffer);
         }
         inline JsonElement *GetProperty(string propertyName)

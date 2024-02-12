@@ -48,7 +48,7 @@ namespace AstralCanvas
             }
             #endif
             #ifdef ASTRALCANVAS_METAL
-            case Backend_Metal
+            case Backend_Metal:
             {
                 AstralCanvasMetal_CreateInstanceBuffer(this);
                 break;
@@ -73,7 +73,7 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
-                AstralCanvasMetal_SetInstanceBuffer(this, verticesData, count);
+                AstralCanvasMetal_SetInstanceData(this, instancesData, count);
                 break;
             }
             #endif
@@ -99,7 +99,7 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
-                AstralCanvasMetal_DestroyVertexBuffer(this);
+                AstralCanvasMetal_DestroyInstanceBuffer(this);
                 break;
             }
             #endif

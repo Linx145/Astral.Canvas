@@ -143,7 +143,7 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
-                AstralCanvasMetal_SetClipArea(newClipArea);
+                AstralCanvasMetal_SetClipArea(currentCommandEncoderInstance, newClipArea);
                 break;
             }
             #endif
@@ -155,6 +155,7 @@ namespace AstralCanvas
     void Graphics::StartRenderProgram(RenderProgram *program, const Color clearColor)
     {
         this->currentRenderProgram = program;
+        this->clearColor = clearColor;
         switch (GetActiveBackend())
         {
             #ifdef ASTRALCANVAS_VULKAN
@@ -263,13 +264,13 @@ namespace AstralCanvas
             }
             #endif
             #ifdef ASTRALCANVAS_METAL
-            case Backend_Metal
+            case Backend_Metal:
             {
                 if (currentCommandEncoderInstance != NULL)
                 {
                     //apparently this is how it works
                     AstralCanvasMetal_EndRenderProgram(this->currentCommandEncoderInstance);
-                    StartRenderProgram(this->currentRenderProgram, COLOR_TRANSPARENT);
+                    StartRenderProgram(this->currentRenderProgram, clearColor);
                 }
                 break;
             }

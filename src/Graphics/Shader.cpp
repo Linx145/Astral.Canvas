@@ -599,6 +599,8 @@ namespace AstralCanvas
                         string vertexMetalString = vertexMetal->GetString(&localArena.asAllocator);
                         string fragmentMetalString = fragmentMetal->GetString(&localArena.asAllocator);
                         
+                        printf("%s\n", vertexMetalString.buffer);
+                        
                         if (!AstralCanvasMetal_CreateShaderProgram(vertexMetalString, fragmentMetalString, &result->shaderModule1, &result->shaderModule2))
                         {
                             THROW_ERR("Failed to create metal shader program!");

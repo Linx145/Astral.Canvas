@@ -120,7 +120,7 @@ void AstralCanvasMetal_RecreateDepthBuffers(usize frameWidth, usize frameHeight)
     }
     for (usize i = 0; i < framesCount; i++)
     {
-        AstralCanvasMetal_DepthBuffers.data[i] = AstralCanvas::CreateTextureFromData(NULL, frameWidth, frameHeight, AstralCanvas::ImageFormat_Depth32, AstralCanvas::SamplerGetPointClamp(), true);
+        AstralCanvasMetal_DepthBuffers.data[i] = AstralCanvas::CreateTextureFromData(NULL, frameWidth, frameHeight, AstralCanvas::ImageFormat_Depth32, true);
     }
 }
 id<CAMetalDrawable> AstralCanvasMetal_NextDrawable()
