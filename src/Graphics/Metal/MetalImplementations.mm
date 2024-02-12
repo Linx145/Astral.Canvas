@@ -353,20 +353,27 @@ void AstralCanvasMetal_CreateTexture(AstralCanvas::Texture2D *texture)
     descriptor.pixelFormat = AstralCanvasMetal_FromImageFormat(texture->imageFormat);
     descriptor.width = texture->width;
     descriptor.height = texture->height;
-    descriptor.storageMode = MTLStorageModePrivate;
     descriptor.depth = 1;
     if (texture->usedForRenderTarget)
     {
+        descriptor.storageMode = MTLStorageModePrivate;
         descriptor.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite;
     }
-    else descriptor.usage = MTLTextureUsageShaderRead;
+    else 
+    {
+        //descriptor.storageMode = MTLStorageMode;
+        descriptor.usage = MTLTextureUsageShaderRead;
+    }
     
     id<MTLTexture> handle = [AstralCanvasMetal_GetCurrentGPU() newTextureWithDescriptor:descriptor];
     
+    printf("Created metal texture handle\n");
+
     [descriptor release];
     
     if (texture->bytes != NULL)
     {
+        printf("texture copy attempt: %llu\n", (usize)texture->bytes);
         MTLRegion region = {
             {0, 0, 0},
             {
@@ -377,7 +384,9 @@ void AstralCanvasMetal_CreateTexture(AstralCanvas::Texture2D *texture)
         };
         NSUInteger bytesPerRow = 4 * texture->width;
         [handle replaceRegion:region mipmapLevel:0 withBytes:texture->bytes bytesPerRow:bytesPerRow];
+        printf("texture copy complete\n");
     }
+    
     texture->imageHandle = handle;
 }
 void AstralCanvasMetal_DestroyTexture(AstralCanvas::Texture2D *texture)
@@ -491,7 +500,7 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
                     
                     if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Vertex) != 0)
                     {
-                        if (toMutate->textures.length > 0)
+                        if (toMutate->textures.length > 1)
                         {
                             NSRange range;
                             range.location = shader->shaderVariables.uniforms.ptr[i].binding + 8;
@@ -502,7 +511,7 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
                     }
                     if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
                     {
-                        if (toMutate->textures.length > 0)
+                        if (toMutate->textures.length > 1)
                         {
                             NSRange range;
                             range.location = shader->shaderVariables.uniforms.ptr[i].binding + 8;
@@ -522,7 +531,7 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
                     
                     if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Vertex) != 0)
                     {
-                        if (toMutate->samplers.length > 0)
+                        if (toMutate->samplers.length > 1)
                         {
                             NSRange range;
                             range.location = shader->shaderVariables.uniforms.ptr[i].binding + 8;
@@ -533,7 +542,7 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
                     }
                     if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
                     {
-                        if (toMutate->samplers.length > 0)
+                        if (toMutate->samplers.length > 1)
                         {
                             NSRange range;
                             range.location = shader->shaderVariables.uniforms.ptr[i].binding + 8;

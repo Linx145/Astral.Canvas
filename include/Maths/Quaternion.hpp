@@ -111,16 +111,9 @@ namespace Maths
 				cYaw * cPitch * cRoll + sYaw * sPitch * sRoll
 			);
 		}
-		static inline Quaternion Dot(Quaternion A, Quaternion B)
+		static inline float Dot(Quaternion A, Quaternion B)
 		{
-#ifdef USE_SSE
-			const __m128 result = _mm_mul_ps(A.asM128, B.asM128);
-			return _mm_add_ps(_mm_shuffle_ps(result, result, _MM_SHUFFLE(0, 0, 0, 0)),
-				_mm_add_ps(_mm_shuffle_ps(result, result, _MM_SHUFFLE(1, 1, 1, 1)),
-					_mm_add_ps(_mm_shuffle_ps(result, result, _MM_SHUFFLE(2, 2, 2, 2)), _mm_shuffle_ps(result, result, _MM_SHUFFLE(3, 3, 3, 3)))));
-#else
 			return A.X * B.X + A.Y * B.Y + A.Z * B.Z + A.W * B.W;
-#endif
 		}
 		static inline Quaternion Lerp(Quaternion A, Quaternion B, float amount)
 		{

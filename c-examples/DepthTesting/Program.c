@@ -30,6 +30,7 @@ AstralCanvasIndexBuffer indexBuffer;
 AstralCanvasShader shader;
 AstralCanvasRenderPipeline renderPipeline;
 AstralCanvasRenderProgram renderProgram;
+AstralCanvasTexture2D texture;
 
 void Update(float deltaTime)
 {
@@ -157,6 +158,9 @@ void Initialize()
     int outputDepthIndex = AstralCanvasRenderProgram_AddAttachment(renderProgram, AstralCanvas_ImageFormat_Depth32, false, true, AstralCanvas_RenderPassOutput_ToWindow);
     AstralCanvasRenderProgram_AddRenderPass(renderProgram, outputAttachmentIndex, outputDepthIndex);
     AstralCanvasRenderProgram_Construct(renderProgram);
+    
+    texture = AstralCanvasTexture2D_FromFile("tbh.png");
+    printf("texture loaded\n");
 }
 void Deinitialize()
 {
@@ -165,6 +169,8 @@ void Deinitialize()
     AstralCanvasRenderPipeline_Deinit(renderPipeline);
 
     AstralCanvasShader_Deinit(shader);
+    
+    AstralCanvasTexture2D_Deinit(texture);
 
     AstralCanvasVertexBuffer_Deinit(vertexBuffer2);
     AstralCanvasVertexBuffer_Deinit(vertexBuffer1);
