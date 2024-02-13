@@ -88,6 +88,7 @@ namespace AstralCanvas
                 u32 arrayLength = textures->arrayElements.data[i].GetProperty("arrayLength")->GetUint32();
                 u32 set = textures->arrayElements.data[i].GetProperty("set")->GetUint32();
                 u32 binding = textures->arrayElements.data[i].GetProperty("binding")->GetUint32();
+                u32 mslBinding = textures->arrayElements.data[i].GetProperty("mslBinding")->GetUint32();
 
                 ShaderResource *resource = results->uniforms.Get(binding);
                 if (resource != NULL && resource->variableName.buffer != NULL)
@@ -105,6 +106,7 @@ namespace AstralCanvas
                     newResource.accessedBy = accessedByShaderOfType;
                     newResource.type = ShaderResourceType_Texture;
                     newResource.size = 0;
+                    newResource.mslBinding = mslBinding;
                     newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
                     results->uniforms.Insert((usize)binding, newResource);
                     //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
@@ -120,6 +122,7 @@ namespace AstralCanvas
                 u32 arrayLength = samplers->arrayElements.data[i].GetProperty("arrayLength")->GetUint32();
                 u32 set = samplers->arrayElements.data[i].GetProperty("set")->GetUint32();
                 u32 binding = samplers->arrayElements.data[i].GetProperty("binding")->GetUint32();
+                u32 mslBinding = samplers->arrayElements.data[i].GetProperty("mslBinding")->GetUint32();
 
                 ShaderResource *resource = results->uniforms.Get(binding);
                 if (resource != NULL && resource->variableName.buffer != NULL)
@@ -137,6 +140,7 @@ namespace AstralCanvas
                     newResource.accessedBy = accessedByShaderOfType;
                     newResource.type = ShaderResourceType_Sampler;
                     newResource.size = 0;
+                    newResource.mslBinding = mslBinding;
                     newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
                     results->uniforms.Insert((usize)binding, newResource);
                     //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
@@ -152,6 +156,7 @@ namespace AstralCanvas
                 u32 index = inputAttachments->arrayElements.data[i].GetProperty("index")->GetUint32();
                 u32 set = inputAttachments->arrayElements.data[i].GetProperty("set")->GetUint32();
                 u32 binding = inputAttachments->arrayElements.data[i].GetProperty("binding")->GetUint32();
+                u32 mslBinding = inputAttachments->arrayElements.data[i].GetProperty("mslBinding")->GetUint32();
 
                 ShaderResource *resource = results->uniforms.Get(binding);
                 if (resource != NULL && resource->variableName.buffer != NULL)
@@ -171,6 +176,7 @@ namespace AstralCanvas
                     newResource.accessedBy = accessedByShaderOfType;
                     newResource.type = ShaderResourceType_InputAttachment;
                     newResource.size = 0;
+                    newResource.mslBinding = mslBinding;
                     newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
                     results->uniforms.Insert((usize)binding, newResource);
                     //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");

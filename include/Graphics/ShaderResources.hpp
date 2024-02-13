@@ -37,6 +37,7 @@ namespace AstralCanvas
         string variableName;
         u32 set;
         u32 binding;
+        u32 mslBinding;
         ShaderResourceType type;
         ShaderInputAccessedBy accessedBy;
         u32 arrayLength;

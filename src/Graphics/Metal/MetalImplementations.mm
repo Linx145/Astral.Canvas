@@ -544,11 +544,11 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
                     if (toMutate->textures.length > 1)
                     {
                         NSRange range;
-                        range.location = shader->shaderVariables.uniforms.ptr[i].binding;
+                        range.location = shader->shaderVariables.uniforms.ptr[i].mslBinding;
                         range.length = toMutate->textures.length;
                         [encoder setFragmentTextures:(id<MTLTexture>*)toMutate->imageInfos withRange:range];
                     }
-                    else [encoder setFragmentTexture:(id<MTLTexture>)((id<MTLTexture>*)toMutate->imageInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].binding];
+                    else [encoder setFragmentTexture:(id<MTLTexture>)((id<MTLTexture>*)toMutate->imageInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].mslBinding];
                     break;
                 }
                 case AstralCanvas::ShaderResourceType_Texture:
@@ -563,22 +563,22 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
                         if (toMutate->textures.length > 1)
                         {
                             NSRange range;
-                            range.location = shader->shaderVariables.uniforms.ptr[i].binding;
+                            range.location = shader->shaderVariables.uniforms.ptr[i].mslBinding;
                             range.length = toMutate->textures.length;
                             [encoder setVertexTextures:(id<MTLTexture>*)toMutate->imageInfos withRange:range];
                         }
-                        else [encoder setVertexTexture:(id<MTLTexture>)((id<MTLTexture>*)toMutate->imageInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].binding];//shader->shaderVariables.uniforms.ptr[i].binding];
+                        else [encoder setVertexTexture:(id<MTLTexture>)((id<MTLTexture>*)toMutate->imageInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].mslBinding];//shader->shaderVariables.uniforms.ptr[i].binding];
                     }
                     if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
                     {
                         if (toMutate->textures.length > 1)
                         {
                             NSRange range;
-                            range.location = shader->shaderVariables.uniforms.ptr[i].binding;
+                            range.location = shader->shaderVariables.uniforms.ptr[i].mslBinding;
                             range.length = toMutate->textures.length;
                             [encoder setFragmentTextures:(id<MTLTexture>*)toMutate->imageInfos withRange:range];
                         }
-                        else [encoder setFragmentTexture:(id<MTLTexture>)((id<MTLTexture>*)toMutate->imageInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].binding];
+                        else [encoder setFragmentTexture:(id<MTLTexture>)((id<MTLTexture>*)toMutate->imageInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].mslBinding];
                     }
                     break;
                 }
@@ -594,22 +594,22 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
                         if (toMutate->samplers.length > 1)
                         {
                             NSRange range;
-                            range.location = shader->shaderVariables.uniforms.ptr[i].binding;
+                            range.location = shader->shaderVariables.uniforms.ptr[i].mslBinding;
                             range.length = toMutate->samplers.length;
                             [encoder setVertexSamplerStates:(id<MTLSamplerState>*)toMutate->samplerInfos withRange:range];
                         }
-                        else [encoder setVertexSamplerState:(id<MTLSamplerState>)((id<MTLSamplerState>*)toMutate->samplerInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].binding];//shader->shaderVariables.uniforms.ptr[i].binding];
+                        else [encoder setVertexSamplerState:(id<MTLSamplerState>)((id<MTLSamplerState>*)toMutate->samplerInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].mslBinding];//shader->shaderVariables.uniforms.ptr[i].binding];
                     }
                     if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
                     {
                         if (toMutate->samplers.length > 1)
                         {
                             NSRange range;
-                            range.location = shader->shaderVariables.uniforms.ptr[i].binding;
+                            range.location = shader->shaderVariables.uniforms.ptr[i].mslBinding;
                             range.length = toMutate->samplers.length;
                             [encoder setFragmentSamplerStates:(id<MTLSamplerState>*)toMutate->samplerInfos withRange:range];
                         }
-                        else [encoder setFragmentSamplerState:(id<MTLSamplerState>)((id<MTLSamplerState>*)toMutate->samplerInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].binding];//shader->shaderVariables.uniforms.ptr[i].binding];
+                        else [encoder setFragmentSamplerState:(id<MTLSamplerState>)((id<MTLSamplerState>*)toMutate->samplerInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].mslBinding];//shader->shaderVariables.uniforms.ptr[i].binding];
                     }
                     //printf("Sent sampler at position %i\n", shader->shaderVariables.uniforms.ptr[i].binding);
                     break;

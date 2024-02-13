@@ -32,6 +32,7 @@ struct AstralShadercResource
     string variableName;
     u32 set;
     u32 binding;
+    u32 mslBinding;
     union
     {
         u32 arrayLength;
@@ -257,7 +258,6 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
     spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &allResources, &uniformCount);
     for (usize i = 0; i < uniformCount; i++)
     {
-        //need to increase binding by 1 for msl because binding0 is taken up by the vertex buffer/input from vertex stage
         u32 binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
         u32 descSet = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
 
@@ -270,7 +270,55 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
         spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
     }
 
-    const char *result;
+    //textures
+    spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SEPARATE_IMAGE, &allResources, &uniformCount);
+    for (usize i = 0; i < uniformCount; i++)
+    {
+        u32 binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
+        u32 descSet = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
+        
+        spvc_msl_resource_binding newBindings;
+        spvc_msl_resource_binding_init(&newBindings);
+        newBindings.binding = binding;
+        newBindings.desc_set = descSet;
+        newBindings.stage = reflectData1 ? SpvExecutionModelVertex : SpvExecutionModelFragment;
+        newBindings.msl_texture = binding;
+        spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
+    }
+
+    //sampler
+    spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SEPARATE_SAMPLERS, &allResources, &uniformCount);
+    for (usize i = 0; i < uniformCount; i++)
+    {
+        u32 binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
+        u32 descSet = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
+        
+        spvc_msl_resource_binding newBindings;
+        spvc_msl_resource_binding_init(&newBindings);
+        newBindings.binding = binding;
+        newBindings.desc_set = descSet;
+        newBindings.stage = reflectData1 ? SpvExecutionModelVertex : SpvExecutionModelFragment;
+        newBindings.msl_sampler = binding;
+        spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
+    }
+
+    //subpasses
+    spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SUBPASS_INPUT, &allResources, &uniformCount);
+    for (usize i = 0; i < uniformCount; i++)
+    {
+        u32 binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
+        u32 descSet = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
+        
+        spvc_msl_resource_binding newBindings;
+        spvc_msl_resource_binding_init(&newBindings);
+        newBindings.binding = binding;
+        newBindings.desc_set = descSet;
+        newBindings.stage = reflectData1 ? SpvExecutionModelVertex : SpvExecutionModelFragment;
+        newBindings.msl_texture = binding;
+        spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
+    }
+
+        const char *result;
     
     if (spvc_compiler_compile(compiler, &result) != SPVC_SUCCESS)
     {
@@ -357,6 +405,7 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
 
     //get textures
     usize resourcesCount = 0;
+    usize mslBinding = 0;
     spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SEPARATE_IMAGE, &allResources, &resourcesCount);
 
     shaderVariables->textures = collections::Array<AstralShadercResource>(allocator, resourcesCount);
@@ -366,6 +415,7 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
         resourceData.binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
         resourceData.set = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
         resourceData.variableName = string(allocator, allResources[i].name);
+        resourceData.mslBinding = mslBinding;
 
         spvc_type type = spvc_compiler_get_type_handle(compiler, allResources[i].type_id);
         u32 arrayDimensions = spvc_type_get_num_array_dimensions(type);
@@ -376,31 +426,13 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
         else resourceData.arrayLength = 0;
 
         shaderVariables->textures.data[i] = resourceData;
-    }
-    
-    //get samplers
-    spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SEPARATE_SAMPLERS, &allResources, &resourcesCount);
-
-    shaderVariables->samplers = collections::Array<AstralShadercResource>(allocator, resourcesCount);
-    for (usize i = 0; i < resourcesCount; i++)
-    {
-        AstralShadercResource resourceData{};
-        resourceData.binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
-        resourceData.set = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
-        resourceData.variableName = string(allocator, allResources[i].name);
-        
-        spvc_type type = spvc_compiler_get_type_handle(compiler, allResources[i].type_id);
-        if (spvc_type_get_num_array_dimensions(type) > 0)
-        {
-            resourceData.arrayLength = spvc_type_get_array_dimension(type, 0);
-        }
-        else resourceData.arrayLength = 0;
-
-        shaderVariables->samplers.data[i] = resourceData;
+        mslBinding += (i32)fmax(resourceData.arrayLength, 1);
     }
 
+    //get input attachments
     spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SUBPASS_INPUT, &allResources, &resourcesCount);
 
+    //msl bindings dont reset as for metal, both input attachments and images count as textures
     shaderVariables->inputAttachments = collections::Array<AstralShadercResource>(allocator, resourcesCount);
     for (usize i = 0; i < resourcesCount; i++)
     {
@@ -409,8 +441,34 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralSh
         resourceData.set = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
         resourceData.inputAttachmentIndex = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationInputAttachmentIndex);
         resourceData.variableName = string(allocator, allResources[i].name);
+        resourceData.mslBinding = mslBinding;
 
         shaderVariables->inputAttachments.data[i] = resourceData;
+        mslBinding += 1;
+    }
+    
+    //get samplers
+    spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SEPARATE_SAMPLERS, &allResources, &resourcesCount);
+
+    shaderVariables->samplers = collections::Array<AstralShadercResource>(allocator, resourcesCount);
+    mslBinding = 0;
+    for (usize i = 0; i < resourcesCount; i++)
+    {
+        AstralShadercResource resourceData{};
+        resourceData.binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
+        resourceData.set = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
+        resourceData.variableName = string(allocator, allResources[i].name);
+        resourceData.mslBinding = mslBinding;
+
+        spvc_type type = spvc_compiler_get_type_handle(compiler, allResources[i].type_id);
+        if (spvc_type_get_num_array_dimensions(type) > 0)
+        {
+            resourceData.arrayLength = spvc_type_get_array_dimension(type, 0);
+        }
+        else resourceData.arrayLength = 0;
+
+        shaderVariables->samplers.data[i] = resourceData;
+        mslBinding += (i32)fmax(resourceData.arrayLength, 1);
     }
 
     return true;
@@ -742,6 +800,9 @@ inline void AstralShaderc_WriteShaderData(SomnialJson::JsonWriter *writer, colle
             writer->WritePropertyName("binding");
             writer->WriteUintValue(variables->textures.data[i].binding);
 
+            writer->WritePropertyName("mslBinding");
+            writer->WriteUintValue(variables->textures.data[i].mslBinding);
+
             writer->WriteEndObject();
         }
         writer->WriteEndArray();
@@ -767,6 +828,9 @@ inline void AstralShaderc_WriteShaderData(SomnialJson::JsonWriter *writer, colle
             writer->WritePropertyName("binding");
             writer->WriteUintValue(variables->samplers.data[i].binding);
 
+            writer->WritePropertyName("mslBinding");
+            writer->WriteUintValue(variables->samplers.data[i].mslBinding);
+
             writer->WriteEndObject();
         }
         writer->WriteEndArray();
@@ -791,6 +855,9 @@ inline void AstralShaderc_WriteShaderData(SomnialJson::JsonWriter *writer, colle
 
             writer->WritePropertyName("binding");
             writer->WriteUintValue(variables->inputAttachments.data[i].binding);
+
+            writer->WritePropertyName("mslBinding");
+            writer->WriteUintValue(variables->inputAttachments.data[i].mslBinding);
 
             writer->WriteEndObject();
         }
