@@ -270,6 +270,7 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
         spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
     }
 
+    usize mslBinding = 0;
     //textures
     spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SEPARATE_IMAGE, &allResources, &uniformCount);
     for (usize i = 0; i < uniformCount; i++)
@@ -282,24 +283,15 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
         newBindings.binding = binding;
         newBindings.desc_set = descSet;
         newBindings.stage = reflectData1 ? SpvExecutionModelVertex : SpvExecutionModelFragment;
-        newBindings.msl_texture = binding;
+        newBindings.msl_texture = mslBinding;
         spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
-    }
 
-    //sampler
-    spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SEPARATE_SAMPLERS, &allResources, &uniformCount);
-    for (usize i = 0; i < uniformCount; i++)
-    {
-        u32 binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
-        u32 descSet = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
-        
-        spvc_msl_resource_binding newBindings;
-        spvc_msl_resource_binding_init(&newBindings);
-        newBindings.binding = binding;
-        newBindings.desc_set = descSet;
-        newBindings.stage = reflectData1 ? SpvExecutionModelVertex : SpvExecutionModelFragment;
-        newBindings.msl_sampler = binding;
-        spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
+        usize arrayLength = spvc_type_get_array_dimension(spvc_compiler_get_type_handle(compiler, allResources[i].type_id), 0);
+        if (arrayLength == 0)
+        {
+            arrayLength = 1;
+        }
+        mslBinding += arrayLength;
     }
 
     //subpasses
@@ -314,11 +306,38 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
         newBindings.binding = binding;
         newBindings.desc_set = descSet;
         newBindings.stage = reflectData1 ? SpvExecutionModelVertex : SpvExecutionModelFragment;
-        newBindings.msl_texture = binding;
+        newBindings.msl_texture = mslBinding;
         spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
+
+        mslBinding += 1;
     }
 
-        const char *result;
+    mslBinding = 0;
+
+    //sampler
+    spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SEPARATE_SAMPLERS, &allResources, &uniformCount);
+    for (usize i = 0; i < uniformCount; i++)
+    {
+        u32 binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
+        u32 descSet = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
+        
+        spvc_msl_resource_binding newBindings;
+        spvc_msl_resource_binding_init(&newBindings);
+        newBindings.binding = binding;
+        newBindings.desc_set = descSet;
+        newBindings.stage = reflectData1 ? SpvExecutionModelVertex : SpvExecutionModelFragment;
+        newBindings.msl_sampler = mslBinding;
+        spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
+
+        usize arrayLength = spvc_type_get_array_dimension(spvc_compiler_get_type_handle(compiler, allResources[i].type_id), 0);
+        if (arrayLength == 0)
+        {
+            arrayLength = 1;
+        }
+        mslBinding += arrayLength;
+    }
+
+    const char *result;
     
     if (spvc_compiler_compile(compiler, &result) != SPVC_SUCCESS)
     {
