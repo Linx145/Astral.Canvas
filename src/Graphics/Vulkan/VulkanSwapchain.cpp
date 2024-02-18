@@ -114,7 +114,7 @@ bool AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode = swapchain->presentMode;
     createInfo.clipped = true;
-    createInfo.oldSwapchain = swapchain->oldHandle;
+    //createInfo.oldSwapchain = swapchain->handle;
     createInfo.imageExtent = swapchain->imageExtents;
 
     swapchain->oldHandle = swapchain->handle;

@@ -286,11 +286,14 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
         newBindings.msl_texture = mslBinding;
         spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
 
-        usize arrayLength = spvc_type_get_array_dimension(spvc_compiler_get_type_handle(compiler, allResources[i].type_id), 0);
-        if (arrayLength == 0)
+        spvc_type type = spvc_compiler_get_type_handle(compiler, allResources[i].type_id);
+        u32 arrayDimensions = spvc_type_get_num_array_dimensions(type);
+        u32 arrayLength;
+        if (arrayDimensions > 0)
         {
-            arrayLength = 1;
+            arrayLength = spvc_type_get_array_dimension(type, 0);
         }
+        else arrayLength = 1;
         mslBinding += arrayLength;
     }
 
@@ -329,11 +332,14 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
         newBindings.msl_sampler = mslBinding;
         spvc_compiler_msl_add_resource_binding(compiler, &newBindings);
 
-        usize arrayLength = spvc_type_get_array_dimension(spvc_compiler_get_type_handle(compiler, allResources[i].type_id), 0);
-        if (arrayLength == 0)
+        spvc_type type = spvc_compiler_get_type_handle(compiler, allResources[i].type_id);
+        u32 arrayDimensions = spvc_type_get_num_array_dimensions(type);
+        u32 arrayLength;
+        if (arrayDimensions > 0)
         {
-            arrayLength = 1;
+            arrayLength = spvc_type_get_array_dimension(type, 0);
         }
+        else arrayLength = 1;
         mslBinding += arrayLength;
     }
 

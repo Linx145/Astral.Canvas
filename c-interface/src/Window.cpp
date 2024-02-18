@@ -45,3 +45,23 @@ exportC void AstralCanvasWindow_SetTitle(AstralCanvasWindow ptr, const char *tit
     }
     ((AstralCanvas::Window *)ptr)->SetWindowTitle(string(GetDefaultAllocator(), title));
 }
+exportC bool AstralCanvasWindow_GetIsFullscreen(AstralCanvasWindow ptr)
+{
+    return ((AstralCanvas::Window *)ptr)->isFullscreen;
+}
+exportC void AstralCanvasWindow_SetFullscreen(AstralCanvasWindow ptr, bool value)
+{
+    ((AstralCanvas::Window *)ptr)->SetFullscreen(value);
+}
+exportC void AstralCanvasWindow_SetOnKeyInteractCallback(AstralCanvasWindow ptr, AstralCanvasWindowOnKeyInteractedFunction callback)
+{
+    ((AstralCanvas::Window *)ptr)->onKeyInteractFunc = (AstralCanvas::WindowOnKeyInteractedFunction)callback;
+}
+exportC void AstralCanvasWindow_SetOnTextInputCallback(AstralCanvasWindow ptr, AstralCanvasWindowOnTextInputFunction callback)
+{
+    ((AstralCanvas::Window *)ptr)->onTextInputFunc = (AstralCanvas::WindowOnTextInputFunction)callback;
+}
+exportC void AstralCanvasWindow_CloseWindow(AstralCanvasWindow ptr)
+{
+    ((AstralCanvas::Window *)ptr)->CloseWindow();
+}

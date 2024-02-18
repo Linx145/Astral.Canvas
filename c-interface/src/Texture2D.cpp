@@ -2,9 +2,9 @@
 #include "Graphics/Texture2D.hpp"
 #include "allocators.hpp"
 
-exportC u8 *AstralCanvasTexture2D_GetData(AstralCanvasTexture2D ptr)
+exportC void *AstralCanvasTexture2D_GetData(AstralCanvasTexture2D ptr)
 {
-    return ((AstralCanvas::Texture2D *)ptr)->bytes;
+    return ((AstralCanvas::Texture2D *)ptr)->GetData();
 }
 exportC u32 AstralCanvasTexture2D_GetWidth(AstralCanvasTexture2D ptr)
 {

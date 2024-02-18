@@ -10,6 +10,7 @@ using namespace collections;
 namespace AstralCanvas
 {
 	Application AstralCanvas_AppInstance;
+	float refreshTimer = 0.0f;
 
 	Application* GetAppInstance()
 	{
@@ -23,8 +24,6 @@ namespace AstralCanvas
 		Application result;
 		result.framesPerSecond = framesPerSecond;
 		result.allocator = allocator;
-		result.onInitialize = NULL;
-		result.onUpdate = NULL;
 		result.windows = vector<Window>(allocator);
 		result.appName = appName;
 		result.engineName = engineName;
@@ -83,7 +82,7 @@ namespace AstralCanvas
         this->graphicsDevice.usedShaders = collections::hashset<AstralCanvas::Shader*>(this->allocator, &PointerHash<AstralCanvas::Shader>, &PointerEql<AstralCanvas::Shader>);
 		return true;
 	}
-	void Application::Run(ApplicationUpdateFunction updateFunc, ApplicationUpdateFunction drawFunc, ApplicationInitFunction initFunc, ApplicationDeinitFunction deinitFunc)
+	void Application::Run(ApplicationUpdateFunction updateFunc, ApplicationUpdateFunction drawFunc, ApplicationUpdateFunction postEndDrawFunc, ApplicationInitFunction initFunc, ApplicationDeinitFunction deinitFunc)
 	{
 		FinalizeGraphicsBackend();
 		if (initFunc != NULL)
@@ -96,9 +95,26 @@ namespace AstralCanvas
 		bool shouldStop = false;
 		while (!shouldStop)
 		{
-			glfwPollEvents();
-
 			float deltaTime = endTime - startTime;
+			
+			if (windows.ptr[0].resolution.X == 0 || windows.ptr[0].resolution.Y == 0)
+			{
+				while (windows.ptr[0].resolution.X == 0 || windows.ptr[0].resolution.Y == 0)
+				{
+					refreshTimer += deltaTime;
+					if (refreshTimer >= 0.03f)
+					{
+						refreshTimer = 0.0f;
+						glfwPollEvents();
+					}
+					endTime = (float)glfwGetTime();
+				}
+			}
+			else
+			{
+				refreshTimer = 0.0f;
+				glfwPollEvents();
+			}
 
 			if (framesPerSecond < 1.0f || deltaTime >= 1.0f / framesPerSecond)
 			{
@@ -133,6 +149,15 @@ namespace AstralCanvas
 						shouldStop = false;
 					}
 				}
+
+				if (shouldStop)
+				{
+					break;
+				}
+				graphicsDevice.Viewport.X = 0;
+				graphicsDevice.Viewport.Y = 0;
+				graphicsDevice.Viewport.Width = windows.ptr[0].resolution.X;
+				graphicsDevice.Viewport.Height = windows.ptr[0].resolution.Y;
 
 				drawFunc(deltaTime);
 
@@ -169,6 +194,10 @@ namespace AstralCanvas
 #endif
 					default:
 						break;
+				}
+				if (postEndDrawFunc != NULL)
+				{
+					postEndDrawFunc(deltaTime);
 				}
 				startTime = endTime;
 			}

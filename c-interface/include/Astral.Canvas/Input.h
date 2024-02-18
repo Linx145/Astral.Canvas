@@ -4,6 +4,7 @@
 #ifdef __cplusplus
 extern "C"
 {
+#include "stdbool.h"
 #endif
 
 typedef struct

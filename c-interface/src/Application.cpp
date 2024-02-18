@@ -41,9 +41,9 @@ AstralCanvasWindow AstralCanvasApplication_GetWindow(AstralCanvasApplication ptr
     return (AstralCanvasWindow)((AstralCanvas::Application *)ptr)->windows.Get(index);
 }
 
-exportC void AstralCanvasApplication_Run(AstralCanvasApplication app, AstralCanvasUpdateFunction updateFunc, AstralCanvasUpdateFunction drawFunc, AstralCanvasInitFunction initFunc, AstralCanvasDeinitFunction deinitFunc)
+exportC void AstralCanvasApplication_Run(AstralCanvasApplication app, AstralCanvasUpdateFunction updateFunc, AstralCanvasUpdateFunction drawFunc, AstralCanvasUpdateFunction postEndDrawFunc, AstralCanvasInitFunction initFunc, AstralCanvasDeinitFunction deinitFunc)
 {
-    ((AstralCanvas::Application *)app)->Run(updateFunc, drawFunc, initFunc, deinitFunc);
+    ((AstralCanvas::Application *)app)->Run(updateFunc, drawFunc, postEndDrawFunc, initFunc, deinitFunc);
 }
 
 exportC AstralCanvasGraphics AstralCanvasApplication_GetGraphicsDevice(AstralCanvasApplication ptr)

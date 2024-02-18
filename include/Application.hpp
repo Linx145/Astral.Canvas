@@ -23,16 +23,13 @@ namespace AstralCanvas
 		u32 appVersion;
 		u32 engineVersion;
 
-		ApplicationInitFunction onInitialize;
-		ApplicationUpdateFunction onUpdate;
-
 		float framesPerSecond;
 
 		Application();
 		Application* init(IAllocator* allocators, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
 		bool AddWindow(i32 width, i32 height, bool resizeable = true);
 		bool FinalizeGraphicsBackend();
-		void Run(ApplicationUpdateFunction updateFunc, ApplicationUpdateFunction drawFunc, ApplicationInitFunction initFunc, ApplicationDeinitFunction deinitFunc);
+		void Run(ApplicationUpdateFunction updateFunc, ApplicationUpdateFunction drawFunc, ApplicationUpdateFunction postEndDrawFunc, ApplicationInitFunction initFunc, ApplicationDeinitFunction deinitFunc);
 	};
 
 	Application* ApplicationInit(IAllocator* ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);

@@ -7,6 +7,8 @@
 
 namespace AstralCanvas
 {
+	def_delegate(WindowOnTextInputFunction, void, void *window, u32 characterUnicode);
+	def_delegate(WindowOnKeyInteractedFunction, void, void *window, AstralCanvas::Keys key, i32 action);
 	struct Window
 	{
 		void* handle;
@@ -14,8 +16,12 @@ namespace AstralCanvas
 		Maths::Point2 position;
 		InputState windowInputState;
 		string windowTitle;
+		bool isFullscreen;
 
 		void *windowSurfaceHandle;
+
+		WindowOnTextInputFunction onTextInputFunc;
+		WindowOnKeyInteractedFunction onKeyInteractFunc;
 
 		Window();
 		void deinit();
@@ -24,6 +30,8 @@ namespace AstralCanvas
 			return Maths::Rectangle(0, 0, resolution.X, resolution.Y);
 		}
 		void SetWindowTitle(string title);
+		void SetFullscreen(bool value);
+		void CloseWindow();
 	};
 
 	bool WindowInit(IAllocator *allocator, Window * result, i32 width, i32 height, bool resizeable);

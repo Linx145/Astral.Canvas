@@ -4,6 +4,42 @@
 
 using namespace Maths;
 
+GLFWmonitor* GetCurrentMonitor(GLFWwindow *window)
+{
+    int nmonitors, i;
+    int wx, wy, ww, wh;
+    int mx, my, mw, mh;
+    int overlap, bestoverlap;
+    GLFWmonitor *bestmonitor;
+    GLFWmonitor **monitors;
+    const GLFWvidmode *mode;
+
+    bestoverlap = 0;
+    bestmonitor = NULL;
+
+    glfwGetWindowPos(window, &wx, &wy);
+    glfwGetWindowSize(window, &ww, &wh);
+    monitors = glfwGetMonitors(&nmonitors);
+
+    for (i = 0; i < nmonitors; i++) {
+        mode = glfwGetVideoMode(monitors[i]);
+        glfwGetMonitorPos(monitors[i], &mx, &my);
+        mw = mode->width;
+        mh = mode->height;
+
+        overlap =
+            fmaxl(0, fminl(wx + ww, mx + mw) - fmaxl(wx, mx)) *
+            fmaxl(0, fminl(wy + wh, my + mh) - fmaxl(wy, my));
+
+        if (bestoverlap < overlap) {
+            bestoverlap = overlap;
+            bestmonitor = monitors[i];
+        }
+    }
+
+    return bestmonitor;
+}
+
 namespace AstralCanvas
 {
 	bool windowLibraryInitialized;
@@ -15,11 +51,18 @@ namespace AstralCanvas
 		this->resolution = Point2(0);
 		this->windowSurfaceHandle = NULL;
 		this->windowInputState = {};
+		this->onTextInputFunc = NULL;
+		this->onKeyInteractFunc = NULL;
 	}
 
 	void Window::deinit()
 	{
 		glfwDestroyWindow((GLFWwindow*)this->handle);
+	}
+	void Window::CloseWindow()
+	{
+		glfwSetWindowShouldClose((GLFWwindow *)this->handle, GLFW_TRUE);
+		deinit();
 	}
 	/// Called when the window is minimized, otherwise known as iconified
 	void WindowMinimized(GLFWwindow* window, i32 iconified)
@@ -40,6 +83,11 @@ namespace AstralCanvas
 	{
 		Window *canvas = (Window*)glfwGetWindowUserPointer(window);
 		canvas->windowInputState.textInputCharacter = characterUnicode;
+
+		if (canvas->onTextInputFunc != NULL)
+		{
+			canvas->onTextInputFunc(canvas, characterUnicode);
+		}
 	}
 	void OnKeyInteracted(GLFWwindow* window, i32 glfwKey, i32 scancode, i32 action, i32 mods)
 	{
@@ -69,6 +117,10 @@ namespace AstralCanvas
 			{
 				canvas->windowInputState.textInputCharacter = '\b';
 			}
+		}
+		if (canvas->onKeyInteractFunc != NULL)
+		{
+			canvas->onKeyInteractFunc(canvas, key, action);
 		}
 	}
 	void OnMouseInteracted(GLFWwindow *window, i32 button, i32 action, i32 mods)
@@ -169,5 +221,25 @@ namespace AstralCanvas
 	{
 		glfwSetWindowTitle((GLFWwindow*)handle, title.buffer);
 		windowTitle = title;
+	}
+	void Window::SetFullscreen(bool value)
+	{
+		if (value)
+		{
+			GLFWmonitor *monitor = GetCurrentMonitor((GLFWwindow *)handle);
+			i32 xpos;
+			i32 ypos;
+			i32 w;
+			i32 h;
+			glfwGetMonitorWorkarea(monitor, &xpos, &ypos, &w, &h);
+			glfwSetWindowMonitor((GLFWwindow*)handle, monitor, xpos, ypos, w, h, GLFW_DONT_CARE);
+			printf("Switched to fullscreen\n");
+		}
+		else
+		{
+			glfwSetWindowMonitor((GLFWwindow*)handle, NULL, position.X, position.Y, resolution.X, resolution.Y, GLFW_DONT_CARE);
+			printf("Switched to windowed\n");
+		}
+		isFullscreen = value;
 	}
 }

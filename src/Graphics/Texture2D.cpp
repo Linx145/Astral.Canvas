@@ -187,6 +187,64 @@ namespace AstralCanvas
         }
         this->constructed = true;
     }
+    void *Texture2D::GetData()
+    {
+        if (!this->constructed || this->isDisposed)
+        {
+            return NULL;
+        }
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+                usize expectedSize = width * height * 4;
+                if (bytes == NULL)
+                {
+                    bytes = (u8 *)malloc(expectedSize);
+                }
+                VkImageAspectFlags imageAspect = VK_IMAGE_ASPECT_COLOR_BIT;
+                if (imageFormat == ImageFormat_Depth16 || imageFormat == ImageFormat_Depth32)
+                {
+                    imageAspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+                }
+                else if (imageFormat > ImageFormat_DepthNone)
+                {
+                    imageAspect = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+                }
+
+                VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, this->width * this->height * 4, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+
+                AstralCanvas::MemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_GPU_TO_CPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), true);
+
+                AstralCanvasVk_TransitionImageLayout(gpu, NULL, (VkImage)this->imageHandle, this->mipLevels, imageAspect, (VkImageLayout)this->imageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+                AstralCanvasVk_CopyImageToBuffer(gpu, (VkImage)this->imageHandle, stagingBuffer, width, height);
+
+                AstralCanvasVk_TransitionImageLayout(gpu, NULL, (VkImage)this->imageHandle, this->mipLevels, imageAspect, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkImageLayout)this->imageLayout);
+
+                memcpy(bytes, stagingMemory.vkAllocationInfo.pMappedData, expectedSize);
+
+                vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
+
+                vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
+
+
+                return bytes;
+            }
+            #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                break;
+            }
+#endif
+            default:
+                THROW_ERR("Unimplemented backend: Texture2D GetData");
+                break;
+        }
+    }
     void Texture2D::deinit()
     {
         if (!this->constructed || this->isDisposed)
@@ -220,6 +278,10 @@ namespace AstralCanvas
             default:
                 THROW_ERR("Unimplemented backend: Texture2D deinit");
                 break;
+        }
+        if (this->bytes != NULL)
+        {
+            free(this->bytes);
         }
         this->isDisposed = true;
     }

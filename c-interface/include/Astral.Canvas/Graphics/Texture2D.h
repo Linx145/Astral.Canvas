@@ -11,7 +11,7 @@ extern "C"
 
     typedef void *AstralCanvasTexture2D;
 
-    DynamicFunction u8 *AstralCanvasTexture2D_GetData(AstralCanvasTexture2D ptr);
+    DynamicFunction void *AstralCanvasTexture2D_GetData(AstralCanvasTexture2D ptr);
     DynamicFunction u32 AstralCanvasTexture2D_GetWidth(AstralCanvasTexture2D ptr);
     DynamicFunction u32 AstralCanvasTexture2D_GetHeight(AstralCanvasTexture2D ptr);
     DynamicFunction bool AstralCanvasTexture2D_StoreData(AstralCanvasTexture2D ptr);

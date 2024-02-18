@@ -272,6 +272,31 @@ void AstralCanvasVk_CopyBufferToBuffer(AstralVulkanGPU *gpu, VkBuffer from, VkBu
 
     AstralCanvasVk_EndTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, transientCmdBuffer);
 }
+void AstralCanvasVk_CopyImageToBuffer(AstralVulkanGPU *gpu, VkImage from, VkBuffer to, u32 width, u32 height)
+{
+    VkCommandBuffer transientCmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, true);
+
+    VkBufferImageCopy bufferImageCopy = {};
+    
+    bufferImageCopy.bufferOffset = 0;
+    //only set values other than 0 if the image buffer is not tightly packed
+    bufferImageCopy.bufferRowLength = 0;
+    bufferImageCopy.bufferImageHeight = 0;
+
+    bufferImageCopy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    bufferImageCopy.imageSubresource.mipLevel = 0;
+    bufferImageCopy.imageSubresource.baseArrayLayer = 0;
+    bufferImageCopy.imageSubresource.layerCount = 1;
+
+    bufferImageCopy.imageOffset = {};
+    bufferImageCopy.imageExtent.width = width;
+    bufferImageCopy.imageExtent.height = height;
+    bufferImageCopy.imageExtent.depth = 1;
+
+    vkCmdCopyImageToBuffer(transientCmdBuffer, from, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, to, 1, &bufferImageCopy);
+
+    AstralCanvasVk_EndTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, transientCmdBuffer);
+}
 void AstralCanvasVk_CopyBufferToImage(AstralVulkanGPU *gpu, VkBuffer from, VkImage imageHandle, u32 width, u32 height)
 {
     VkCommandBuffer transientCmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, true);

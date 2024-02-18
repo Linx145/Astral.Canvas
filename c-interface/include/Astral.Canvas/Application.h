@@ -20,7 +20,7 @@ extern "C"
     DynamicFunction void AstralCanvasApplication_AddWindow(AstralCanvasApplication ptr, i32 width, i32 height, bool resizeable);
     DynamicFunction AstralCanvasWindow AstralCanvasApplication_GetWindow(AstralCanvasApplication ptr, usize index);
     DynamicFunction AstralCanvasApplication AstralCanvasApplication_Init(const char *appName, const char *engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
-    DynamicFunction void AstralCanvasApplication_Run(AstralCanvasApplication app, AstralCanvasUpdateFunction updateFunc, AstralCanvasUpdateFunction drawFunc, AstralCanvasInitFunction initFunc, AstralCanvasDeinitFunction deinitFunc);
+    DynamicFunction void AstralCanvasApplication_Run(AstralCanvasApplication app, AstralCanvasUpdateFunction updateFunc, AstralCanvasUpdateFunction drawFunc, AstralCanvasUpdateFunction postEndDrawFunc, AstralCanvasInitFunction initFunc, AstralCanvasDeinitFunction deinitFunc);
     DynamicFunction AstralCanvasGraphics AstralCanvasApplication_GetGraphicsDevice(AstralCanvasApplication ptr);
     DynamicFunction AstralCanvasApplication AstralCanvasApplication_GetInstance();
 #ifdef __cplusplus
