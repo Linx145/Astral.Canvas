@@ -187,6 +187,10 @@ namespace AstralCanvas
         }
         this->constructed = true;
     }
+    void *Texture2D::RetrieveCurrentData()
+    {
+        return this->bytes;
+    }
     void *Texture2D::GetData()
     {
         if (!this->constructed || this->isDisposed)
@@ -343,6 +347,10 @@ namespace AstralCanvas
         result.isDisposed = false;
 
         result.Construct();
+        if (!result.storeData)
+        {
+            result.bytes = NULL;
+        }
         return result;
     }
 }

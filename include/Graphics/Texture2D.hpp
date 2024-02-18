@@ -40,6 +40,7 @@ namespace AstralCanvas
 
         void deinit();
         void Construct();
+        void *RetrieveCurrentData();
         void *GetData();
     };
     Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget);

@@ -2,6 +2,10 @@
 #include "Graphics/Texture2D.hpp"
 #include "allocators.hpp"
 
+exportC void *AstralCanvasTexture2D_RetrieveCurrentData(AstralCanvasTexture2D ptr)
+{
+    return ((AstralCanvas::Texture2D *)ptr)->bytes;
+}
 exportC void *AstralCanvasTexture2D_GetData(AstralCanvasTexture2D ptr)
 {
     return ((AstralCanvas::Texture2D *)ptr)->GetData();
