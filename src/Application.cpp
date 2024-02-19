@@ -82,6 +82,11 @@ namespace AstralCanvas
         this->graphicsDevice.usedShaders = collections::hashset<AstralCanvas::Shader*>(this->allocator, &PointerHash<AstralCanvas::Shader>, &PointerEql<AstralCanvas::Shader>);
 		return true;
 	}
+	void Application::ResetDeltaTimer()
+	{
+		glfwSetTime(0.0);
+		shouldResetDeltaTimer = true;
+	}
 	void Application::Run(ApplicationUpdateFunction updateFunc, ApplicationUpdateFunction drawFunc, ApplicationUpdateFunction postEndDrawFunc, ApplicationInitFunction initFunc, ApplicationDeinitFunction deinitFunc)
 	{
 		FinalizeGraphicsBackend();
@@ -89,8 +94,8 @@ namespace AstralCanvas
 		{
 			initFunc();
 		}
-		float startTime = (float)glfwGetTime();
-		float endTime = startTime;
+		startTime = (float)glfwGetTime();
+		endTime = startTime;
 
 		bool shouldStop = false;
 		while (!shouldStop)
@@ -101,12 +106,14 @@ namespace AstralCanvas
 			{
 				while (windows.ptr[0].resolution.X == 0 || windows.ptr[0].resolution.Y == 0)
 				{
+					deltaTime = endTime - startTime;
 					refreshTimer += deltaTime;
 					if (refreshTimer >= 0.03f)
 					{
 						refreshTimer = 0.0f;
 						glfwPollEvents();
 					}
+					startTime = endTime;
 					endTime = (float)glfwGetTime();
 				}
 			}
@@ -202,6 +209,11 @@ namespace AstralCanvas
 				startTime = endTime;
 			}
 			endTime = (float)glfwGetTime();
+			if (this->shouldResetDeltaTimer)
+			{
+				startTime = endTime;
+				this->shouldResetDeltaTimer = false;
+			}
 		}
 
 		this->graphicsDevice.usedShaders.deinit();

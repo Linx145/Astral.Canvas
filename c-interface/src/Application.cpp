@@ -35,8 +35,7 @@ AstralCanvasApplication AstralCanvasApplication_Init(const char *appName, const 
 
     return (AstralCanvasApplication)AstralCanvas::GetAppInstance();
 }
-exportC 
-AstralCanvasWindow AstralCanvasApplication_GetWindow(AstralCanvasApplication ptr, usize index)
+exportC AstralCanvasWindow AstralCanvasApplication_GetWindow(AstralCanvasApplication ptr, usize index)
 {
     return (AstralCanvasWindow)((AstralCanvas::Application *)ptr)->windows.Get(index);
 }
@@ -45,7 +44,6 @@ exportC void AstralCanvasApplication_Run(AstralCanvasApplication app, AstralCanv
 {
     ((AstralCanvas::Application *)app)->Run(updateFunc, drawFunc, postEndDrawFunc, initFunc, deinitFunc);
 }
-
 exportC AstralCanvasGraphics AstralCanvasApplication_GetGraphicsDevice(AstralCanvasApplication ptr)
 {
     return (AstralCanvasGraphics)&((AstralCanvas::Application *)ptr)->graphicsDevice;
@@ -53,4 +51,8 @@ exportC AstralCanvasGraphics AstralCanvasApplication_GetGraphicsDevice(AstralCan
 exportC AstralCanvasApplication AstralCanvasApplication_GetInstance()
 {
     return (AstralCanvasApplication)AstralCanvas::GetAppInstance();
+}
+exportC void AstralCanvasApplication_ResetDeltaTimer(AstralCanvasApplication ptr)
+{
+    ((AstralCanvas::Application *)ptr)->ResetDeltaTimer();
 }

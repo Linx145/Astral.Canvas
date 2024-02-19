@@ -13,6 +13,7 @@ extern "C"
 
     typedef void *AstralCanvasApplication;
 
+    DynamicFunction void AstralCanvasApplication_ResetDeltaTimer(AstralCanvasApplication ptr);
     DynamicFunction const char *AstralCanvasApplication_GetApplicationName(AstralCanvasApplication ptr);
     DynamicFunction const char *AstralCanvasApplication_GetEngineName(AstralCanvasApplication ptr);
     DynamicFunction float AstralCanvasApplication_GetFramesPerSecond(AstralCanvasApplication ptr);

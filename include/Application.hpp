@@ -22,6 +22,9 @@ namespace AstralCanvas
 		string engineName;
 		u32 appVersion;
 		u32 engineVersion;
+		float startTime;
+		float endTime;
+		bool shouldResetDeltaTimer;
 
 		float framesPerSecond;
 
@@ -30,6 +33,7 @@ namespace AstralCanvas
 		bool AddWindow(i32 width, i32 height, bool resizeable = true);
 		bool FinalizeGraphicsBackend();
 		void Run(ApplicationUpdateFunction updateFunc, ApplicationUpdateFunction drawFunc, ApplicationUpdateFunction postEndDrawFunc, ApplicationInitFunction initFunc, ApplicationDeinitFunction deinitFunc);
+		void ResetDeltaTimer();
 	};
 
 	Application* ApplicationInit(IAllocator* ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
