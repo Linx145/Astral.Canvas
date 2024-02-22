@@ -132,7 +132,7 @@ namespace AstralCanvas
         this->renderTargetHandle = NULL;
         u8 *bytes = (u8*)calloc(width * height, 4);
         usize textureLength = 1;
-        Texture2D backendTexture = CreateTextureFromData(bytes, width, height, imageFormat, true);
+        Texture2D backendTexture = CreateTextureFromData(bytes, width, height, imageFormat, true, false);
         Texture2D depthBuffer{};
 
         if (depthFormat > ImageFormat_DepthNone)
@@ -142,7 +142,7 @@ namespace AstralCanvas
                 depthFormat = ImageFormat_Depth32;
             }
             textureLength++;
-            depthBuffer = CreateTextureFromData(NULL, width, height, depthFormat, true);
+            depthBuffer = CreateTextureFromData(NULL, width, height, depthFormat, true, false);
         }
         free(bytes);
 

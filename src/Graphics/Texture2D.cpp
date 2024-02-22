@@ -82,6 +82,10 @@ namespace AstralCanvas
                         else
                         {
                             createInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+                            if (this->storeData)
+                            {
+                                createInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+                            }
                         }
                     }
                     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -289,10 +293,11 @@ namespace AstralCanvas
         }
         this->isDisposed = true;
     }
-    Texture2D CreateTextureFromFile(const char *fileName)
+    Texture2D CreateTextureFromFile(const char *fileName, bool storeData)
     {
         Texture2D result = {};
         result.width = 0;
+        result.storeData = storeData;
         result.height = 0;
         result.imageHandle = NULL;
         result.ownsHandle = true;
@@ -312,8 +317,11 @@ namespace AstralCanvas
         result.height = height;
 
         result.Construct();
-        free(result.bytes);
-        result.bytes = NULL;
+        if (!storeData)
+        {
+            free(result.bytes);
+            result.bytes = NULL;
+        }
         return result;
     }
     Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget)
@@ -333,11 +341,12 @@ namespace AstralCanvas
         result.Construct();
         return result;
     }
-    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget)
+    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget, bool storeData)
     {
         Texture2D result = {};
         result.width = width;
         result.height = height;
+        result.storeData = storeData;
         result.ownsHandle = true;
         result.bytes = data;
         result.imageFormat = imageFormat;
@@ -347,10 +356,7 @@ namespace AstralCanvas
         result.isDisposed = false;
 
         result.Construct();
-        if (!result.storeData)
-        {
-            result.bytes = NULL;
-        }
+        result.bytes = NULL;
         return result;
     }
 }

@@ -34,5 +34,5 @@ namespace AstralCanvas
 		void CloseWindow();
 	};
 
-	bool WindowInit(IAllocator *allocator, Window * result, i32 width, i32 height, bool resizeable);
+	bool WindowInit(IAllocator *allocator, const char *name, Window * result, i32 width, i32 height, bool resizeable, void *iconData, u32 iconWidth, u32 iconHeight);
 }

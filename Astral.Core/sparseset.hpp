@@ -49,7 +49,7 @@ namespace collections
                 {
                     newCapacity = 4;
                 }
-                while (newCapacity < minCapacity)
+                while (newCapacity <= minCapacity)
                 {
                     newCapacity *= 2;
                 }

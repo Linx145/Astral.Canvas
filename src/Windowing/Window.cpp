@@ -179,7 +179,7 @@ namespace AstralCanvas
         canvas->resolution.Y = height;
     }
 
-	bool WindowInit(IAllocator *allocator, Window * result, i32 width, i32 height, bool resizeable)
+	bool WindowInit(IAllocator *allocator, const char *name, Window * result, i32 width, i32 height, bool resizeable, void *iconData, u32 iconWidth, u32 iconHeight)
 	{
 		*result = {};
 		if (!windowLibraryInitialized)
@@ -192,7 +192,17 @@ namespace AstralCanvas
 		}
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, resizeable);
-		GLFWwindow* handle = glfwCreateWindow(width, height, "Hello Window", NULL, NULL);
+		
+		GLFWwindow* handle = glfwCreateWindow(width, height, name, NULL, NULL);
+
+		if (iconData != NULL)
+		{
+			GLFWimage image;
+			image.width = iconWidth;
+			image.height = iconHeight;
+			image.pixels = (u8 *)iconData;
+			glfwSetWindowIcon(handle, 1, &image);
+		}
 
 		if (handle)
 		{

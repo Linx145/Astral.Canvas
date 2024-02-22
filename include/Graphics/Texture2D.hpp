@@ -44,6 +44,6 @@ namespace AstralCanvas
         void *GetData();
     };
     Texture2D CreateTextureFromHandle(void *handle, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget);
-    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget);
-    Texture2D CreateTextureFromFile(const char *fileName);
+    Texture2D CreateTextureFromData(u8* data, u32 width, u32 height, ImageFormat imageFormat, bool usedForRenderTarget, bool storeData);
+    Texture2D CreateTextureFromFile(const char *fileName, bool storeData);
 }

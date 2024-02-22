@@ -22,9 +22,9 @@ void AstralCanvasApplication_SetFramesPerSecond(AstralCanvasApplication ptr, flo
     ((AstralCanvas::Application *)ptr)->framesPerSecond = frames;
 }
 exportC 
-void AstralCanvasApplication_AddWindow(AstralCanvasApplication ptr, i32 width, i32 height, bool resizeable)
+void AstralCanvasApplication_AddWindow(AstralCanvasApplication ptr, const char *name, i32 width, i32 height, bool resizeable, void *iconData, u32 iconWidth, u32 iconHeight)
 {
-    ((AstralCanvas::Application *)ptr)->AddWindow(width, height, resizeable);
+    ((AstralCanvas::Application *)ptr)->AddWindow(name, width, height, resizeable, iconData, iconWidth, iconHeight);
 }
 exportC 
 AstralCanvasApplication AstralCanvasApplication_Init(const char *appName, const char *engineName, u32 appVersion, u32 engineVersion, float framesPerSecond)

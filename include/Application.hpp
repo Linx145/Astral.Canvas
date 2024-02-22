@@ -30,7 +30,7 @@ namespace AstralCanvas
 
 		Application();
 		Application* init(IAllocator* allocators, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
-		bool AddWindow(i32 width, i32 height, bool resizeable = true);
+		bool AddWindow(const char *name, i32 width, i32 height, bool resizeable = true, void *iconData = NULL, u32 iconWidth = 0, u32 iconHeight = 0);
 		bool FinalizeGraphicsBackend();
 		void Run(ApplicationUpdateFunction updateFunc, ApplicationUpdateFunction drawFunc, ApplicationUpdateFunction postEndDrawFunc, ApplicationInitFunction initFunc, ApplicationDeinitFunction deinitFunc);
 		void ResetDeltaTimer();

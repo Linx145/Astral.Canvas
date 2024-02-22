@@ -278,7 +278,7 @@ namespace AstralCanvas
         }
         inline void SimulateMouseRelease(MouseButtons button)
         {
-            mouseStatuses.Insert((usize)button, {true, KeyState_Released});
+            mouseStatuses.Insert((usize)button, {false, KeyState_Released});
         }
         bool IsControllerConnected(usize index);
 

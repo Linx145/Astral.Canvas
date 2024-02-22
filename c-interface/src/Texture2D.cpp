@@ -4,6 +4,10 @@
 
 exportC void *AstralCanvasTexture2D_RetrieveCurrentData(AstralCanvasTexture2D ptr)
 {
+    if (((AstralCanvas::Texture2D *)ptr)->bytes == NULL)
+    {
+        ((AstralCanvas::Texture2D *)ptr)->GetData();
+    }
     return ((AstralCanvas::Texture2D *)ptr)->bytes;
 }
 exportC void *AstralCanvasTexture2D_GetData(AstralCanvasTexture2D ptr)
@@ -59,17 +63,17 @@ exportC AstralCanvasTexture2D AstralCanvasTexture2D_FromHandle(void *handle, u32
     *((AstralCanvas::Texture2D *)result) = texture;
     return result;
 }
-exportC AstralCanvasTexture2D AstralCanvasTexture2D_FromData(u8* data, u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, bool usedForRenderTarget)
+exportC AstralCanvasTexture2D AstralCanvasTexture2D_FromData(u8* data, u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, bool usedForRenderTarget, bool storeData)
 {
     AstralCanvasTexture2D result = GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::Texture2D));
-    AstralCanvas::Texture2D texture = AstralCanvas::CreateTextureFromData(data, width, height, (AstralCanvas::ImageFormat)imageFormat, usedForRenderTarget);
+    AstralCanvas::Texture2D texture = AstralCanvas::CreateTextureFromData(data, width, height, (AstralCanvas::ImageFormat)imageFormat, usedForRenderTarget, storeData);
     *((AstralCanvas::Texture2D *)result) = texture;
     return result;
 }
-exportC AstralCanvasTexture2D AstralCanvasTexture2D_FromFile(const char *fileName)
+exportC AstralCanvasTexture2D AstralCanvasTexture2D_FromFile(const char *fileName, bool storeData)
 {
     AstralCanvasTexture2D result = GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::Texture2D));
-    AstralCanvas::Texture2D texture = AstralCanvas::CreateTextureFromFile(fileName);
+    AstralCanvas::Texture2D texture = AstralCanvas::CreateTextureFromFile(fileName, storeData);
     *((AstralCanvas::Texture2D *)result) = texture;
     return result;
 }

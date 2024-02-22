@@ -32,10 +32,10 @@ namespace AstralCanvas
 		AstralCanvas_AppInstance = result;
 		return &AstralCanvas_AppInstance;
 	}
-	bool Application::AddWindow(i32 width, i32 height, bool resizeable)
+	bool Application::AddWindow(const char *name, i32 width, i32 height, bool resizeable, void *iconData, u32 iconWidth, u32 iconHeight)
 	{
 		Window result;
-		if (WindowInit(this->allocator, &result, width, height, resizeable))
+		if (WindowInit(this->allocator, name, &result, width, height, resizeable, iconData, iconWidth, iconHeight))
 		{
 			windows.Add(result);
 			glfwSetWindowUserPointer((GLFWwindow*)result.handle, &windows.ptr[windows.count - 1]);
