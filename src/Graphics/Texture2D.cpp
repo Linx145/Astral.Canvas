@@ -252,6 +252,7 @@ namespace AstralCanvas
                 THROW_ERR("Unimplemented backend: Texture2D GetData");
                 break;
         }
+        return NULL;
     }
     void Texture2D::deinit()
     {

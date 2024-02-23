@@ -1,6 +1,5 @@
 #pragma once
 #include "Linxc.h"
-#include "stdbool.h"
 #include "Astral.Canvas/Graphics/Enums.h"
 #include "Astral.Canvas/Graphics/SamplerState.h"
 

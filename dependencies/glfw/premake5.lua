@@ -2,6 +2,7 @@ project "GLFW"
     kind "StaticLib"
     language "C"
     targetdir "bin/%{cfg.buildcfg}"
+	staticruntime "Off"
 	files {
 		"include/GLFW/glfw3.h",
 		"include/GLFW/glfw3native.h",
@@ -24,7 +25,6 @@ project "GLFW"
 
     filter "system:windows"
 		systemversion "latest"
-		staticruntime "On"
         defines { "_GLFW_WIN32", "_CRT_SECURE_NO_WARNINGS" }
         files {
 			"src/win32_init.c",

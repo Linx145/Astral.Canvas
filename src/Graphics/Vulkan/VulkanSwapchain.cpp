@@ -138,7 +138,11 @@ bool AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
     //now that we have swapchain images, we store them into textures, which are in turn
     //stored into rendertarget
     swapchain->renderTargets = collections::Array<RenderTarget>(swapchain->allocator, swapchain->imageCount);
-    AstralCanvasVk_SwapchainRecreateRendertargets(swapchain);
+    for (usize i = 0; i < swapchain->renderTargets.length; i++)
+    {
+        swapchain->renderTargets.data[i].constructed = false;
+    }
+        AstralCanvasVk_SwapchainRecreateRendertargets(swapchain);
 
     details.deinit();
 

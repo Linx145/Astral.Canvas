@@ -10,7 +10,7 @@ namespace AstralCanvas
 {
     void RenderTarget::deinit()
     {
-        if (this->isDisposed)
+        if (this->isDisposed || !this->constructed || this->textures.data == NULL)
         {
             return;
         }

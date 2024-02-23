@@ -163,6 +163,6 @@ void Deinitialize()
 int main()
 {
     AstralCanvasApplication application = AstralCanvasApplication_Init("Triangle Demo", "My Engine", 0, 0, 0.0f);
-    AstralCanvasApplication_AddWindow(application, 1024, 768, true);
-    AstralCanvasApplication_Run(application, &Update, &Draw, &Initialize, &Deinitialize);
+    AstralCanvasApplication_AddWindow(application, "Triangle", 1024, 768, true, NULL, 0, 0);
+    AstralCanvasApplication_Run(application, &Update, &Draw, NULL, &Initialize, &Deinitialize);
 }
