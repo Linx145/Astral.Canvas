@@ -14,8 +14,7 @@ VkBool32 AstralCanvasVk_ErrorCallback(
 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 	void* pUserData)
 {
-	THROW_ERR(pCallbackData->pMessage);
-	exit(1);
+	LOG_WARNING(pCallbackData->pMessage);
 	// if (messageSeverity | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 	// {
 	// 	THROW_ERR(pCallbackData->pMessage);

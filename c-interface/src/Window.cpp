@@ -65,3 +65,7 @@ exportC void AstralCanvasWindow_CloseWindow(AstralCanvasWindow ptr)
 {
     ((AstralCanvas::Window *)ptr)->CloseWindow();
 }
+exportC void AstralCanvasWindow_SetMouseVisible(AstralCanvasWindow ptr, bool visible)
+{
+    ((AstralCanvas::Window *)ptr)->SetMouseVisible(visible);
+}

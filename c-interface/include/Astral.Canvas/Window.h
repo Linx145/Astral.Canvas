@@ -36,6 +36,7 @@ extern "C"
     DynamicFunction void AstralCanvasWindow_SetFullscreen(AstralCanvasWindow ptr, bool value);
     DynamicFunction void AstralCanvasWindow_SetOnKeyInteractCallback(AstralCanvasWindow ptr, AstralCanvasWindowOnKeyInteractedFunction callback);
     DynamicFunction void AstralCanvasWindow_SetOnTextInputCallback(AstralCanvasWindow ptr, AstralCanvasWindowOnTextInputFunction callback);
+    DynamicFunction void AstralCanvasWindow_SetMouseVisible(AstralCanvasWindow ptr, bool visible);
 #ifdef __cplusplus
 }
 #endif

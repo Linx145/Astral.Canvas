@@ -155,7 +155,8 @@ namespace AstralCanvas
     {
         MouseButton_Left,
         MouseButton_Right,
-        MouseButton_Middle
+        MouseButton_Middle,
+        MouseButton_Other
     };
     enum KeyState
     {

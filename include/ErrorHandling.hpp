@@ -25,6 +25,7 @@ inline void AstralDebugger_Log(const char* message, bool logTiming = true)
 inline void AstralDebugger_DefaultOnError(const char* message)
 {
 	AstralDebugger_Log(message);
+	getchar();
 	exit(1);
 }
 inline void AstralDebugger_DefaultOnWarning(const char* message)

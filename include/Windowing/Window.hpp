@@ -31,6 +31,7 @@ namespace AstralCanvas
 		}
 		void SetWindowTitle(string title);
 		void SetFullscreen(bool value);
+		void SetMouseVisible(bool value);
 		void CloseWindow();
 	};
 

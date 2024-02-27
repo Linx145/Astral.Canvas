@@ -142,7 +142,7 @@ bool AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
     {
         swapchain->renderTargets.data[i].constructed = false;
     }
-        AstralCanvasVk_SwapchainRecreateRendertargets(swapchain);
+    AstralCanvasVk_SwapchainRecreateRendertargets(swapchain);
 
     details.deinit();
 
@@ -172,7 +172,7 @@ bool AstralCanvasVk_SwapchainSwapBuffers(AstralVulkanGPU *gpu, AstralVulkanSwapc
 
     if (result != VK_SUCCESS)
     {
-        if (result == VK_ERROR_OUT_OF_DATE_KHR)
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
             AstralCanvasVk_DestroySwapchain(swapchain);
             AstralCanvasVk_SwapchainRecreate(swapchain, gpu);

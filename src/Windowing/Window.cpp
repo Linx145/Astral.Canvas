@@ -6,12 +6,12 @@ using namespace Maths;
 
 GLFWmonitor* GetCurrentMonitor(GLFWwindow *window)
 {
-    int nmonitors, i;
-    int wx, wy, ww, wh;
-    int mx, my, mw, mh;
-    int overlap, bestoverlap;
-    GLFWmonitor *bestmonitor;
-    GLFWmonitor **monitors;
+    i32 nmonitors, i;
+    i32 wx, wy, ww, wh;
+    i32 mx, my, mw, mh;
+    i32 overlap, bestoverlap;
+	GLFWmonitor *bestmonitor = NULL;
+	GLFWmonitor **monitors;
     const GLFWvidmode *mode;
 
     bestoverlap = 0;
@@ -63,6 +63,15 @@ namespace AstralCanvas
 	{
 		glfwSetWindowShouldClose((GLFWwindow *)this->handle, GLFW_TRUE);
 		deinit();
+	}
+	void Window::SetMouseVisible(bool value)
+	{
+		if (value)
+		{
+			glfwSetInputMode((GLFWwindow *)handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		else 
+			glfwSetInputMode((GLFWwindow *)handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 	/// Called when the window is minimized, otherwise known as iconified
 	void WindowMinimized(GLFWwindow* window, i32 iconified)
@@ -127,7 +136,7 @@ namespace AstralCanvas
 	{
 		Window *canvas = (Window*)glfwGetWindowUserPointer(window);
 
-		AstralCanvas::MouseButtons btn;
+		AstralCanvas::MouseButtons btn = MouseButton_Other;
 		if (button == GLFW_MOUSE_BUTTON_LEFT)
 		{
 			btn = MouseButton_Left;
@@ -237,18 +246,26 @@ namespace AstralCanvas
 		if (value)
 		{
 			GLFWmonitor *monitor = GetCurrentMonitor((GLFWwindow *)handle);
+			if (monitor == NULL)
+			{
+				i32 monitorCount = 0;
+				GLFWmonitor **monitors = glfwGetMonitors(&monitorCount);
+				monitor = monitors[0];
+			}
 			i32 xpos;
 			i32 ypos;
 			i32 w;
 			i32 h;
 			glfwGetMonitorWorkarea(monitor, &xpos, &ypos, &w, &h);
 			glfwSetWindowMonitor((GLFWwindow*)handle, monitor, xpos, ypos, w, h, GLFW_DONT_CARE);
-			printf("Switched to fullscreen\n");
+			resolution.X = w;
+			resolution.Y = h;
+			//printf("Switched to fullscreen\n");
 		}
 		else
 		{
 			glfwSetWindowMonitor((GLFWwindow*)handle, NULL, position.X, position.Y, resolution.X, resolution.Y, GLFW_DONT_CARE);
-			printf("Switched to windowed\n");
+			//printf("Switched to windowed\n");
 		}
 		isFullscreen = value;
 	}

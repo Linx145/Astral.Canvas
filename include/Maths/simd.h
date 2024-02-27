@@ -1,3 +1,5 @@
+#define FORCE_NO_INTRINSICS
+
 #ifndef FORCE_NO_INTRINSICS
 #if defined(__AVX2__)
 #   include <immintrin.h>

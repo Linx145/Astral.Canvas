@@ -3,7 +3,11 @@
 
 VkDebugUtilsMessengerCreateInfoEXT      AstralCanvasVk_debugCreateInfo = {};
 VkDebugUtilsMessengerEXT                AstralCanvasVk_debugMessenger = {};
+#ifdef DEBUG
 bool                                    AstralCanvasVk_validationLayers = true;
+#else
+bool                                    AstralCanvasVk_validationLayers = false;
+#endif
 VkInstance                              AstralCanvasVk_instance = NULL;
 AstralVulkanGPU                         AstralCanvasVk_GPU = {};
 VmaAllocator                            AstralCanvasVk_vma = NULL;
