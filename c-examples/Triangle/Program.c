@@ -45,6 +45,12 @@ void Update(float deltaTime)
     {
         printf("Scrolling vertically...\n");
     }
+    if (AstralCanvasInput_IsKeyPressed(AstralCanvas_Keys_Escape))
+    {
+        AstralCanvasApplication application = AstralCanvasApplication_GetInstance();
+
+        AstralCanvasWindow_CloseWindow(AstralCanvasApplication_GetWindow(application, 0));
+    }
 }
 void Draw(float deltaTime)
 {

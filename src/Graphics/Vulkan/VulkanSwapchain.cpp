@@ -172,14 +172,14 @@ bool AstralCanvasVk_SwapchainSwapBuffers(AstralVulkanGPU *gpu, AstralVulkanSwapc
 
     if (result != VK_SUCCESS)
     {
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+        if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
             AstralCanvasVk_DestroySwapchain(swapchain);
             AstralCanvasVk_SwapchainRecreate(swapchain, gpu);
 
             return true;
         }
-        else
+        else if (result != VK_SUBOPTIMAL_KHR)
         {
             THROW_ERR("Failed to acquire next swapchain image");
             return false;

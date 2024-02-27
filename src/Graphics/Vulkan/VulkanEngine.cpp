@@ -41,114 +41,136 @@ collections::vector<const char*> AstralCanvasVk_GetDefaultInstanceExtensions(IAl
 	return result;
 }
 
-bool AstralCanvasVk_Initialize(IAllocator* allocator, Array<const char*> validationLayersToUse, Array<const char*> requiredExtensions, AstralCanvas::Window* window)
+bool AstralCanvasVk_InitializeFor(IAllocator* allocator, Array<const char*> validationLayersToUse, Array<const char*> requiredExtensions, AstralCanvas::Window *window)
 {
-	if (!AstralCanvasVk_CreateInstance(allocator, validationLayersToUse, "", "", 0, 0))
+	if (AstralCanvasVk_GetInstance() != NULL)
 	{
-		return false;
-	}
-	printf("Created vulkan instance\n");
+		if (glfwCreateWindowSurface(AstralCanvasVk_GetInstance(), (GLFWwindow *)window->handle, NULL, (VkSurfaceKHR *)&window->windowSurfaceHandle) != VK_SUCCESS)
+		{
+			printf("Failed to create window surface\n");
+			return false;
+		}
+		printf("Created window surface\n");
 
-	if (glfwCreateWindowSurface(AstralCanvasVk_GetInstance(), (GLFWwindow*)window->handle, NULL, (VkSurfaceKHR*)&window->windowSurfaceHandle) != VK_SUCCESS)
+		window->swapchain = malloc(sizeof(AstralVulkanSwapchain));
+		if (!AstralCanvasVk_CreateSwapchain(allocator, AstralCanvasVk_GetCurrentGPU(), window, (AstralVulkanSwapchain *)window->swapchain))
+		{
+			return false;
+		}
+		printf("Created swapchain\n");
+		return true;
+	}
+	else
 	{
-		printf("Failed to create window surface!\n");
-		return false;
+		if (!AstralCanvasVk_CreateInstance(allocator, validationLayersToUse, "", "", 0, 0))
+		{
+			return false;
+		}
+		printf("Created vulkan instance\n");
+
+		if (glfwCreateWindowSurface(AstralCanvasVk_GetInstance(), (GLFWwindow *)window->handle, NULL, (VkSurfaceKHR *)&window->windowSurfaceHandle) != VK_SUCCESS)
+		{
+			printf("Failed to create window surface\n");
+			return false;
+		}
+		printf("Created window surface\n");
+
+		AstralVulkanGPU gpu;
+		if (!AstralCanvasVk_SelectGPU(allocator, AstralCanvasVk_GetInstance(), (VkSurfaceKHR)window->windowSurfaceHandle, requiredExtensions, &gpu))
+		{
+			return false;
+		}
+		AstralCanvasVk_SetCurrentGPU(gpu);
+		printf("Created GPU interface\n");
+
+		VmaVulkanFunctions vulkanAllocatorFunctions = {};
+		vulkanAllocatorFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+		vulkanAllocatorFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+
+		VmaAllocator vulkanAllocator;
+		VmaAllocatorCreateInfo allocatorCreateInfo = {};
+		allocatorCreateInfo.device = gpu.logicalDevice;
+		allocatorCreateInfo.instance = AstralCanvasVk_GetInstance();
+		allocatorCreateInfo.physicalDevice = gpu.physicalDevice;
+		allocatorCreateInfo.pAllocationCallbacks = NULL;
+		allocatorCreateInfo.pDeviceMemoryCallbacks = NULL;
+		allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+		allocatorCreateInfo.pVulkanFunctions = &vulkanAllocatorFunctions;
+
+		if (vmaCreateAllocator(&allocatorCreateInfo, &vulkanAllocator) != VK_SUCCESS)
+		{
+			return false;
+		}
+		AstralCanvasVk_SetCurrentVulkanAllocator(vulkanAllocator);
+		printf("Created memory allocator\n");
+
+		window->swapchain = malloc(sizeof(AstralVulkanSwapchain));
+		if (!AstralCanvasVk_CreateSwapchain(allocator, AstralCanvasVk_GetCurrentGPU(), window, (AstralVulkanSwapchain *)window->swapchain))
+		{
+			return false;
+		}
+		printf("Created swapchain\n");
+
+		VkSemaphoreCreateInfo semaphoreCreateInfo;
+		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		semaphoreCreateInfo.flags = 0;
+		semaphoreCreateInfo.pNext = NULL;
+
+		VkSemaphore awaitPresentCompleteSemaphore;
+		vkCreateSemaphore(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &semaphoreCreateInfo, NULL, &awaitPresentCompleteSemaphore);
+
+		AstralCanvasVk_SetAwaitPresentCompleteSemaphore(awaitPresentCompleteSemaphore);
+
+		VkSemaphore awaitRenderCompleteSemaphore;
+		vkCreateSemaphore(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &semaphoreCreateInfo, NULL, &awaitRenderCompleteSemaphore);
+
+		AstralCanvasVk_SetAwaitRenderCompleteSemaphore(awaitRenderCompleteSemaphore);
+
+		//main rendering command pool (Non transient)
+		VkCommandPool mainCmdPool;
+		VkCommandPoolCreateInfo cmdPoolCreateInfo{};
+		cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		cmdPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		cmdPoolCreateInfo.queueFamilyIndex = AstralCanvasVk_GetCurrentGPU()->queueInfo.dedicatedGraphicsQueueIndex;
+		vkCreateCommandPool(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &cmdPoolCreateInfo, NULL, &mainCmdPool);
+
+		AstralCanvasVk_SetMainCmdPool(mainCmdPool);
+
+		//main command buffer (Non transient)
+		VkCommandBuffer mainCmdBuffer;
+		VkCommandBufferAllocateInfo cmdBufferInfo{};
+		cmdBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufferInfo.commandPool = mainCmdPool;
+		cmdBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdBufferInfo.commandBufferCount = 1;
+		vkAllocateCommandBuffers(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &cmdBufferInfo, &mainCmdBuffer);
+
+		AstralCanvasVk_SetMainCmdBuffer(mainCmdBuffer);
+
+		u32 maxUniformDescriptors = ASTRALVULKAN_MAX_DESCRIPTOR_SETS;
+		VkDescriptorPoolSize poolSizes[4];
+		poolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+		poolSizes[0].descriptorCount = maxUniformDescriptors;
+		poolSizes[1].type = VK_DESCRIPTOR_TYPE_SAMPLER;
+		poolSizes[1].descriptorCount = maxUniformDescriptors;
+		poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSizes[2].descriptorCount = maxUniformDescriptors;
+		poolSizes[3].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		poolSizes[3].descriptorCount = maxUniformDescriptors;
+
+		VkDescriptorPoolCreateInfo poolCreateInfo{};
+		poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolCreateInfo.pPoolSizes = poolSizes;
+		poolCreateInfo.poolSizeCount = 4;
+		poolCreateInfo.maxSets = maxUniformDescriptors;
+
+		VkDescriptorPool mainPool;
+		vkCreateDescriptorPool(gpu.logicalDevice, &poolCreateInfo, NULL, &mainPool);
+
+		AstralCanvasVk_SetDescriptorPool(mainPool);
+
+		return true;
 	}
-	printf("Created window surface\n");
-	AstralVulkanGPU gpu;
-	if (!AstralCanvasVk_SelectGPU(allocator, AstralCanvasVk_GetInstance(), (VkSurfaceKHR)window->windowSurfaceHandle, requiredExtensions, &gpu))
-	{
-		return false;
-	}
-	AstralCanvasVk_SetCurrentGPU(gpu);
-	printf("Created GPU interface\n");
-
-	VmaVulkanFunctions vulkanAllocatorFunctions = {};
-	vulkanAllocatorFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
-	vulkanAllocatorFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
-
-	VmaAllocator vulkanAllocator;
-	VmaAllocatorCreateInfo allocatorCreateInfo = {};
-	allocatorCreateInfo.device = gpu.logicalDevice;
-	allocatorCreateInfo.instance = AstralCanvasVk_GetInstance();
-	allocatorCreateInfo.physicalDevice = gpu.physicalDevice;
-	allocatorCreateInfo.pAllocationCallbacks = NULL;
-	allocatorCreateInfo.pDeviceMemoryCallbacks = NULL;
-	allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
-	allocatorCreateInfo.pVulkanFunctions = &vulkanAllocatorFunctions;
-
-	if (vmaCreateAllocator(&allocatorCreateInfo, &vulkanAllocator) != VK_SUCCESS)
-	{
-		return false;
-	}
-	AstralCanvasVk_SetCurrentVulkanAllocator(vulkanAllocator);
-	printf("Created memory allocator\n");
-
-	AstralVulkanSwapchain swapchain;
-	if (!AstralCanvasVk_CreateSwapchain(allocator, AstralCanvasVk_GetCurrentGPU(), window, &swapchain))
-	{
-		return false;
-	}
-	AstralCanvasVk_SetCurrentSwapchain(swapchain);
-	printf("Created swapchain\n");
-
-	VkSemaphoreCreateInfo semaphoreCreateInfo;
-	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	semaphoreCreateInfo.flags = 0;
-	semaphoreCreateInfo.pNext = NULL;
-
-	VkSemaphore awaitPresentCompleteSemaphore;
-	vkCreateSemaphore(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &semaphoreCreateInfo, NULL, &awaitPresentCompleteSemaphore);
-
-	AstralCanvasVk_SetAwaitPresentCompleteSemaphore(awaitPresentCompleteSemaphore);
-
-	VkSemaphore awaitRenderCompleteSemaphore;
-	vkCreateSemaphore(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &semaphoreCreateInfo, NULL, &awaitRenderCompleteSemaphore);
-
-	AstralCanvasVk_SetAwaitRenderCompleteSemaphore(awaitRenderCompleteSemaphore);
-
-	//main rendering command pool (Non transient)
-	VkCommandPool mainCmdPool;
-	VkCommandPoolCreateInfo cmdPoolCreateInfo{};
-	cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	cmdPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	cmdPoolCreateInfo.queueFamilyIndex = AstralCanvasVk_GetCurrentGPU()->queueInfo.dedicatedGraphicsQueueIndex;
-	vkCreateCommandPool(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &cmdPoolCreateInfo, NULL, &mainCmdPool);
-
-	AstralCanvasVk_SetMainCmdPool(mainCmdPool);
-
-	//main command buffer (Non transient)
-	VkCommandBuffer mainCmdBuffer;
-	VkCommandBufferAllocateInfo cmdBufferInfo{};
-	cmdBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cmdBufferInfo.commandPool = mainCmdPool;
-	cmdBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	cmdBufferInfo.commandBufferCount = 1;
-	vkAllocateCommandBuffers(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &cmdBufferInfo, &mainCmdBuffer);
-
-	AstralCanvasVk_SetMainCmdBuffer(mainCmdBuffer);
-
-	u32 maxUniformDescriptors = ASTRALVULKAN_MAX_DESCRIPTOR_SETS;
-	VkDescriptorPoolSize poolSizes[4];
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-	poolSizes[0].descriptorCount = maxUniformDescriptors;
-	poolSizes[1].type = VK_DESCRIPTOR_TYPE_SAMPLER;
-	poolSizes[1].descriptorCount = maxUniformDescriptors;
-	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[2].descriptorCount = maxUniformDescriptors;
-	poolSizes[3].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	poolSizes[3].descriptorCount = maxUniformDescriptors;
-
-	VkDescriptorPoolCreateInfo poolCreateInfo{};
-	poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolCreateInfo.pPoolSizes = poolSizes;
-	poolCreateInfo.poolSizeCount = 4;
-	poolCreateInfo.maxSets = maxUniformDescriptors;
-
-	VkDescriptorPool mainPool;
-	vkCreateDescriptorPool(gpu.logicalDevice, &poolCreateInfo, NULL, &mainPool);
-
-	AstralCanvasVk_SetDescriptorPool(mainPool);
 }
 
 bool AstralCanvasVk_CreateInstance(IAllocator* allocator, Array<const char*> validationLayersToUse, const char* appName, const char* engineName, u32 applicationVersion, u32 engineVersion, u32 vulkanVersion)
@@ -255,7 +277,7 @@ void AstralCanvasVk_AwaitShutdown()
 {
 	vkQueueWaitIdle(AstralCanvasVk_GetCurrentGPU()->DedicatedGraphicsQueue.queue);
 }
-void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvas::Window* window)
+void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvas::Window* windows, u32 windowCount)
 {
 	AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
 	AstralCanvas::DestroyDefaultSamplerStates();
@@ -284,10 +306,14 @@ void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvas::Window* wi
 		vkDestroySemaphore(gpu->logicalDevice, semaphore, NULL);
 	}
 
-	AstralVulkanSwapchain *swapchain = AstralCanvasVk_GetCurrentSwapchain();
-	if (swapchain != NULL)
+	for (usize i = 0; i < windowCount; i++)
 	{
-		AstralCanvasVk_DestroySwapchain(swapchain);
+		AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)windows[i].swapchain;
+		if (swapchain != NULL)
+		{
+			AstralCanvasVk_DestroySwapchain(swapchain);
+			free(swapchain);
+		}
 	}
 
 	VmaAllocator vma = AstralCanvasVk_GetCurrentVulkanAllocator();
@@ -302,7 +328,11 @@ void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvas::Window* wi
 	}
 
 	VkInstance instance = AstralCanvasVk_GetInstance();
-	vkDestroySurfaceKHR(instance, (VkSurfaceKHR)window->windowSurfaceHandle, NULL);
+	for (usize i = 0; i < windowCount; i++)
+	{
+		vkDestroySurfaceKHR(instance, (VkSurfaceKHR)windows[i].windowSurfaceHandle, NULL);
+	}
+	//vkDestroySurfaceKHR(instance, (VkSurfaceKHR)window->windowSurfaceHandle, NULL);
 
 	if (AstralCanvasVk_ValidationLayersIsEnabled())
 	{
@@ -318,10 +348,10 @@ void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvas::Window* wi
 	}
 }
 
-void AstralCanvasVk_BeginDraw()
+void AstralCanvasVk_BeginDraw(AstralCanvas::Window *window)
 {
 	AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
-	AstralVulkanSwapchain *swapchain = AstralCanvasVk_GetCurrentSwapchain();
+	AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)window->swapchain;
 
 	VkFence toWaitFor = gpu->DedicatedGraphicsQueue.queueFence;
 	vkWaitForFences(gpu->logicalDevice, 1, &toWaitFor, true, UINT64_MAX);
@@ -331,7 +361,6 @@ void AstralCanvasVk_BeginDraw()
 
 	if (AstralCanvasVk_SwapchainSwapBuffers(gpu, swapchain, AstralCanvasVk_GetAwaitPresentCompleteSemaphore(), NULL))
 	{
-		onResized = true;
 		swapchain->recreatedThisFrame = true;
 		return;
 	}
@@ -349,7 +378,7 @@ void AstralCanvasVk_BeginDraw()
 		THROW_ERR("Failed to begin command buffer");
 	}
 }
-void AstralCanvasVk_EndDraw()
+void AstralCanvasVk_EndDraw(AstralCanvas::Window *window)
 {
 	//submit to GPU
 	vkEndCommandBuffer(AstralCanvasVk_GetMainCmdBuffer());
@@ -377,7 +406,7 @@ void AstralCanvasVk_EndDraw()
 	}
 	gpu->DedicatedGraphicsQueue.queueMutex.ExitLock();
 
-	AstralVulkanSwapchain* swapchain = AstralCanvasVk_GetCurrentSwapchain();
+	AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)window->swapchain;
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -392,7 +421,7 @@ void AstralCanvasVk_EndDraw()
 	swapchain->renderTargets.data[swapchain->currentImageIndex].textures.data[0].imageLayout = (u32)VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	gpu->DedicatedGraphicsQueue.queueMutex.ExitLock();
 
-	if (presentResults == VK_ERROR_OUT_OF_DATE_KHR || onResized)
+	if (presentResults == VK_ERROR_OUT_OF_DATE_KHR || presentResults == VK_SUBOPTIMAL_KHR || onResized)
 	{
 		if (!swapchain->recreatedThisFrame)
 		{
@@ -403,7 +432,7 @@ void AstralCanvasVk_EndDraw()
 		{
 			onResized = false;
 		}
-		if (presentResults == VK_ERROR_OUT_OF_DATE_KHR)
+		if (presentResults == VK_ERROR_OUT_OF_DATE_KHR || presentResults == VK_SUBOPTIMAL_KHR)
 		{
 			presentResults = VK_SUCCESS;
 		}

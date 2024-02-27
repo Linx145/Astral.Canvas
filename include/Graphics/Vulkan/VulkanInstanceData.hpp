@@ -22,8 +22,8 @@ void AstralCanvasVk_SetCurrentGPU(AstralVulkanGPU gpu);
 VmaAllocator AstralCanvasVk_GetCurrentVulkanAllocator();
 void AstralCanvasVk_SetCurrentVulkanAllocator(VmaAllocator allocator);
 
-AstralVulkanSwapchain *AstralCanvasVk_GetCurrentSwapchain();
-void AstralCanvasVk_SetCurrentSwapchain(AstralVulkanSwapchain swapchain);
+//AstralVulkanSwapchain *AstralCanvasVk_GetCurrentSwapchain();
+//void AstralCanvasVk_SetCurrentSwapchain(AstralVulkanSwapchain swapchain);
 
 VkSemaphore AstralCanvasVk_GetAwaitPresentCompleteSemaphore();
 void AstralCanvasVk_SetAwaitPresentCompleteSemaphore(VkSemaphore semaphore);

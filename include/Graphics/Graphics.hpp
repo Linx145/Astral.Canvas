@@ -9,11 +9,13 @@
 #include "Graphics/RenderTarget.hpp"
 #include "Graphics/SamplerState.hpp"
 #include "hashset.hpp"
+#include "Windowing/Window.hpp"
 
 namespace AstralCanvas
 {
     struct Graphics
     {
+        AstralCanvas::Window *currentWindow;
         RenderProgram *currentRenderProgram;
         u32 currentRenderPass;
         RenderTarget *currentRenderTarget;

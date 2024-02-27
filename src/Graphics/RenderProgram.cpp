@@ -46,7 +46,8 @@ namespace AstralCanvas
 #ifdef ASTRALCANVAS_VULKAN
                 case Backend_Vulkan:
                 {
-                    imageFormat = AstralCanvasVk_GetCurrentSwapchain()->imageFormat;
+                    //guaranteed to be B8G8R8A8 Unorm for now 
+                    imageFormat = AstralCanvas::ImageFormat_B8G8R8A8Unorm;
                     break;
                 }
 #endif

@@ -11,17 +11,21 @@ namespace AstralCanvas
 	def_delegate(WindowOnKeyInteractedFunction, void, void *window, AstralCanvas::Keys key, i32 action);
 	struct Window
 	{
-		void* handle;
+		void *handle;
+		void *swapchain;
 		Maths::Point2 resolution;
 		Maths::Point2 position;
 		InputState windowInputState;
 		string windowTitle;
 		bool isFullscreen;
+		bool *justResized;
 
 		void *windowSurfaceHandle;
 
 		WindowOnTextInputFunction onTextInputFunc;
 		WindowOnKeyInteractedFunction onKeyInteractFunc;
+
+		bool isDisposed;
 
 		Window();
 		void deinit();

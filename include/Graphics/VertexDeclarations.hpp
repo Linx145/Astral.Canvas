@@ -26,26 +26,26 @@ namespace AstralCanvas
 
     struct VertexPositionColor
     {
-        Maths::Vec3 position;
-        Maths::Vec4 color;
+        alignas(0) Maths::Vec3 position;
+        alignas(16) Maths::Vec4 color;
     };
     struct VertexPositionColorTexture
     {
-        Maths::Vec3 position;
-        Maths::Vec4 color;
-        Maths::Vec2 UV;
+        alignas(0) Maths::Vec3 position;
+        alignas(16) Maths::Vec4 color;
+        alignas(32) Maths::Vec2 UV;
     };
     struct VertexPositionTextureColor
     {
-        Maths::Vec3 position;
-        Maths::Vec2 UV;
-        Maths::Vec4 color;
+        alignas(0) Maths::Vec3 position;
+        alignas(16) Maths::Vec2 UV;
+        alignas(32) Maths::Vec4 color;
     };
     struct VertexPositionNormalTexture
     {
-        Maths::Vec3 position;
-        Maths::Vec3 normal;
-        Maths::Vec2 UV;
+        alignas(0) Maths::Vec3 position;
+        alignas(16) Maths::Vec3 normal;
+        alignas(32) Maths::Vec2 UV;
     };
 
     VertexDeclaration *GetVertexPositionColorDecl();

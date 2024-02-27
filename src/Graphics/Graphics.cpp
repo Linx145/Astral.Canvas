@@ -164,7 +164,7 @@ namespace AstralCanvas
                 RenderTarget *renderTarget = currentRenderTarget;
                 if (renderTarget == NULL)
                 {
-                    AstralVulkanSwapchain *swapchain = AstralCanvasVk_GetCurrentSwapchain();
+                    AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)this->currentWindow->swapchain;
                     renderTarget = &swapchain->renderTargets.data[swapchain->currentImageIndex];
                 }
 
@@ -293,11 +293,10 @@ namespace AstralCanvas
 
                     vkCmdEndRenderPass(cmdBuffer);
 
-                    //
                     RenderTarget *renderTarget = currentRenderTarget;
                     if (renderTarget == NULL)
                     {
-                        AstralVulkanSwapchain *swapchain = AstralCanvasVk_GetCurrentSwapchain();
+                        AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)this->currentWindow->swapchain;
                         renderTarget = &swapchain->renderTargets.data[swapchain->currentImageIndex];
                     }
                     if (renderTarget != NULL)
@@ -360,10 +359,10 @@ namespace AstralCanvas
                     VkViewport viewport{};
                     viewport.minDepth = 0.0f;
                     viewport.maxDepth = 1.0f;
-                    viewport.x = this->Viewport.X;
-                    viewport.y = this->Viewport.Y;
-                    viewport.width = this->Viewport.Width;
-                    viewport.height = this->Viewport.Height;
+                    viewport.x = (float)this->Viewport.X;
+                    viewport.y = (float)this->Viewport.Y;
+                    viewport.width = (float)this->Viewport.Width;
+                    viewport.height = (float)this->Viewport.Height;
 
                     vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 

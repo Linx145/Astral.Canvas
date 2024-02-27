@@ -1,4 +1,5 @@
 #ifdef ASTRALCANVAS_VULKAN
+#include "vector.hpp"
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
 
 VkDebugUtilsMessengerCreateInfoEXT      AstralCanvasVk_debugCreateInfo = {};
@@ -11,12 +12,13 @@ bool                                    AstralCanvasVk_validationLayers = false;
 VkInstance                              AstralCanvasVk_instance = NULL;
 AstralVulkanGPU                         AstralCanvasVk_GPU = {};
 VmaAllocator                            AstralCanvasVk_vma = NULL;
-AstralVulkanSwapchain                   AstralCanvasVk_swapchain = {};
 VkSemaphore                             AstralCanvasVk_AwaitPresentCompleteSemaphore = NULL;
 VkSemaphore                             AstralCanvasVk_AwaitRenderCompleteSemaphore = NULL;
 VkCommandPool                           AstralCanvasVk_MainCommandPool = NULL;
 VkCommandBuffer                         AstralCanvasVk_MainCommandBuffer = NULL;
 VkDescriptorPool                        AstralCanvasVk_DescriptorPool = NULL;
+
+collections::vector<AstralVulkanSwapchain> windowToSwapchain;
 
 VkDebugUtilsMessengerEXT AstralCanvasVk_GetDebugMessenger()
 {
@@ -70,15 +72,6 @@ VmaAllocator AstralCanvasVk_GetCurrentVulkanAllocator()
 void AstralCanvasVk_SetCurrentVulkanAllocator(VmaAllocator allocator)
 {
     AstralCanvasVk_vma = allocator;
-}
-
-AstralVulkanSwapchain *AstralCanvasVk_GetCurrentSwapchain()
-{
-    return &AstralCanvasVk_swapchain;
-}
-void AstralCanvasVk_SetCurrentSwapchain(AstralVulkanSwapchain swapchain)
-{
-    AstralCanvasVk_swapchain = swapchain;
 }
 
 VkSemaphore AstralCanvasVk_GetAwaitPresentCompleteSemaphore()

@@ -2,6 +2,12 @@
 #include <stdio.h>
 #include "GLFW/glfw3.h"
 
+#ifdef ASTRALCANVAS_VULKAN
+#include "Graphics/Vulkan/VulkanSwapchain.hpp"
+#include "Graphics/CurrentBackend.hpp"
+#include "Graphics/Vulkan/VulkanInstanceData.hpp"
+#endif
+
 using namespace Maths;
 
 GLFWmonitor* GetCurrentMonitor(GLFWwindow *window)
@@ -21,7 +27,8 @@ GLFWmonitor* GetCurrentMonitor(GLFWwindow *window)
     glfwGetWindowSize(window, &ww, &wh);
     monitors = glfwGetMonitors(&nmonitors);
 
-    for (i = 0; i < nmonitors; i++) {
+    for (i = 0; i < nmonitors; i++) 
+	{
         mode = glfwGetVideoMode(monitors[i]);
         glfwGetMonitorPos(monitors[i], &mx, &my);
         mw = mode->width;
@@ -53,11 +60,41 @@ namespace AstralCanvas
 		this->windowInputState = {};
 		this->onTextInputFunc = NULL;
 		this->onKeyInteractFunc = NULL;
+		this->swapchain = NULL;
+		this->isDisposed = false;
 	}
 
 	void Window::deinit()
 	{
-		glfwDestroyWindow((GLFWwindow*)this->handle);
+		if (!isDisposed)
+		{
+			switch (AstralCanvas::GetActiveBackend())
+			{
+				#ifdef ASTRALCANVAS_VULKAN
+				case AstralCanvas::Backend_Vulkan:
+				{
+					if (swapchain != NULL)
+					{
+						AstralCanvasVk_DestroySwapchain((AstralVulkanSwapchain *)swapchain);
+						free(swapchain);
+						vkDestroySurfaceKHR(AstralCanvasVk_GetInstance(), (VkSurfaceKHR)this->windowSurfaceHandle, NULL);
+						this->swapchain = NULL;
+						this->windowSurfaceHandle = NULL;
+					}
+					break;
+				}
+				#endif
+				#ifdef ASTRALCANVAS_METAL
+				case AstralCanvas::Backend_Metal:
+				{
+					break;
+				}
+				#endif
+			}
+			glfwDestroyWindow((GLFWwindow*)this->handle);
+			this->handle = NULL;
+			isDisposed = true;
+		}
 	}
 	void Window::CloseWindow()
 	{
@@ -183,10 +220,18 @@ namespace AstralCanvas
 	}
     void WindowSizeChanged(GLFWwindow *window, i32 width, i32 height)
     {
+
+    }
+	void WindowFramebufferSizeChanged(GLFWwindow* window, i32 width, i32 height)
+	{
         Window *canvas = (Window*)glfwGetWindowUserPointer(window);
         canvas->resolution.X = width;
         canvas->resolution.Y = height;
-    }
+		if (canvas->justResized != NULL)
+		{
+			*canvas->justResized = true;
+		}
+	}
 
 	bool WindowInit(IAllocator *allocator, const char *name, Window * result, i32 width, i32 height, bool resizeable, void *iconData, u32 iconWidth, u32 iconHeight)
 	{
@@ -223,6 +268,7 @@ namespace AstralCanvas
 			glfwSetWindowIconifyCallback(handle, &WindowMinimized);
 			glfwSetWindowMaximizeCallback(handle, &WindowMaximized);
             glfwSetWindowSizeCallback(handle, &WindowSizeChanged);
+			glfwSetFramebufferSizeCallback(handle, &WindowFramebufferSizeChanged);
 			glfwSetCharCallback(handle, &OnTextInput);
 			glfwSetKeyCallback(handle, &OnKeyInteracted);
 			glfwSetMouseButtonCallback(handle, &OnMouseInteracted);
@@ -248,18 +294,19 @@ namespace AstralCanvas
 			GLFWmonitor *monitor = GetCurrentMonitor((GLFWwindow *)handle);
 			if (monitor == NULL)
 			{
-				i32 monitorCount = 0;
-				GLFWmonitor **monitors = glfwGetMonitors(&monitorCount);
-				monitor = monitors[0];
+				monitor = glfwGetPrimaryMonitor();
 			}
 			i32 xpos;
 			i32 ypos;
 			i32 w;
 			i32 h;
 			glfwGetMonitorWorkarea(monitor, &xpos, &ypos, &w, &h);
-			glfwSetWindowMonitor((GLFWwindow*)handle, monitor, xpos, ypos, w, h, GLFW_DONT_CARE);
-			resolution.X = w;
-			resolution.Y = h;
+
+			const GLFWvidmode *videoMode = glfwGetVideoMode(monitor);
+
+			glfwSetWindowMonitor((GLFWwindow*)handle, monitor, xpos, ypos, w, h, videoMode->refreshRate);
+			resolution.X = videoMode->width;
+			resolution.Y = videoMode->height;
 			//printf("Switched to fullscreen\n");
 		}
 		else
