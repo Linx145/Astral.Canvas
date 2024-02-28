@@ -123,7 +123,7 @@ void Initialize()
     AstralCanvasVertexBuffer_SetData(vertexBuffer, vertices, 3);
     AstralCanvasIndexBuffer_SetData(indexBuffer, (u8*)indices, sizeof(u16) * 3);
 
-    char *fileData = ReadFile("Triangle.shaderobj");
+    char *fileData = ReadFile("C:/Users/Linus/source/repos/Astral.Canvas/c-examples/Triangle/bin/Debug/Triangle.shaderobj");
 
     if (fileData == NULL)
     {

@@ -11,6 +11,7 @@ namespace AstralCanvas
 	def_delegate(WindowOnKeyInteractedFunction, void, void *window, AstralCanvas::Keys key, i32 action);
 	struct Window
 	{
+		void *customCursorHandle;
 		void *handle;
 		void *swapchain;
 		Maths::Point2 resolution;
@@ -36,6 +37,7 @@ namespace AstralCanvas
 		void SetWindowTitle(string title);
 		void SetFullscreen(bool value);
 		void SetMouseVisible(bool value);
+		void SetMouseIcon(void *iconData, u32 iconWidth, u32 iconHeight, i32 originX, i32 originY);
 		void CloseWindow();
 	};
 

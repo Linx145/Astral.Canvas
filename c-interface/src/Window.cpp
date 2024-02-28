@@ -69,3 +69,7 @@ exportC void AstralCanvasWindow_SetMouseVisible(AstralCanvasWindow ptr, bool vis
 {
     ((AstralCanvas::Window *)ptr)->SetMouseVisible(visible);
 }
+exportC void AstralCanvasWindow_SetMouseIcon(AstralCanvasWindow ptr, void *iconData, u32 iconWidth, u32 iconHeight, i32 originX, i32 originY)
+{
+    ((AstralCanvas::Window *)ptr)->SetMouseIcon(iconData, iconWidth, iconHeight, originX, originY);
+}

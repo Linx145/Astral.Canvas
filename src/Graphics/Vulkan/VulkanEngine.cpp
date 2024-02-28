@@ -169,6 +169,8 @@ bool AstralCanvasVk_InitializeFor(IAllocator* allocator, Array<const char*> vali
 
 		AstralCanvasVk_SetDescriptorPool(mainPool);
 
+		window->justResized = &onResized;
+
 		return true;
 	}
 }
@@ -348,7 +350,7 @@ void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvas::Window* wi
 	}
 }
 
-void AstralCanvasVk_BeginDraw(AstralCanvas::Window *window)
+bool AstralCanvasVk_BeginDraw(AstralCanvas::Window *window)
 {
 	AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
 	AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)window->swapchain;
@@ -362,7 +364,7 @@ void AstralCanvasVk_BeginDraw(AstralCanvas::Window *window)
 	if (AstralCanvasVk_SwapchainSwapBuffers(gpu, swapchain, AstralCanvasVk_GetAwaitPresentCompleteSemaphore(), NULL))
 	{
 		swapchain->recreatedThisFrame = true;
-		return;
+		return false;
 	}
 
 	VkCommandBuffer mainCmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
@@ -377,6 +379,7 @@ void AstralCanvasVk_BeginDraw(AstralCanvas::Window *window)
 	{
 		THROW_ERR("Failed to begin command buffer");
 	}
+	return true;
 }
 void AstralCanvasVk_EndDraw(AstralCanvas::Window *window)
 {

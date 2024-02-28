@@ -25,6 +25,6 @@ bool AstralCanvasVk_CreateDebugMessenger();
 void AstralCanvasVk_AwaitShutdown();
 void AstralCanvasVk_Deinitialize(IAllocator *allocator, AstralCanvas::Window *windows, u32 windowCount);
 
-void AstralCanvasVk_BeginDraw(AstralCanvas::Window *window);
+bool AstralCanvasVk_BeginDraw(AstralCanvas::Window *window);
 void AstralCanvasVk_EndDraw(AstralCanvas::Window *window);
 #endif

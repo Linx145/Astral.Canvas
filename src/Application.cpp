@@ -158,12 +158,13 @@ namespace AstralCanvas
 					this->graphicsDevice.currentWindow = &this->windows.ptr[i];
 					this->graphicsDevice.ClipArea = this->windows.ptr[i].AsRectangle();
 					this->graphicsDevice.Viewport = this->windows.ptr[i].AsRectangle();
+					bool shouldContinue = true;
 					switch (AstralCanvas::GetActiveBackend())
 					{
 #ifdef ASTRALCANVAS_VULKAN
 						case AstralCanvas::Backend_Vulkan:
 						{
-							AstralCanvasVk_BeginDraw(this->graphicsDevice.currentWindow);
+							shouldContinue = AstralCanvasVk_BeginDraw(this->graphicsDevice.currentWindow);
 							break;
 						}
 #endif
@@ -177,46 +178,49 @@ namespace AstralCanvas
 						default:
 							break;
 					}
-
-					drawFunc(deltaTime);
-
-					graphicsDevice.currentRenderPass = 0;
-					graphicsDevice.currentRenderPipeline = NULL;
-					graphicsDevice.currentRenderProgram = NULL;
-					graphicsDevice.currentRenderTarget = NULL;
-					for (usize i = 0; i < graphicsDevice.usedShaders.bucketsCount; i++)
+					if (shouldContinue)
 					{
-						if (graphicsDevice.usedShaders.buckets[i].initialized)
+
+						drawFunc(deltaTime);
+
+						graphicsDevice.currentRenderPass = 0;
+						graphicsDevice.currentRenderPipeline = NULL;
+						graphicsDevice.currentRenderProgram = NULL;
+						graphicsDevice.currentRenderTarget = NULL;
+						for (usize i = 0; i < graphicsDevice.usedShaders.bucketsCount; i++)
 						{
-							for (usize j = 0; j < graphicsDevice.usedShaders.buckets[i].entries.count; j++)
+							if (graphicsDevice.usedShaders.buckets[i].initialized)
 							{
-								graphicsDevice.usedShaders.buckets[i].entries.ptr[j]->descriptorForThisDrawCall = 0;
+								for (usize j = 0; j < graphicsDevice.usedShaders.buckets[i].entries.count; j++)
+								{
+									graphicsDevice.usedShaders.buckets[i].entries.ptr[j]->descriptorForThisDrawCall = 0;
+								}
+								graphicsDevice.usedShaders.buckets[i].entries.Clear();
 							}
-							graphicsDevice.usedShaders.buckets[i].entries.Clear();
 						}
-					}
-					switch (AstralCanvas::GetActiveBackend())
-					{
-						#ifdef ASTRALCANVAS_VULKAN
-						case AstralCanvas::Backend_Vulkan:
+						switch (AstralCanvas::GetActiveBackend())
 						{
-							AstralCanvasVk_EndDraw(windows.Get(i));
-							break;
+							#ifdef ASTRALCANVAS_VULKAN
+							case AstralCanvas::Backend_Vulkan:
+							{
+								AstralCanvasVk_EndDraw(windows.Get(i));
+								break;
+							}
+							#endif
+		#ifdef ASTRALCANVAS_METAL
+							case AstralCanvas::Backend_Metal:
+							{
+								AstralCanvasMetal_EndDraw();
+								break;
+							}
+		#endif
+							default:
+								break;
 						}
-						#endif
-	#ifdef ASTRALCANVAS_METAL
-						case AstralCanvas::Backend_Metal:
+						if (postEndDrawFunc != NULL)
 						{
-							AstralCanvasMetal_EndDraw();
-							break;
+							postEndDrawFunc(deltaTime);
 						}
-	#endif
-						default:
-							break;
-					}
-					if (postEndDrawFunc != NULL)
-					{
-						postEndDrawFunc(deltaTime);
 					}
 				}
 				if (windows.count == 0)

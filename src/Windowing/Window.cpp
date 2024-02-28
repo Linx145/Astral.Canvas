@@ -62,6 +62,7 @@ namespace AstralCanvas
 		this->onKeyInteractFunc = NULL;
 		this->swapchain = NULL;
 		this->isDisposed = false;
+		this->justResized = NULL;
 	}
 
 	void Window::deinit()
@@ -109,6 +110,27 @@ namespace AstralCanvas
 		}
 		else 
 			glfwSetInputMode((GLFWwindow *)handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+	void Window::SetMouseIcon(void *iconData, u32 iconWidth, u32 iconHeight, i32 originX, i32 originY)
+	{
+		if (this->customCursorHandle == NULL)
+		{
+			glfwDestroyCursor((GLFWcursor*)this->customCursorHandle);
+			this->customCursorHandle = NULL;
+		}
+		if (iconData != NULL)
+		{
+			GLFWimage image;
+			image.pixels = (u8 *)iconData;
+			image.width = iconWidth;
+			image.height = iconHeight;
+			this->customCursorHandle = glfwCreateCursor(&image, originX, originY);
+			glfwSetCursor((GLFWwindow *)this->handle, (GLFWcursor *)this->customCursorHandle);
+		}
+		else
+		{
+			glfwSetCursor((GLFWwindow *)this->handle, NULL);
+		}
 	}
 	/// Called when the window is minimized, otherwise known as iconified
 	void WindowMinimized(GLFWwindow* window, i32 iconified)
@@ -220,8 +242,7 @@ namespace AstralCanvas
 	}
     void WindowSizeChanged(GLFWwindow *window, i32 width, i32 height)
     {
-
-    }
+	}
 	void WindowFramebufferSizeChanged(GLFWwindow* window, i32 width, i32 height)
 	{
         Window *canvas = (Window*)glfwGetWindowUserPointer(window);
