@@ -74,7 +74,6 @@ namespace AstralCanvas
                     newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
                     newResource.type = ShaderResourceType_Uniform;
                     results->uniforms.Insert((usize)binding, newResource);
-                    //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
                 }
                 //results->uniforms.Add(binding, {name, set, binding, stride});
             }
@@ -109,7 +108,6 @@ namespace AstralCanvas
                     newResource.mslBinding = mslBinding;
                     newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
                     results->uniforms.Insert((usize)binding, newResource);
-                    //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
                 }
             }
         }
@@ -143,7 +141,6 @@ namespace AstralCanvas
                     newResource.mslBinding = mslBinding;
                     newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
                     results->uniforms.Insert((usize)binding, newResource);
-                    //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
                 }
             }
         }
@@ -166,7 +163,6 @@ namespace AstralCanvas
                 }
                 else
                 {
-                    //printf("Added input attachment: %s at binding %u, index %u\n", name.buffer, binding, index);
                     ShaderResource newResource;
                     newResource.binding = binding;
                     newResource.set = set;
@@ -179,7 +175,6 @@ namespace AstralCanvas
                     newResource.mslBinding = mslBinding;
                     newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
                     results->uniforms.Insert((usize)binding, newResource);
-                    //printf("at %u is null?: %s\n", binding, results->uniforms.Get(binding) == NULL ? "true" : "false");
                 }
             }
         }
@@ -559,7 +554,6 @@ namespace AstralCanvas
                                 layoutBinding.pImmutableSamplers = NULL;
 
                                 bindings.data[resource.binding] = layoutBinding;
-                                //printf("resource %s at binding %u of descriptor type %i, count %u with stage flags %i\n", resource.variableName.buffer, resource.binding, layoutBinding.descriptorType, layoutBinding.descriptorCount, layoutBinding.stageFlags);
                             }
                             layoutInfo.pBindings = bindings.data;
 

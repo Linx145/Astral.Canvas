@@ -102,7 +102,6 @@ namespace AstralCanvas
                             attribDescriptions.data[attribIndex].binding = i;
                             attribDescriptions.data[attribIndex].offset = element.offset;
                             attribDescriptions.data[attribIndex].location = attribIndex; //very important!!
-                            //printf("Attribute %llu binding %llu offset %llu\n", attribIndex, i, element.offset);
                             attribIndex++;
                         }
                     }
@@ -213,7 +212,6 @@ namespace AstralCanvas
                     {
                         pipelineLayoutCreateInfo.setLayoutCount = 1;
                         pipelineLayoutCreateInfo.pSetLayouts = (VkDescriptorSetLayout*)&pipeline->shader->shaderPipelineLayout;
-                        //printf("Creating shader pipeline layout\n");
                     }
 
                     if (vkCreatePipelineLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &pipelineLayoutCreateInfo, NULL, (VkPipelineLayout*)&pipeline->layout) != VK_SUCCESS)

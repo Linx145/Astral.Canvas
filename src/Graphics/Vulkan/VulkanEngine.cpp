@@ -47,41 +47,43 @@ bool AstralCanvasVk_InitializeFor(IAllocator* allocator, Array<const char*> vali
 	{
 		if (glfwCreateWindowSurface(AstralCanvasVk_GetInstance(), (GLFWwindow *)window->handle, NULL, (VkSurfaceKHR *)&window->windowSurfaceHandle) != VK_SUCCESS)
 		{
-			printf("Failed to create window surface\n");
+			LOG_WARNING("Failed to create window surface");
 			return false;
 		}
-		printf("Created window surface\n");
+		LOG_WARNING("Created window surface");
 
 		window->swapchain = malloc(sizeof(AstralVulkanSwapchain));
 		if (!AstralCanvasVk_CreateSwapchain(allocator, AstralCanvasVk_GetCurrentGPU(), window, (AstralVulkanSwapchain *)window->swapchain))
 		{
 			return false;
 		}
-		printf("Created swapchain\n");
+		LOG_WARNING("Created swapchain");
 		return true;
 	}
 	else
 	{
 		if (!AstralCanvasVk_CreateInstance(allocator, validationLayersToUse, "", "", 0, 0))
 		{
+			LOG_WARNING("Failed to create Vulkan instance");
 			return false;
 		}
-		printf("Created vulkan instance\n");
+		LOG_WARNING("Created vulkan instance");
 
 		if (glfwCreateWindowSurface(AstralCanvasVk_GetInstance(), (GLFWwindow *)window->handle, NULL, (VkSurfaceKHR *)&window->windowSurfaceHandle) != VK_SUCCESS)
 		{
-			printf("Failed to create window surface\n");
+			LOG_WARNING("Failed to creat window surface");
 			return false;
 		}
-		printf("Created window surface\n");
+		LOG_WARNING("Created window surface");
 
 		AstralVulkanGPU gpu;
 		if (!AstralCanvasVk_SelectGPU(allocator, AstralCanvasVk_GetInstance(), (VkSurfaceKHR)window->windowSurfaceHandle, requiredExtensions, &gpu))
 		{
+			LOG_WARNING("Failed to create GPU interface");
 			return false;
 		}
 		AstralCanvasVk_SetCurrentGPU(gpu);
-		printf("Created GPU interface\n");
+		LOG_WARNING("Created GPU interface");
 
 		VmaVulkanFunctions vulkanAllocatorFunctions = {};
 		vulkanAllocatorFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
@@ -99,17 +101,19 @@ bool AstralCanvasVk_InitializeFor(IAllocator* allocator, Array<const char*> vali
 
 		if (vmaCreateAllocator(&allocatorCreateInfo, &vulkanAllocator) != VK_SUCCESS)
 		{
+			LOG_WARNING("Failed to create memory allocator");
 			return false;
 		}
 		AstralCanvasVk_SetCurrentVulkanAllocator(vulkanAllocator);
-		printf("Created memory allocator\n");
+		LOG_WARNING("Created memory allocator");
 
 		window->swapchain = malloc(sizeof(AstralVulkanSwapchain));
 		if (!AstralCanvasVk_CreateSwapchain(allocator, AstralCanvasVk_GetCurrentGPU(), window, (AstralVulkanSwapchain *)window->swapchain))
 		{
+			LOG_WARNING("Failed to create swapchain");
 			return false;
 		}
-		printf("Created swapchain\n");
+		LOG_WARNING("Created swapchain");
 
 		VkSemaphoreCreateInfo semaphoreCreateInfo;
 		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -132,7 +136,11 @@ bool AstralCanvasVk_InitializeFor(IAllocator* allocator, Array<const char*> vali
 		cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		cmdPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		cmdPoolCreateInfo.queueFamilyIndex = AstralCanvasVk_GetCurrentGPU()->queueInfo.dedicatedGraphicsQueueIndex;
-		vkCreateCommandPool(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &cmdPoolCreateInfo, NULL, &mainCmdPool);
+		if (vkCreateCommandPool(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &cmdPoolCreateInfo, NULL, &mainCmdPool) != VK_SUCCESS)
+		{
+			LOG_WARNING("Failed to create main command pool");
+		}
+		LOG_WARNING("Created main command pool");
 
 		AstralCanvasVk_SetMainCmdPool(mainCmdPool);
 
@@ -143,7 +151,11 @@ bool AstralCanvasVk_InitializeFor(IAllocator* allocator, Array<const char*> vali
 		cmdBufferInfo.commandPool = mainCmdPool;
 		cmdBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		cmdBufferInfo.commandBufferCount = 1;
-		vkAllocateCommandBuffers(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &cmdBufferInfo, &mainCmdBuffer);
+		if (vkAllocateCommandBuffers(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &cmdBufferInfo, &mainCmdBuffer) != VK_SUCCESS)
+		{
+			LOG_WARNING("Failed to create main command buffer");
+		}
+		LOG_WARNING("Created main command buffer");
 
 		AstralCanvasVk_SetMainCmdBuffer(mainCmdBuffer);
 
@@ -165,7 +177,11 @@ bool AstralCanvasVk_InitializeFor(IAllocator* allocator, Array<const char*> vali
 		poolCreateInfo.maxSets = maxUniformDescriptors;
 
 		VkDescriptorPool mainPool;
-		vkCreateDescriptorPool(gpu.logicalDevice, &poolCreateInfo, NULL, &mainPool);
+		if (vkCreateDescriptorPool(gpu.logicalDevice, &poolCreateInfo, NULL, &mainPool) != VK_SUCCESS)
+		{
+			LOG_WARNING("Failed to create shader uniform descriptor pool");
+		}
+		LOG_WARNING("Created shader uniform descriptor pool");
 
 		AstralCanvasVk_SetDescriptorPool(mainPool);
 

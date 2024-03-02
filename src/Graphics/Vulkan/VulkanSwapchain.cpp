@@ -133,7 +133,7 @@ bool AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
     swapchain->imageHandles = collections::Array<void *>(swapchain->allocator, sizeof(VkImage) * swapchain->imageCount);
     vkGetSwapchainImagesKHR(swapchain->gpu->logicalDevice, swapchain->handle, &swapchain->imageCount, (VkImage *)swapchain->imageHandles.data);
 
-    printf("Got image handles for swapchain\n");
+    LOG_WARNING("Got image handles for swapchain");
 
     //now that we have swapchain images, we store them into textures, which are in turn
     //stored into rendertarget

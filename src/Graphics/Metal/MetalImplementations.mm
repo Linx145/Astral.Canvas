@@ -524,7 +524,6 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
                 {
                     if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Vertex) != 0)
                     {
-                        //printf("Setting vertex uniform buffer at %u\n", shader->shaderVariables.uniforms.ptr[i].binding);
                         [encoder setVertexBuffer:(id<MTLBuffer>)toMutate->ub.handle offset:0 atIndex:shader->shaderVariables.uniforms.ptr[i].binding + 8];
                     }
                     if ((shader->shaderVariables.uniforms.ptr[i].accessedBy & AstralCanvas::InputAccessedBy_Fragment) != 0)
@@ -611,7 +610,6 @@ void AstralCanvasMetal_SyncUniformsWithGPU(void *commandEncoder, AstralCanvas::S
                         }
                         else [encoder setFragmentSamplerState:(id<MTLSamplerState>)((id<MTLSamplerState>*)toMutate->samplerInfos)[0] atIndex:shader->shaderVariables.uniforms.ptr[i].mslBinding];//shader->shaderVariables.uniforms.ptr[i].binding];
                     }
-                    //printf("Sent sampler at position %i\n", shader->shaderVariables.uniforms.ptr[i].binding);
                     break;
                 }
                 case AstralCanvas::ShaderResourceType_StructuredBuffer:

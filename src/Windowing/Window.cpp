@@ -308,6 +308,13 @@ namespace AstralCanvas
 		glfwSetWindowTitle((GLFWwindow*)handle, title.buffer);
 		windowTitle = title;
 	}
+	i32 Window::GetCurrentMonitorFramerate()
+	{
+		GLFWmonitor *monitor = GetCurrentMonitor((GLFWwindow*)handle);
+		const GLFWvidmode *vidmode = glfwGetVideoMode(monitor);
+
+		return vidmode->refreshRate;
+	}
 	void Window::SetFullscreen(bool value)
 	{
 		if (value)
@@ -328,12 +335,10 @@ namespace AstralCanvas
 			glfwSetWindowMonitor((GLFWwindow*)handle, monitor, xpos, ypos, w, h, videoMode->refreshRate);
 			resolution.X = videoMode->width;
 			resolution.Y = videoMode->height;
-			//printf("Switched to fullscreen\n");
 		}
 		else
 		{
 			glfwSetWindowMonitor((GLFWwindow*)handle, NULL, position.X, position.Y, resolution.X, resolution.Y, GLFW_DONT_CARE);
-			//printf("Switched to windowed\n");
 		}
 		isFullscreen = value;
 	}

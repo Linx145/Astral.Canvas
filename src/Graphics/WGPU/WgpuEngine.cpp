@@ -26,7 +26,6 @@ void AstralCanvasWgpu_LogCallback(WGPULogLevel level, char const *message, void 
         THROW_ERR(message);
     }
     else AstralDebugger_Log(message);
-    //printf(stderr, "[wgpu] [%s] %s\n", level_str, message);
 }
 
 void AstralCanvasWgpu_InitLogging(WGPULogLevel logLevel)

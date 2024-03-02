@@ -1,22 +1,47 @@
 #include "ErrorHandling.hpp"
 
-AstralCanvasErrorCallback AstralCanvas_GlobalErrorCallback = &AstralDebugger_DefaultOnError;
-AstralCanvasErrorCallback AstralCanvas_GlobalWarningCallback = &AstralDebugger_DefaultOnWarning;
+void AstralCanvas::Debugger_DefaultOnError(const char* message)
+{
+	AstralCanvas::Debugger_Log(message, true);
+	getchar();
+	exit(1);
+}
+void AstralCanvas::Debugger_DefaultOnWarning(const char* message)
+{
+	AstralCanvas::Debugger_Log(message, true);
+}
 
-AstralCanvasErrorCallback AstralCanvas_GetGlobalErrorCallback()
+AstralCanvas::ErrorCallback AstralCanvas_GlobalErrorCallback = &AstralCanvas::Debugger_DefaultOnError;
+AstralCanvas::ErrorCallback AstralCanvas_GlobalWarningCallback = &AstralCanvas::Debugger_DefaultOnWarning;
+
+void AstralCanvas::Debugger_Log(const char *message, bool logTiming)
+{
+	if (logTiming)
+	{
+		time_t now = time(NULL);
+		char* nowStr = ctime(&now);
+		printf("[%s]: %s\n", nowStr, message);
+	}
+	else
+	{
+		printf("%s\n", message);
+	}
+}
+
+AstralCanvas::ErrorCallback AstralCanvas::GetGlobalErrorCallback()
 {
 	return AstralCanvas_GlobalErrorCallback;
 }
-void AstralCanvas_SetGlobalErrorCallback(AstralCanvasErrorCallback callback)
+void AstralCanvas::SetGlobalErrorCallback(AstralCanvas::ErrorCallback callback)
 {
 	AstralCanvas_GlobalErrorCallback = callback;
 }
 
-AstralCanvasErrorCallback AstralCanvas_GetGlobalWarningCallback()
+AstralCanvas::ErrorCallback AstralCanvas::GetGlobalWarningCallback()
 {
 	return AstralCanvas_GlobalWarningCallback;
 }
-void AstralCanvas_SetGlobalWarningCallback(AstralCanvasErrorCallback callback)
+void AstralCanvas::SetGlobalWarningCallback(AstralCanvas::ErrorCallback callback)
 {
 	AstralCanvas_GlobalWarningCallback = callback;
 }

@@ -39,6 +39,7 @@ namespace AstralCanvas
 		void SetMouseVisible(bool value);
 		void SetMouseIcon(void *iconData, u32 iconWidth, u32 iconHeight, i32 originX, i32 originY);
 		void CloseWindow();
+		i32 GetCurrentMonitorFramerate();
 	};
 
 	bool WindowInit(IAllocator *allocator, const char *name, Window * result, i32 width, i32 height, bool resizeable, void *iconData, u32 iconWidth, u32 iconHeight);

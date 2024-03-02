@@ -141,17 +141,14 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* alloca
 	createInfo.flags = NULL;
 
 	i32 graphicsQueueIndex = AstralCanvasVk_GetQueue(&gpu->queueInfo, gpu->physicalDevice, AstralVulkanQueue_Graphics);
-	printf("Graphics queue: %i\n", graphicsQueueIndex);
 	createInfo.queueFamilyIndex = graphicsQueueIndex;
 	createInfos.Add(createInfo);
 	
 	i32 transferQueueIndex = AstralCanvasVk_GetQueue(&gpu->queueInfo, gpu->physicalDevice, AstralVulkanQueue_Transfer);
-	printf("Transfer queue: %i\n", transferQueueIndex);
 	createInfo.queueFamilyIndex = transferQueueIndex;
 	createInfos.Add(createInfo);
 	
 	i32 computeQueueIndex = AstralCanvasVk_GetQueue(&gpu->queueInfo, gpu->physicalDevice, AstralVulkanQueue_Compute);
-	printf("Compute queue: %i\n", computeQueueIndex);
 	createInfo.queueFamilyIndex = computeQueueIndex;
 	createInfos.Add(createInfo);
 

@@ -38,6 +38,7 @@ extern "C"
     DynamicFunction void AstralCanvasWindow_SetOnTextInputCallback(AstralCanvasWindow ptr, AstralCanvasWindowOnTextInputFunction callback);
     DynamicFunction void AstralCanvasWindow_SetMouseVisible(AstralCanvasWindow ptr, bool visible);
     DynamicFunction void AstralCanvasWindow_SetMouseIcon(AstralCanvasWindow ptr, void *iconData, u32 iconWidth, u32 iconHeight, i32 originX, i32 originY);
+    DynamicFunction i32 AstralCanvasWindow_GetCurrentMonitorFramerate(AstralCanvasWindow ptr);
 #ifdef __cplusplus
 }
 #endif

@@ -73,3 +73,7 @@ exportC void AstralCanvasWindow_SetMouseIcon(AstralCanvasWindow ptr, void *iconD
 {
     ((AstralCanvas::Window *)ptr)->SetMouseIcon(iconData, iconWidth, iconHeight, originX, originY);
 }
+exportC i32 AstralCanvasWindow_GetCurrentMonitorFramerate(AstralCanvasWindow ptr)
+{
+    return ((AstralCanvas::Window *)ptr)->GetCurrentMonitorFramerate();
+}
