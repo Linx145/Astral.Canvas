@@ -8,13 +8,11 @@ project "Astral.Shaderc"
     includedirs {
         "dependencies/include",
         "../Astral.Core",
-        "../Astral.Json",
         "../Astral.Reflect/include"
     }
 
     files { 
-        "*.cpp", 
-        "../Astral.Json/Json.cpp"
+        "*.cpp"
     }
 
     links { "%{VULKAN_SDK}/Lib/shaderc_combined.lib", "%{VULKAN_SDK}/Lib/spirv-cross-c-shared.lib", "Astral.Reflect" }

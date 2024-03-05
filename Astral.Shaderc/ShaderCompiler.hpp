@@ -775,7 +775,7 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *alloca
     return result;
 }
 
-inline void AstralShaderc_WriteShaderData(SomnialJson::JsonWriter *writer, collections::vector<u32> spirv, AstralShadercShaderVariables *variables, string msl)
+inline void AstralShaderc_WriteShaderData(Json::JsonWriter *writer, collections::vector<u32> spirv, AstralShadercShaderVariables *variables, string msl)
 {
     if (variables->uniforms.length > 0)
     {
@@ -917,7 +917,7 @@ inline bool AstralShaderc_WriteToFile(IAllocator *allocator, string filePath, As
         return false;
     }
 
-    SomnialJson::JsonWriter writer = SomnialJson::JsonWriter(allocator, fs, true);
+    Json::JsonWriter writer = Json::JsonWriter(allocator, fs, true);
 
     writer.WriteStartObject();
     

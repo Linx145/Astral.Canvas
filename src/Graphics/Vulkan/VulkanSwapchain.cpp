@@ -181,7 +181,10 @@ bool AstralCanvasVk_SwapchainSwapBuffers(AstralVulkanGPU *gpu, AstralVulkanSwapc
         }
         else if (result != VK_SUBOPTIMAL_KHR)
         {
-            THROW_ERR("Failed to acquire next swapchain image");
+            string str = string(GetDefaultAllocator(), "Failed to acquire next swapchain image, error code: ");
+            str.Append((i64)result);
+            THROW_ERR(str.buffer);
+            str.deinit();
             return false;
         }
     }

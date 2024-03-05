@@ -44,6 +44,8 @@ extern "C"
     DynamicFunction void AstralCanvasGraphics_NextRenderPass(AstralCanvasGraphics ptr);
     DynamicFunction AstralCanvasClipArea AstralCanvasGraphics_GetClipArea(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_SetClipArea(AstralCanvasGraphics ptr, i32 x, i32 y, i32 w, i32 h);
+    DynamicFunction AstralCanvasClipArea AstralCanvasGraphics_GetViewport(AstralCanvasGraphics ptr);
+    DynamicFunction void AstralCanvasGraphics_SetViewport(AstralCanvasGraphics ptr, i32 x, i32 y, i32 w, i32 h);
 
 #ifdef __cplusplus
 }

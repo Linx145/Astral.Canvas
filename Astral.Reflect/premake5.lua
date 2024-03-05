@@ -7,12 +7,10 @@ project "Astral.Reflect"
     targetdir "bin/%{cfg.buildcfg}"
     includedirs {
         "include",
-        "../Astral.Core",
-        "../Astral.Json"
+        "../Astral.Core"
     }
     files { 
-        "src/*.cpp", 
-        "../Astral.Json/Json.cpp",
+        "src/*.cpp"
     }
 
     filter "configurations:Debug"

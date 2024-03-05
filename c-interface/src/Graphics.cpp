@@ -86,3 +86,12 @@ exportC void AstralCanvasGraphics_SetClipArea(AstralCanvasGraphics ptr, i32 x, i
 {
     ((AstralCanvas::Graphics *)ptr)->SetClipArea({x, y, w, h});
 }
+exportC AstralCanvasClipArea AstralCanvasGraphics_GetViewport(AstralCanvasGraphics ptr)
+{
+    Maths::Rectangle rect = ((AstralCanvas::Graphics *)ptr)->Viewport;
+    return {rect.X, rect.Y, rect.Width, rect.Height};
+}
+exportC void AstralCanvasGraphics_SetViewport(AstralCanvasGraphics ptr, i32 x, i32 y, i32 w, i32 h)
+{
+    ((AstralCanvas::Graphics *)ptr)->Viewport = {x, y, w, h};
+}

@@ -5,6 +5,7 @@
 #include "Graphics/CurrentBackend.hpp"
 #include "ErrorHandling.hpp"
 #include "array.hpp"
+#include "Input/Input.hpp"
 using namespace collections;
 
 namespace AstralCanvas
@@ -158,6 +159,7 @@ namespace AstralCanvas
 					this->graphicsDevice.currentWindow = &this->windows.ptr[i];
 					this->graphicsDevice.ClipArea = this->windows.ptr[i].AsRectangle();
 					this->graphicsDevice.Viewport = this->windows.ptr[i].AsRectangle();
+					
 					bool shouldContinue = true;
 					switch (AstralCanvas::GetActiveBackend())
 					{

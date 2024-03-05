@@ -5,7 +5,7 @@
 #include "Json.hpp"
 #include "ArenaAllocator.hpp"
 
-using namespace SomnialJson;
+using namespace Json;
 using namespace AstralCanvas;
 
 VkBuffer AstralCanvasVk_CreateResourceBuffer(AstralVulkanGPU *gpu, usize size, VkBufferUsageFlags usageFlags)

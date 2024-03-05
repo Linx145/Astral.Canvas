@@ -1,6 +1,7 @@
 #include "Windowing/Window.hpp"
 #include <stdio.h>
 #include "GLFW/glfw3.h"
+#include "ErrorHandling.hpp"
 
 #ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanSwapchain.hpp"
@@ -245,7 +246,13 @@ namespace AstralCanvas
 	}
 	void WindowFramebufferSizeChanged(GLFWwindow* window, i32 width, i32 height)
 	{
-        Window *canvas = (Window*)glfwGetWindowUserPointer(window);
+		string str = string(GetDefaultAllocator(), "Framebuffer size changed: ");
+		str.Append((i64)width);
+		str.Append(", ");
+		str.Append((i64)height);
+		LOG_WARNING(str.buffer);
+		str.deinit();
+		Window *canvas = (Window*)glfwGetWindowUserPointer(window);
         canvas->resolution.X = width;
         canvas->resolution.Y = height;
 		if (canvas->justResized != NULL)

@@ -30,14 +30,12 @@ workspace "AstralCanvas"
             "include", 
             "dependencies/glfw/include", 
             "c-interface/include",
-            "Astral.Core",
-            "Astral.Json"
+            "Astral.Core"
         }
         links {"GLFW", "Astral.Canvas"}
 
         files { 
-            "c-interface/src/*.cpp",
-            "Astral.Json/Json.cpp"
+            "c-interface/src/*.cpp"
         }
 
         defines "EXPORT_DYNAMIC_LIBRARY"
@@ -76,8 +74,7 @@ workspace "AstralCanvas"
         includedirs {
             "include", 
             "dependencies/glfw/include", 
-            "Astral.Core",
-            "Astral.Json"
+            "Astral.Core"
         }
         links {"GLFW"}
 
@@ -86,7 +83,6 @@ workspace "AstralCanvas"
             "src/**.cpp", 
             "include/**.hpp",
             "include/**.h",
-            "Astral.Json/Json.cpp",
             "dependencies/include/GLFW/glfw3.h",
             "dependencies/include/GLFW/glfw3native.h",
         }

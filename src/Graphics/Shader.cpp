@@ -14,7 +14,7 @@
 #include "Graphics/Metal/MetalImplementations.h"
 #endif
 
-using namespace SomnialJson;
+using namespace Json;
 
 namespace AstralCanvas
 {
