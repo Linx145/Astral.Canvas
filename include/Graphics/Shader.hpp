@@ -36,6 +36,7 @@ namespace AstralCanvas
         void SetShaderVariableTextures(const char* variableName, Texture2D **textures, usize count);
         void SetShaderVariableSampler(const char* variableName, SamplerState *sampler);
         void SetShaderVariableSamplers(const char* variableName, SamplerState **samplers, usize count);
+        void SetShaderVariableComputeBuffer(const char* variableName, ComputeBuffer* computeBuffer);
 
         Shader();
         Shader(IAllocator allocator, ShaderType type);

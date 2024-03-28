@@ -258,6 +258,11 @@ namespace AstralCanvas
                         ShaderStagingMutableState newMutableState{};
                         switch (resource->type)
                         {
+                            case ShaderResourceType_StructuredBuffer:
+                            {
+                                newMutableState.computeBuffer = NULL;
+                                break;
+                            }
                             case ShaderResourceType_Uniform:
                             {
                                 newMutableState.ub = UniformBuffer(resource->size);
@@ -312,6 +317,10 @@ namespace AstralCanvas
                 VkWriteDescriptorSet setWrites[MAX_UNIFORMS_IN_SHADER];
                 VkDescriptorBufferInfo bufferInfos[MAX_UNIFORMS_IN_SHADER];
 
+                if (this->shaderVariables.uniforms.ptr == NULL)
+                {
+                    THROW_ERR("Cannot sync shader without uniforms with GPU");
+                }
                 for (usize i = 0; i < this->shaderVariables.uniforms.capacity; i++)
                 {
                     if (this->shaderVariables.uniforms.ptr[i].variableName.buffer == NULL)
@@ -402,6 +411,18 @@ namespace AstralCanvas
                         }
                         case ShaderResourceType_StructuredBuffer:
                         {
+                            ComputeBuffer *buffer = toMutate->computeBuffer;
+                            bufferInfos[bufferInfoCount].buffer = (VkBuffer)buffer->handle;
+                            bufferInfos[bufferInfoCount].offset = 0;
+                            bufferInfos[bufferInfoCount].range = buffer->elementSize * buffer->elementCount;
+
+                            setWrite.dstArrayElement = 0;
+                            setWrite.descriptorCount = 1;
+                            setWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                            setWrite.pBufferInfo = &bufferInfos[bufferInfoCount];
+
+                            bufferInfoCount += 1;
+
                             break;
                         }
                         default:
@@ -429,6 +450,29 @@ namespace AstralCanvas
             default:
                 THROW_ERR("Unimplemented backend: Shader SyncUniformsWithGPU");
                 break;
+        }
+    }
+    void Shader::SetShaderVariableComputeBuffer(const char* variableName, ComputeBuffer* buffer)
+    {
+        CheckDescriptorSetAvailability();
+        ShaderVariables *variables = &shaderVariables;
+        for (usize i = 0; i < variables->uniforms.capacity; i++)
+        {
+            if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+            {
+                if (GetActiveBackend() == Backend_Vulkan)
+                {
+                    break; //can only break in vulkan as metal has non-continguous uniform indices
+                }
+                continue;
+            }
+            
+            if (variables->uniforms.ptr[i].variableName == variableName)
+            {
+                uniformsHasBeenSet = true;
+                variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].mutated = true;
+                variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].computeBuffer = buffer;
+            }
         }
     }
     void Shader::SetShaderVariable(const char* variableName, void* ptr, usize size)
@@ -702,12 +746,27 @@ namespace AstralCanvas
                         localArena.deinit();
                         return -1;
                     }
+                }
 
-                    //create descriptor
-                    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-                    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                    layoutInfo.flags = 0;
-                    layoutInfo.bindingCount = 0;
+                //create descriptor
+                VkDescriptorSetLayoutCreateInfo layoutInfo{};
+                layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                layoutInfo.flags = 0;
+                layoutInfo.bindingCount = 0;
+
+                for (usize i = 0; i < result->shaderVariables.uniforms.capacity; i++)
+                {
+                    if (result->shaderVariables.uniforms.ptr[i].variableName.buffer == NULL)
+                    {
+                        break;
+                    }
+                    layoutInfo.bindingCount++;
+                }
+
+                result->shaderPipelineLayout = NULL;
+                if (layoutInfo.bindingCount > 0)
+                {
+                    collections::Array<VkDescriptorSetLayoutBinding> bindings = collections::Array<VkDescriptorSetLayoutBinding>(localArena.asAllocator, layoutInfo.bindingCount);
 
                     for (usize i = 0; i < result->shaderVariables.uniforms.capacity; i++)
                     {
@@ -715,37 +774,22 @@ namespace AstralCanvas
                         {
                             break;
                         }
-                        layoutInfo.bindingCount++;
+
+                        ShaderResource resource = result->shaderVariables.uniforms.ptr[i];
+                        VkDescriptorSetLayoutBinding layoutBinding = {};
+                        layoutBinding.binding = resource.binding;
+                        layoutBinding.descriptorCount = max(resource.arrayLength, 1);
+                        layoutBinding.descriptorType = AstralCanvasVk_FromResourceType(resource.type);
+                        layoutBinding.stageFlags = AstralCanvasVk_FromAccessedBy(resource.accessedBy);
+                        layoutBinding.pImmutableSamplers = NULL;
+
+                        bindings.data[resource.binding] = layoutBinding;
                     }
+                    layoutInfo.pBindings = bindings.data;
 
-                    result->shaderPipelineLayout = NULL;
-                    if (layoutInfo.bindingCount > 0)
+                    if (vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout) != VK_SUCCESS)
                     {
-                        collections::Array<VkDescriptorSetLayoutBinding> bindings = collections::Array<VkDescriptorSetLayoutBinding>(localArena.asAllocator, layoutInfo.bindingCount);
-
-                        for (usize i = 0; i < result->shaderVariables.uniforms.capacity; i++)
-                        {
-                            if (result->shaderVariables.uniforms.ptr[i].variableName.buffer == NULL)
-                            {
-                                break;
-                            }
-
-                            ShaderResource resource = result->shaderVariables.uniforms.ptr[i];
-                            VkDescriptorSetLayoutBinding layoutBinding = {};
-                            layoutBinding.binding = resource.binding;
-                            layoutBinding.descriptorCount = max(resource.arrayLength, 1);
-                            layoutBinding.descriptorType = AstralCanvasVk_FromResourceType(resource.type);
-                            layoutBinding.stageFlags = AstralCanvasVk_FromAccessedBy(resource.accessedBy);
-                            layoutBinding.pImmutableSamplers = NULL;
-
-                            bindings.data[resource.binding] = layoutBinding;
-                        }
-                        layoutInfo.pBindings = bindings.data;
-
-                        if (vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout) != VK_SUCCESS)
-                        {
-                            fprintf(stderr, "Error creating descriptor set layout\n");
-                        }
+                        THROW_ERR("Failed to create descriptor set layout");
                     }
                 }
 

@@ -71,3 +71,28 @@ exportC u32 AstralCanvasShaderVariable_GetSize(AstralCanvasShaderVariable ptr)
 {
     return ((AstralCanvas::ShaderResource *)ptr)->size;
 }
+
+exportC void AstralCanvasShader_SetShaderVariable(AstralCanvasShader ptr, const char* variableName, void* varPtr, usize size)
+{
+    ((AstralCanvas::Shader *)ptr)->SetShaderVariable(variableName, varPtr, size);
+}
+exportC void AstralCanvasShader_SetShaderVariableTexture(AstralCanvasShader ptr, const char* variableName, AstralCanvasTexture2D texture)
+{
+    ((AstralCanvas::Shader *)ptr)->SetShaderVariableTexture(variableName, (AstralCanvas::Texture2D*)texture);
+}
+exportC void AstralCanvasShader_SetShaderVariableTextures(AstralCanvasShader ptr, const char* variableName, AstralCanvasTexture2D *textures, usize count)
+{
+    ((AstralCanvas::Shader *)ptr)->SetShaderVariableTextures(variableName, (AstralCanvas::Texture2D**)textures, count);
+}
+exportC void AstralCanvasShader_SetShaderVariableSampler(AstralCanvasShader ptr, const char* variableName, AstralCanvasSamplerState sampler)
+{
+    ((AstralCanvas::Shader *)ptr)->SetShaderVariableSampler(variableName, (AstralCanvas::SamplerState*)sampler);
+}
+exportC void AstralCanvasShader_SetShaderVariableSamplers(AstralCanvasShader ptr, const char* variableName, AstralCanvasSamplerState *samplers, usize count)
+{
+    ((AstralCanvas::Shader *)ptr)->SetShaderVariableSamplers(variableName, (AstralCanvas::SamplerState**)samplers, count);
+}
+exportC void AstralCanvasShader_SetShaderVariableComputeBuffer(AstralCanvasShader ptr, const char* variableName, AstralCanvasComputeBuffer computeBuffer)
+{
+    ((AstralCanvas::Shader *)ptr)->SetShaderVariableComputeBuffer(variableName, (AstralCanvas::ComputeBuffer*)computeBuffer);
+}

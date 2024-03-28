@@ -57,6 +57,47 @@ namespace AstralCanvas
                 break;
         }
     }
+    void *ComputeBuffer::GetData(IAllocator allocator, usize* dataLength)
+    {
+        if (CPUCanRead)
+        {
+            switch (GetActiveBackend())
+            {
+                #ifdef ASTRALCANVAS_VULKAN
+                case Backend_Vulkan:
+                {
+                    usize lengthOfBytes = elementCount * elementSize;
+                    AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+                    VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, lengthOfBytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+                    MemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_GPU_TO_CPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+
+                    AstralCanvasVk_CopyBufferToBuffer(gpu, (VkBuffer)this->handle, stagingBuffer, lengthOfBytes);
+
+                    void *result = allocator.Allocate(lengthOfBytes);
+                    memcpy(result, stagingMemory.vkAllocationInfo.pMappedData, lengthOfBytes);
+
+                    vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
+                    vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
+
+                    if (dataLength != NULL)
+                    {
+                        *dataLength = lengthOfBytes;
+                    }
+                    return result;
+                }
+                #endif
+                #ifdef ASTRALCANVAS_METAL
+                case Backend_Metal:
+                {
+                    break;
+                }
+                #endif
+                default:
+                    break;
+            }
+        }
+        return NULL;
+    }
     void ComputeBuffer::Construct()
     {
         switch (GetActiveBackend())

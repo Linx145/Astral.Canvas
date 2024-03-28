@@ -5,6 +5,7 @@
 #include "string.hpp"
 #include "Graphics/Enums.hpp"
 #include "Graphics/UniformBuffer.hpp"
+#include "Graphics/ComputeBuffer.hpp"
 #include "Graphics/Texture2D.hpp"
 #include "Graphics/SamplerState.hpp"
 
@@ -19,6 +20,7 @@ namespace AstralCanvas
                 UniformBuffer ub;
                 bool ownsUniformBuffer;
             };
+            ComputeBuffer* computeBuffer;
             struct
             {
                 collections::Array<Texture2D*> textures;

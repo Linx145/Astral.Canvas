@@ -39,6 +39,7 @@ namespace AstralCanvas
                         //dont free textures here
                         this->allocator.Free(this->uniforms.ptr[i].stagingData.ptr[j].imageInfos);
                     }
+                    //dont free compute buffers/textures as those are never owned
                 }
                 this->uniforms.ptr[i].variableName.deinit();
             }

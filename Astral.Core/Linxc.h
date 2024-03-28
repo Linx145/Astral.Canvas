@@ -16,7 +16,7 @@
 #define exportC
 #define true 1
 #define false 0
-typedef signed char bool;
+#define bool _Bool
 #endif
 
 #ifdef WINDOWS

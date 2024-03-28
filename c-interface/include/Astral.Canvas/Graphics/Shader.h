@@ -1,5 +1,8 @@
 #pragma once
 #include "Linxc.h"
+#include "Astral.Canvas/Graphics/Texture2D.h"
+#include "Astral.Canvas/Graphics/SamplerState.h"
+#include "Astral.Canvas/Graphics/ComputeBuffer.h"
 #include "Astral.Canvas/Graphics/Enums.h"
 
 #ifdef __cplusplus
@@ -25,6 +28,13 @@ extern "C"
     DynamicFunction AstralCanvas_ShaderInputAccessedBy AstralCanvasShaderVariable_GetAccessedBy(AstralCanvasShaderVariable ptr);
     DynamicFunction u32 AstralCanvasShaderVariable_GetArrayLength(AstralCanvasShaderVariable ptr);
     DynamicFunction u32 AstralCanvasShaderVariable_GetSize(AstralCanvasShaderVariable ptr);
+
+    DynamicFunction void AstralCanvasShader_SetShaderVariable(AstralCanvasShader ptr, const char* variableName, void* varPtr, usize size);
+    DynamicFunction void AstralCanvasShader_SetShaderVariableTexture(AstralCanvasShader ptr, const char* variableName, AstralCanvasTexture2D texture);
+    DynamicFunction void AstralCanvasShader_SetShaderVariableTextures(AstralCanvasShader ptr, const char* variableName, AstralCanvasTexture2D *textures, usize count);
+    DynamicFunction void AstralCanvasShader_SetShaderVariableSampler(AstralCanvasShader ptr, const char* variableName, AstralCanvasSamplerState sampler);
+    DynamicFunction void AstralCanvasShader_SetShaderVariableSamplers(AstralCanvasShader ptr, const char* variableName, AstralCanvasSamplerState *samplers, usize count);
+    DynamicFunction void AstralCanvasShader_SetShaderVariableComputeBuffer(AstralCanvasShader ptr, const char* variableName, AstralCanvasComputeBuffer computeBuffer);
 
 #ifdef __cplusplus
 }

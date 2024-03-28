@@ -118,3 +118,4 @@ workspace "AstralCanvas"
 
     include("c-examples/Triangle")
     include("c-examples/DepthTesting")
+    include("c-examples/Compute")

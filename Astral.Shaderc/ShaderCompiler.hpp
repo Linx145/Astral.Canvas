@@ -46,6 +46,7 @@ struct AstralShadercShaderVariables
     collections::Array<AstralShadercResource> textures;
     collections::Array<AstralShadercResource> samplers;
     collections::Array<AstralShadercResource> inputAttachments;
+    collections::Array<AstralShadercResource> computeBuffers;
 
     inline AstralShadercShaderVariables()
     {
@@ -53,6 +54,7 @@ struct AstralShadercShaderVariables
         textures = collections::Array<AstralShadercResource>();
         samplers = collections::Array<AstralShadercResource>();
         inputAttachments = collections::Array<AstralShadercResource>();
+        computeBuffers = collections::Array<AstralShadercResource>();
     }
     inline AstralShadercShaderVariables(IAllocator allocator)
     {
@@ -60,6 +62,7 @@ struct AstralShadercShaderVariables
         textures = collections::Array<AstralShadercResource>(allocator);
         samplers = collections::Array<AstralShadercResource>(allocator);
         inputAttachments = collections::Array<AstralShadercResource>(allocator);
+        computeBuffers = collections::Array<AstralShadercResource>(allocator);
     }
     inline void deinit()
     {
@@ -67,6 +70,7 @@ struct AstralShadercShaderVariables
         textures.deinit();
         samplers.deinit();
         inputAttachments.deinit();
+        computeBuffers.deinit();
     }
 };
 
@@ -496,6 +500,22 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator allocator, AstralSha
         mslBinding += (i32)fmax(resourceData.arrayLength, 1);
     }
 
+    spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STORAGE_BUFFER, &allResources, &resourcesCount);
+
+    shaderVariables->computeBuffers = collections::Array<AstralShadercResource>(allocator, resourcesCount);
+    mslBinding = 0;
+    for (usize i = 0; i < resourcesCount; i++)
+    {
+        AstralShadercResource resourceData{};
+        resourceData.binding = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationBinding);
+        resourceData.set = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
+        resourceData.variableName = string(allocator, allResources[i].name);
+        resourceData.mslBinding = mslBinding;
+
+        shaderVariables->computeBuffers.data[i] = resourceData;
+        mslBinding += 1;
+    }
+
     return true;
 }
 
@@ -883,6 +903,31 @@ inline void AstralShaderc_WriteShaderData(Json::JsonWriter *writer, collections:
 
             writer->WritePropertyName("mslBinding");
             writer->WriteUintValue(variables->inputAttachments.data[i].mslBinding);
+
+            writer->WriteEndObject();
+        }
+        writer->WriteEndArray();
+    }
+
+    if (variables->computeBuffers.length > 0)
+    {
+        writer->WritePropertyName("storageBuffers");
+        writer->WriteStartArray();
+        for (usize i = 0; i < variables->computeBuffers.length; i++)
+        {
+            writer->WriteStartObject();
+
+            writer->WritePropertyName("name");
+            writer->WriteString(variables->computeBuffers.data[i].variableName.buffer);
+
+            writer->WritePropertyName("set");
+            writer->WriteUintValue(variables->computeBuffers.data[i].set);
+
+            writer->WritePropertyName("binding");
+            writer->WriteUintValue(variables->computeBuffers.data[i].binding);
+
+            writer->WritePropertyName("mslBinding");
+            writer->WriteUintValue(variables->computeBuffers.data[i].mslBinding);
 
             writer->WriteEndObject();
         }
