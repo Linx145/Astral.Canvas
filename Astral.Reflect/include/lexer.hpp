@@ -179,7 +179,7 @@ struct LinxcToken
     u32 start;
     u32 end;
 
-    string ToString(IAllocator *allocator);
+    string ToString(IAllocator allocator);
     CharSlice ToCharSlice();
 };
 

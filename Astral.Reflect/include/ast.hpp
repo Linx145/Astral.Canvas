@@ -33,7 +33,7 @@ struct LinxcFunctionCall
     LinxcExpression* thisAsParam;
     collections::Array<LinxcExpression> templateArgs;
 
-    string ToString(IAllocator *allocator);
+    string ToString(IAllocator allocator);
 };
 
 struct LinxcIndexerCall
@@ -90,17 +90,17 @@ struct LinxcType
     collections::hashmap<TemplateSpecialization, LinxcType> templateSpecializations;
 
     LinxcType();
-    LinxcType(IAllocator *allocator, string name, LinxcNamespace *myNamespace, LinxcType *myParent);
+    LinxcType(IAllocator allocator, string name, LinxcNamespace *myNamespace, LinxcType *myParent);
 
-    LinxcType Specialize(IAllocator* allocator, TemplateArgs inputArgs, TemplateSpecialization specialization);
+    LinxcType Specialize(IAllocator allocator, TemplateArgs inputArgs, TemplateSpecialization specialization);
 
     LinxcType *FindSubtype(string name);
     LinxcFunc *FindFunction(string name);
     LinxcVar *FindVar(string name);
     LinxcEnumMember* FindEnumMember(string name);
 
-    string GetFullName(IAllocator *allocator);
-    string GetCName(IAllocator* allocator);
+    string GetFullName(IAllocator allocator);
+    string GetCName(IAllocator allocator);
 
     LinxcExpression AsExpression();
 };
@@ -120,8 +120,8 @@ struct LinxcTypeReference
 
     LinxcTypeReference();
     LinxcTypeReference(LinxcType *type);
-    string ToString(IAllocator *allocator);
-    string GetCName(IAllocator* allocator, bool pointerAsPtr = false, TemplateArgs templateArgs = TemplateArgs(), TemplateSpecialization templateSpecializations = TemplateSpecialization());
+    string ToString(IAllocator allocator);
+    string GetCName(IAllocator allocator, bool pointerAsPtr = false, TemplateArgs templateArgs = TemplateArgs(), TemplateSpecialization templateSpecializations = TemplateSpecialization());
 
     bool CanCastTo(LinxcTypeReference type, bool implicitly);
     //dont need to check const as only const u8* is a special type
@@ -186,16 +186,16 @@ struct LinxcExpression
     LinxcTypeReference resolvesTo;
     bool priority;
 
-    string ToString(IAllocator *allocator);
+    string ToString(IAllocator allocator);
     //In the case that ID is a LinxcTypeReference or operator that eventually resolves to one,
     //resolvesTo.type will be NULL, as this expression itself *is* a type name.
     //However, because LinxcTypeReference may not be immediately accessible,
     //call this function to parse the potential operator tree and retrieve the final type.
     option<LinxcTypeReference> AsTypeReference();
     option<LinxcFunc*> AsFuncReference();
-    LinxcExpression SpecializeSignature(IAllocator* allocator, collections::Array<string> args, TemplateSpecialization with);
+    LinxcExpression SpecializeSignature(IAllocator allocator, collections::Array<string> args, TemplateSpecialization with);
     //void Specialize(collections::Array<string> args, TemplateSpecialization with);
-    LinxcExpression *ToHeap(IAllocator *allocator);
+    LinxcExpression *ToHeap(IAllocator allocator);
 };
 struct LinxcTypeCast
 {
@@ -218,9 +218,9 @@ struct LinxcFunc
 
     LinxcFunc();
     LinxcFunc(string name, LinxcExpression returnType);
-    LinxcFuncPtr GetSignature(IAllocator* allocator);
-    LinxcFunc SpecializeSignature(IAllocator* allocator, collections::Array<string> templateArgs, TemplateSpecialization specialization);
-    string GetCName(IAllocator* allocator);// , collections::Array<string> scopeTemplateArgs, collections::Array<LinxcTypeReference> scopeTemplateSpecializations);
+    LinxcFuncPtr GetSignature(IAllocator allocator);
+    LinxcFunc SpecializeSignature(IAllocator allocator, collections::Array<string> templateArgs, TemplateSpecialization specialization);
+    string GetCName(IAllocator allocator);// , collections::Array<string> scopeTemplateArgs, collections::Array<LinxcTypeReference> scopeTemplateSpecializations);
 };
 
 /// Represents a variable in Linxc, including it's type, name and optionally default value.
@@ -236,7 +236,7 @@ struct LinxcVar
     LinxcVar();
     LinxcVar(string varName, LinxcExpression varType, option<LinxcExpression> defaultVal);
 
-    string ToString(IAllocator *allocator);
+    string ToString(IAllocator allocator);
 };
 
 struct LinxcMacro
@@ -257,11 +257,11 @@ struct LinxcNamespace
     collections::hashmap<string, LinxcNamespace> subNamespaces; //dont need pointer here as internal is pointer already
 
     LinxcNamespace();
-    LinxcNamespace(IAllocator *allocator, string name);
+    LinxcNamespace(IAllocator allocator, string name);
 };
 struct LinxcPhoneyNamespace
 {
-    IAllocator* allocator;
+    IAllocator allocator;
     LinxcNamespace* actualNamespace;
     LinxcPhoneyNamespace* parentNamespace;
     string name;
@@ -272,7 +272,7 @@ struct LinxcPhoneyNamespace
     collections::hashmap<string, LinxcPhoneyNamespace> subNamespaces; //dont need pointer here as internal is pointer already
 
     LinxcPhoneyNamespace();
-    LinxcPhoneyNamespace(IAllocator* allocator, LinxcNamespace* thisActualNamespace);
+    LinxcPhoneyNamespace(IAllocator allocator, LinxcNamespace* thisActualNamespace);
 
     inline LinxcVar* AddVariableToOrigin(string name, LinxcVar variable)
     {
@@ -331,7 +331,7 @@ struct LinxcParsedFile
     bool isLinxcH;
 
     LinxcParsedFile();
-    LinxcParsedFile(IAllocator *allocator, string fullPath, string includeName);
+    LinxcParsedFile(IAllocator allocator, string fullPath, string includeName);
 };
 
 //A modified expression is an expression that is either a dereferenced pointer, a type to pointer conversion or an inverted/NOT/negative expression
@@ -414,7 +414,7 @@ struct LinxcStatement
     LinxcStatementData data;
     LinxcStatementID ID;
 
-    string ToString(IAllocator *allocator);
+    string ToString(IAllocator allocator);
 };
 
 enum LinxcOperatorOrCastID
@@ -434,7 +434,7 @@ struct LinxcOperatorImpl
     //in a cast type, refers to what we are casting to
     LinxcTypeReference otherType;
 
-    string ToString(IAllocator* allocator);
+    string ToString(IAllocator allocator);
 };
 u32 LinxcOperatorImplHash(LinxcOperatorImpl A);
 bool LinxcOperatorImplEql(LinxcOperatorImpl A, LinxcOperatorImpl B);
@@ -444,5 +444,5 @@ struct LinxcOperatorFunc
     LinxcOperatorImpl operatorOverride;
     LinxcFunc function;
 
-    string ToString(IAllocator* allocator);
+    string ToString(IAllocator allocator);
 };

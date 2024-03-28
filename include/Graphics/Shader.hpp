@@ -31,6 +31,12 @@ namespace AstralCanvas
         void CheckDescriptorSetAvailability(bool forceAddNewDescriptor = false);
         void SyncUniformsWithGPU(void *commandEncoder);
 
+        void SetShaderVariable(const char* variableName, void* ptr, usize size);
+        void SetShaderVariableTexture(const char* variableName, Texture2D *texture);
+        void SetShaderVariableTextures(const char* variableName, Texture2D **textures, usize count);
+        void SetShaderVariableSampler(const char* variableName, SamplerState *sampler);
+        void SetShaderVariableSamplers(const char* variableName, SamplerState **samplers, usize count);
+
         Shader();
         Shader(IAllocator allocator, ShaderType type);
         void deinit();

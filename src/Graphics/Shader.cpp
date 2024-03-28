@@ -178,6 +178,38 @@ namespace AstralCanvas
                 }
             }
         }
+        JsonElement *storageBuffers = json->GetProperty("storageBuffers");
+        if (storageBuffers != NULL)
+        {
+            for (usize i = 0; i < storageBuffers->arrayElements.length; i++)
+            {
+                string name = storageBuffers->arrayElements.data[i].GetProperty("name")->GetString(results->allocator);
+                u32 set = storageBuffers->arrayElements.data[i].GetProperty("set")->GetUint32();
+                u32 binding = storageBuffers->arrayElements.data[i].GetProperty("binding")->GetUint32();
+                u32 mslBinding = storageBuffers->arrayElements.data[i].GetProperty("mslBinding")->GetUint32();
+            
+                ShaderResource *resource = results->uniforms.Get(binding);
+                if (resource != NULL && resource->variableName.buffer != NULL)
+                {
+                    resource->accessedBy = (ShaderInputAccessedBy)((u32)resource->accessedBy | (u32)accessedByShaderOfType);
+                    name.deinit();
+                }
+                else
+                {
+                    ShaderResource newResource;
+                    newResource.binding = binding;
+                    newResource.set = set;
+                    newResource.variableName = name;
+                    newResource.arrayLength = 0;
+                    newResource.accessedBy = accessedByShaderOfType;
+                    newResource.type = ShaderResourceType_StructuredBuffer;
+                    newResource.size = 0;
+                    newResource.mslBinding = mslBinding;
+                    newResource.stagingData = collections::vector<ShaderStagingMutableState>(results->allocator);
+                    results->uniforms.Insert((usize)binding, newResource);
+                }
+            }
+        }
     }
     i32 Shader::GetVariableBinding(const char* variableName)
     {
@@ -399,6 +431,130 @@ namespace AstralCanvas
                 break;
         }
     }
+    void Shader::SetShaderVariable(const char* variableName, void* ptr, usize size)
+    {
+        CheckDescriptorSetAvailability();
+        ShaderVariables *variables = &shaderVariables;
+        for (usize i = 0; i < variables->uniforms.capacity; i++)
+        {
+            if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+            {
+                if (GetActiveBackend() == Backend_Vulkan)
+                {
+                    break; //can only break in vulkan as metal has non-continguous uniform indices
+                }
+                continue;
+            }
+            
+            if (variables->uniforms.ptr[i].variableName == variableName)
+            {
+                uniformsHasBeenSet = true;
+                variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].mutated = true;
+                variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].ub.SetData(ptr, size);
+            }
+        }
+    }
+    void Shader::SetShaderVariableTextures(const char* variableName, Texture2D **textures, usize count)
+    {
+        CheckDescriptorSetAvailability();
+        ShaderVariables *variables = &shaderVariables;
+        for (usize i = 0; i < variables->uniforms.capacity; i++)
+        {
+            if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+            {
+                if (GetActiveBackend() == Backend_Vulkan)
+                {
+                    break; //can only break in vulkan as metal has non-continguous uniform indices
+                }
+                continue;
+            }
+            if (variables->uniforms.ptr[i].variableName == variableName)
+            {
+                uniformsHasBeenSet = true;
+                ShaderStagingMutableState *mutableState = &variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall];
+                mutableState->mutated = true;
+                for (usize j = 0; j < count; j++)
+                {
+                    variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].textures.data[j] = textures[j];
+                }
+                break;
+            }
+        }
+    }
+    void Shader::SetShaderVariableTexture(const char* variableName, Texture2D *texture)
+    {
+        CheckDescriptorSetAvailability();
+        ShaderVariables *variables = &shaderVariables;
+        for (usize i = 0; i < variables->uniforms.capacity; i++)
+        {
+            if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+            {
+                if (GetActiveBackend() == Backend_Vulkan)
+                {
+                    break; //can only break in vulkan as metal has non-continguous uniform indices
+                }
+                continue;
+            }
+            if (variables->uniforms.ptr[i].variableName == variableName)
+            {
+                uniformsHasBeenSet = true;
+                variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].mutated = true;
+                variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].textures.data[0] = texture;
+                return;
+            }
+        }
+        fprintf(stderr, "Variable of name %s not found\n", variableName);
+    }
+    void Shader::SetShaderVariableSamplers(const char* variableName, SamplerState **samplers, usize count)
+    {
+        CheckDescriptorSetAvailability();
+        ShaderVariables *variables = &shaderVariables;
+        for (usize i = 0; i < variables->uniforms.capacity; i++)
+        {
+            if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+            {
+                if (GetActiveBackend() == Backend_Vulkan)
+                {
+                    break; //can only break in vulkan as metal has non-continguous uniform indices
+                }
+                continue;
+            }
+            if (variables->uniforms.ptr[i].variableName == variableName)
+            {
+                uniformsHasBeenSet = true;
+                ShaderStagingMutableState *mutableState = &variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall];
+                mutableState->mutated = true;
+                for (usize j = 0; j < count; j++)
+                {
+                    variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].samplers.data[j] = samplers[j];
+                }
+                break;
+            }
+        }
+    }
+    void Shader::SetShaderVariableSampler(const char* variableName, SamplerState *sampler)
+    {
+        CheckDescriptorSetAvailability();
+        ShaderVariables *variables = &shaderVariables;
+        for (usize i = 0; i < variables->uniforms.capacity; i++)
+        {
+            if (variables->uniforms.ptr[i].variableName.buffer == NULL)
+            {
+                if (GetActiveBackend() == Backend_Vulkan)
+                {
+                    break; //can only break in vulkan as metal has non-continguous uniform indices
+                }
+                continue;
+            }
+            if (variables->uniforms.ptr[i].variableName == variableName)
+            {
+                uniformsHasBeenSet = true;
+                variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].mutated = true;
+                variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].samplers.data[0] = sampler;
+                break;
+            }
+        }
+    }
     void Shader::deinit()
     {
         switch (GetActiveBackend())
@@ -463,6 +619,29 @@ namespace AstralCanvas
                 if (computeElement != NULL)
                 {
                     ParseShaderVariables(computeElement, &result->shaderVariables, InputAccessedBy_Compute);
+                
+                    JsonElement *computeSpirv = computeElement->GetProperty("spirv");
+                    collections::Array<u32> computeSpirvData = collections::Array<u32>(localArena.asAllocator, computeSpirv->arrayElements.length);
+                    for (usize i = 0; i < computeSpirv->arrayElements.length; i++)
+                    {
+                        computeSpirvData.data[i] = computeSpirv->arrayElements.data[i].GetUint32();
+                    }
+
+                    VkDevice logicalDevice = AstralCanvasVk_GetCurrentGPU()->logicalDevice;
+
+                    VkShaderModuleCreateInfo computeCreateInfo = {};
+                    computeCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+                    computeCreateInfo.codeSize = computeSpirvData.length * 4;
+                    computeCreateInfo.pCode = computeSpirvData.data;
+
+                    VkShaderModule computeShaderModule;
+                    if (vkCreateShaderModule(logicalDevice, &computeCreateInfo, NULL, &computeShaderModule) != VK_SUCCESS)
+                    {
+                        localArena.deinit();
+                        return -1;
+                    }
+                    result->shaderModule1 = computeShaderModule;
+
                 }
                 else
                 {
@@ -517,12 +696,32 @@ namespace AstralCanvas
 
                         result->shaderModule1 = vertexShaderModule;
                         result->shaderModule2 = fragmentShaderModule;
+                    }
+                    else
+                    {
+                        localArena.deinit();
+                        return -1;
+                    }
 
-                        //create descriptor
-                        VkDescriptorSetLayoutCreateInfo layoutInfo{};
-                        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                        layoutInfo.flags = 0;
-                        layoutInfo.bindingCount = 0;
+                    //create descriptor
+                    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+                    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                    layoutInfo.flags = 0;
+                    layoutInfo.bindingCount = 0;
+
+                    for (usize i = 0; i < result->shaderVariables.uniforms.capacity; i++)
+                    {
+                        if (result->shaderVariables.uniforms.ptr[i].variableName.buffer == NULL)
+                        {
+                            break;
+                        }
+                        layoutInfo.bindingCount++;
+                    }
+
+                    result->shaderPipelineLayout = NULL;
+                    if (layoutInfo.bindingCount > 0)
+                    {
+                        collections::Array<VkDescriptorSetLayoutBinding> bindings = collections::Array<VkDescriptorSetLayoutBinding>(localArena.asAllocator, layoutInfo.bindingCount);
 
                         for (usize i = 0; i < result->shaderVariables.uniforms.capacity; i++)
                         {
@@ -530,43 +729,23 @@ namespace AstralCanvas
                             {
                                 break;
                             }
-                            layoutInfo.bindingCount++;
-                        }
 
-                        result->shaderPipelineLayout = NULL;
-                        if (layoutInfo.bindingCount > 0)
+                            ShaderResource resource = result->shaderVariables.uniforms.ptr[i];
+                            VkDescriptorSetLayoutBinding layoutBinding = {};
+                            layoutBinding.binding = resource.binding;
+                            layoutBinding.descriptorCount = max(resource.arrayLength, 1);
+                            layoutBinding.descriptorType = AstralCanvasVk_FromResourceType(resource.type);
+                            layoutBinding.stageFlags = AstralCanvasVk_FromAccessedBy(resource.accessedBy);
+                            layoutBinding.pImmutableSamplers = NULL;
+
+                            bindings.data[resource.binding] = layoutBinding;
+                        }
+                        layoutInfo.pBindings = bindings.data;
+
+                        if (vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout) != VK_SUCCESS)
                         {
-                            collections::Array<VkDescriptorSetLayoutBinding> bindings = collections::Array<VkDescriptorSetLayoutBinding>(localArena.asAllocator, layoutInfo.bindingCount);
-
-                            for (usize i = 0; i < result->shaderVariables.uniforms.capacity; i++)
-                            {
-                                if (result->shaderVariables.uniforms.ptr[i].variableName.buffer == NULL)
-                                {
-                                    break;
-                                }
-
-                                ShaderResource resource = result->shaderVariables.uniforms.ptr[i];
-                                VkDescriptorSetLayoutBinding layoutBinding = {};
-                                layoutBinding.binding = resource.binding;
-                                layoutBinding.descriptorCount = max(resource.arrayLength, 1);
-                                layoutBinding.descriptorType = AstralCanvasVk_FromResourceType(resource.type);
-                                layoutBinding.stageFlags = AstralCanvasVk_FromAccessedBy(resource.accessedBy);
-                                layoutBinding.pImmutableSamplers = NULL;
-
-                                bindings.data[resource.binding] = layoutBinding;
-                            }
-                            layoutInfo.pBindings = bindings.data;
-
-                            if (vkCreateDescriptorSetLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, &layoutInfo, NULL, (VkDescriptorSetLayout*)&result->shaderPipelineLayout) != VK_SUCCESS)
-                            {
-                                fprintf(stderr, "Error creating descriptor set layout\n");
-                            }
+                            fprintf(stderr, "Error creating descriptor set layout\n");
                         }
-                    }
-                    else
-                    {
-                        localArena.deinit();
-                        return -1;
                     }
                 }
 

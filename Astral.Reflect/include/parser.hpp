@@ -161,7 +161,7 @@ struct LinxcParserState
 
 struct LinxcParser
 {
-    IAllocator *allocator;
+    IAllocator allocator;
     /// The root directories for #include statements. 
     ///In pure-linxc projects, normally is your project's
     ///src folder. May consist of include folders for C .h files as well
@@ -180,13 +180,13 @@ struct LinxcParser
     string linxcstdLocation;
     string appName;
 
-    LinxcParser(IAllocator *allocator);
+    LinxcParser(IAllocator allocator);
 
     //Call after parsing the opening ( of the function declaration, ends after parsing the closing )
     collections::Array<LinxcVar> ParseFunctionArgs(LinxcParserState *state, u32* necessaryArguments);
     //Parses an entire file, parsing include directives under it and their relative files if unparsed thusfar.
     LinxcParsedFile *ParseFile(string fileFullPath, string includeName, string fileContents);
-    bool TokenizeFile(LinxcTokenizer* tokenizer, IAllocator* allocator, LinxcParsedFile* parsingFile);
+    bool TokenizeFile(LinxcTokenizer* tokenizer, IAllocator allocator, LinxcParsedFile* parsingFile);
     //Parses a compound statement and returns it given the state. Returns invalid if an error is encountered
     option<collections::vector<LinxcStatement>> ParseCompoundStmt(LinxcParserState *state);
     //Parses a single, non-operator expression

@@ -15,10 +15,10 @@ LinxcParserState::LinxcParserState(LinxcParser *myParser, LinxcParsedFile *curre
     this->currentNamespace = NULL;
     this->currentFunction = NULL;
     this->parentType = NULL;
-    this->varsInScope = collections::hashmap<string, LinxcVar *>(GetDefaultAllocator(), &stringHash, &stringEql);
+    this->varsInScope = collections::hashmap<string, LinxcVar *>(GetCAllocator(), &stringHash, &stringEql);
     this->parsingLinxci = isParsingLinxci;
 }
-LinxcParser::LinxcParser(IAllocator *allocator)
+LinxcParser::LinxcParser(IAllocator allocator)
 {
     this->allocator = allocator;
     this->globalNamespace = LinxcNamespace(allocator, string());
@@ -272,13 +272,7 @@ void LinxcParser::PrintAllErrors()
     }
 }
 bool LinxcParser::Compile(const char* outputDirectory)
-{
-    if (GetDefaultAllocator()->allocFunction == NULL)
-    {
-        printf("Default allocator not assigned\n");
-    }
-    else printf("Default allocator found.\n");
-    
+{    
     bool foundError = false;
     for (usize i = 0; i < this->includedFiles.bucketsCount; i++)
     {
@@ -289,7 +283,7 @@ bool LinxcParser::Compile(const char* outputDirectory)
                 LinxcIncludedFile includedFile = this->includedFiles.buckets[i].entries.Get(j)->value;
                 if (!this->parsedFiles.Contains(includedFile.includeName))
                 {
-                    string contents = io::ReadFile(GetDefaultAllocator(), includedFile.fullNameAndPath.buffer);
+                    string contents = io::ReadFile(GetCAllocator(), includedFile.fullNameAndPath.buffer);
                     if (contents.buffer != NULL)
                     {
                         LinxcParsedFile* result = this->ParseFile(includedFile.fullNameAndPath, includedFile.includeName, contents);
@@ -318,7 +312,7 @@ bool LinxcParser::Compile(const char* outputDirectory)
         return false;
     }
 
-    /*string cmd = string(GetDefaultAllocator());
+    /*string cmd = string(GetCAllocator());
 
     for (usize i = 0; i < this->parsedFiles.bucketsCount; i++)
     {
@@ -330,13 +324,13 @@ bool LinxcParser::Compile(const char* outputDirectory)
 
                 if (!parsedFile->isLinxcH)
                 {
-                    string outputPath = this->parsedFiles.buckets[i].entries.Get(j)->value.includeName.Clone(GetDefaultAllocator());
+                    string outputPath = this->parsedFiles.buckets[i].entries.Get(j)->value.includeName.Clone(GetCAllocator());
 
                     outputPath.Prepend("/");
                     outputPath.Prepend(outputDirectory);
 
-                    string pathC = path::SwapExtension(GetDefaultAllocator(), outputPath, ".c");
-                    string pathH = path::SwapExtension(GetDefaultAllocator(), outputPath, ".h");
+                    string pathC = path::SwapExtension(GetCAllocator(), outputPath, ".c");
+                    string pathH = path::SwapExtension(GetCAllocator(), outputPath, ".h");
 
                     bool transpiledC = this->TranspileFile(parsedFile, pathC.buffer, pathH.buffer);
 
@@ -366,7 +360,7 @@ bool LinxcParser::Compile(const char* outputDirectory)
         cmd.Append(outputDirectory);
         cmd.Append(" -o");
 
-        string outputFile = string(GetDefaultAllocator(), outputDirectory);
+        string outputFile = string(GetCAllocator(), outputDirectory);
         outputFile.Append("/\"");
         outputFile.Append(this->appName.buffer);
         outputFile.Append("\".exe");
@@ -396,11 +390,11 @@ void LinxcParser::SetLinxcStdLocation(string path)
 }
 void LinxcParser::AddAllFilesFromDirectory(string directoryPath)
 {
-    collections::Array<string> result = io::GetFilesInDirectory(GetDefaultAllocator(), directoryPath.buffer);
+    collections::Array<string> result = io::GetFilesInDirectory(GetCAllocator(), directoryPath.buffer);
 
     for (usize i = 0; i < result.length; i++)
     {
-        string fullPathAndName = string(GetDefaultAllocator(), directoryPath.buffer);
+        string fullPathAndName = string(GetCAllocator(), directoryPath.buffer);
         fullPathAndName.Append("/");
         fullPathAndName.Append(result.data[i].buffer);
         
@@ -424,7 +418,7 @@ LinxcParsedFile *LinxcParser::ParseFile(string fileFullPath, string includeName,
         return NULL;
     }
     bool parsingLinxci = false;
-    string extension = path::GetExtension(GetDefaultAllocator(), fileFullPath);
+    string extension = path::GetExtension(GetCAllocator(), fileFullPath);
     if (extension == ".h" || extension == ".hpp")
     {
         parsingLinxci = true;
@@ -461,7 +455,7 @@ string LinxcParser::FullPathFromIncludeName(string includeName)
 {
     for (usize i = 0; i < this->includeDirectories.count; i++)
     {
-        string potentialFullPath = string(GetDefaultAllocator(), this->includeDirectories.Get(i)->buffer);
+        string potentialFullPath = string(GetCAllocator(), this->includeDirectories.Get(i)->buffer);
         potentialFullPath.Append("/");
         potentialFullPath.Append(includeName.buffer);
 
@@ -572,7 +566,7 @@ LinxcOperatorFunc LinxcParser::NewDefaultOperator(LinxcType** primitiveTypePtrs,
     LinxcFunc opFunc = LinxcFunc(string(), returnTypeExpr); //these functions don't need names
     
     //our sole argument is the other type. EG: intVar + floatVar = intVar.Add(floatVar)
-    LinxcVar* inputArg = (LinxcVar*)this->allocator->Allocate(sizeof(LinxcVar));
+    LinxcVar* inputArg = (LinxcVar*)this->allocator.Allocate(sizeof(LinxcVar));
     inputArg->type.ID = LinxcExpr_TypeRef;
     inputArg->type.data.typeRef = LinxcTypeReference(otherType);
     inputArg->type.resolvesTo.lastType = NULL;
@@ -587,9 +581,9 @@ LinxcOperatorFunc LinxcParser::NewDefaultOperator(LinxcType** primitiveTypePtrs,
     return result;
 }
 
-bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator* allocator, LinxcParsedFile* parsingFile)
+bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator allocator, LinxcParsedFile* parsingFile)
 {
-    collections::hashmap<string, LinxcMacro*> identifierToMacro = collections::hashmap<string, LinxcMacro*>(GetDefaultAllocator(), &stringHash, &stringEql);
+    collections::hashmap<string, LinxcMacro*> identifierToMacro = collections::hashmap<string, LinxcMacro*>(GetCAllocator(), &stringHash, &stringEql);
     LinxcMacro compilingFlagMacro;
     compilingFlagMacro.isFunctionMacro = false;
     compilingFlagMacro.name = string(allocator, "LINXC_COMPILING");
@@ -649,7 +643,7 @@ bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator* allocator,
                         if (next.ID == Linxc_LParen)
                         {
                             collections::vector<LinxcToken> macroBody = collections::vector<LinxcToken>(allocator);
-                            collections::vector<LinxcToken> macroArgs = collections::vector<LinxcToken>(GetDefaultAllocator());
+                            collections::vector<LinxcToken> macroArgs = collections::vector<LinxcToken>(GetCAllocator());
                             bool foundEllipsis = false;
 
                             LinxcToken macroArg = tokenizer->TokenizeAdvance();
@@ -746,7 +740,7 @@ bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator* allocator,
                 else if (preprocessorDirective.ID == Linxc_Keyword_ifdef)
                 {
                     LinxcToken macroToCheck = tokenizer->TokenizeAdvance();
-                    string macroToCheckString = macroToCheck.ToString(GetDefaultAllocator());
+                    string macroToCheckString = macroToCheck.ToString(GetCAllocator());
 
                     expectEndif += 1;
                     if (!identifierToMacro.Contains(macroToCheckString))
@@ -758,7 +752,7 @@ bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator* allocator,
                 else if (preprocessorDirective.ID == Linxc_Keyword_ifndef)
                 {
                     LinxcToken macroToCheck = tokenizer->TokenizeAdvance();
-                    string macroToCheckString = macroToCheck.ToString(GetDefaultAllocator());
+                    string macroToCheckString = macroToCheck.ToString(GetCAllocator());
 
                     expectEndif += 1;
                     if (identifierToMacro.Contains(macroToCheckString))
@@ -803,7 +797,7 @@ bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator* allocator,
         {
             if (token.ID == Linxc_Identifier)
             {
-                string temp = token.ToString(GetDefaultAllocator());
+                string temp = token.ToString(GetCAllocator());
                 LinxcMacro **potentialMacro = identifierToMacro.Get(temp);
                 temp.deinit();
                 if (potentialMacro != NULL)
@@ -848,10 +842,10 @@ bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator* allocator,
                                 expectedArguments = -1;
                             }
 
-                            ArenaAllocator arena = ArenaAllocator(GetDefaultAllocator());
+                            ArenaAllocator arena = ArenaAllocator(GetCAllocator());
                             
-                            collections::vector<LinxcToken> tokensInArg = collections::vector<LinxcToken>(&arena.asAllocator);
-                            collections::hashmap<string, collections::Array<LinxcToken>> argsInMacro = collections::hashmap<string, collections::Array<LinxcToken>>(&arena.asAllocator, &stringHash, &stringEql);
+                            collections::vector<LinxcToken> tokensInArg = collections::vector<LinxcToken>(arena.asAllocator);
+                            collections::hashmap<string, collections::Array<LinxcToken>> argsInMacro = collections::hashmap<string, collections::Array<LinxcToken>>(arena.asAllocator, &stringHash, &stringEql);
 
                             while (next.ID != Linxc_RParen)
                             {
@@ -863,9 +857,9 @@ bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator* allocator,
                                 if (next.ID == Linxc_RParen || next.ID == Linxc_Comma)
                                 {
                                     collections::Array<LinxcToken> argsTokenStream = tokensInArg.ToOwnedArray();
-                                    string currentArgName = macro->arguments.data[argsInMacro.Count].ToString(&arena.asAllocator);
+                                    string currentArgName = macro->arguments.data[argsInMacro.Count].ToString(arena.asAllocator);
                                     argsInMacro.Add(currentArgName, argsTokenStream);
-                                    tokensInArg = collections::vector<LinxcToken>(&arena.asAllocator);
+                                    tokensInArg = collections::vector<LinxcToken>(arena.asAllocator);
                                 }
                                 if (next.ID == Linxc_RParen)
                                 {
@@ -892,7 +886,7 @@ bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator* allocator,
                                 {
                                     LinxcToken macroToken = *macro->body.Get(i);
 
-                                    string macroTokenName = macroToken.ToString(GetDefaultAllocator());
+                                    string macroTokenName = macroToken.ToString(GetCAllocator());
                                     collections::Array<LinxcToken> *inputToArgs = argsInMacro.Get(macroTokenName);
                                     if (inputToArgs != NULL)
                                     {
@@ -959,7 +953,7 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
                 }
                 else
                 {
-                    LinxcModifiedExpression* modified = (LinxcModifiedExpression*)this->allocator->Allocate(sizeof(LinxcModifiedExpression));
+                    LinxcModifiedExpression* modified = (LinxcModifiedExpression*)this->allocator.Allocate(sizeof(LinxcModifiedExpression));
                     modified->expression = expression;
                     modified->modification = token.ID;
 
@@ -1035,7 +1029,7 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
                     }
                     LinxcExpression nextExpression = this->ParseExpression(state, nextPrimaryOpt.value, 3); //3 because cast itself is 3
 
-                    LinxcTypeCast* typeCast = (LinxcTypeCast*)this->allocator->Allocate(sizeof(LinxcTypeCast));
+                    LinxcTypeCast* typeCast = (LinxcTypeCast*)this->allocator.Allocate(sizeof(LinxcTypeCast));
                     typeCast->castToType = expression;
                     typeCast->expressionToCast = nextExpression;
 
@@ -1067,12 +1061,12 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
             if (!result.present)
             {
                 ERR_MSG msg = ERR_MSG(this->allocator, "No type, function, namespace or variable of name ");
-                msg.AppendDeinit(token.ToString(GetDefaultAllocator()));
+                msg.AppendDeinit(token.ToString(GetCAllocator()));
                 msg.Append(" exists");
                 if (prevScopeIfAny.present && (prevScopeIfAny.value.ID != LinxcExpr_NamespaceRef || prevScopeIfAny.value.data.namespaceRef->actualNamespace->name.buffer != NULL))
                 {
                     msg.Append(" within scope ");
-                    msg.AppendDeinit(prevScopeIfAny.value.ToString(GetDefaultAllocator()));
+                    msg.AppendDeinit(prevScopeIfAny.value.ToString(GetCAllocator()));
                 }
                 state->parsingFile->errors.Add(msg);
                 return option<LinxcExpression>();
@@ -1083,7 +1077,7 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
             {
                 if ((result.value.ID == LinxcExpr_TypeRef && result.value.data.typeRef.lastType != NULL && result.value.data.typeRef.lastType->templateArgs.length > 0) || (result.value.ID == LinxcExpr_FunctionRef && result.value.data.functionRef->templateArgs.length > 0))
                 {
-                    collections::vector<LinxcExpression> templateArgs = collections::vector<LinxcExpression>(GetDefaultAllocator());
+                    collections::vector<LinxcExpression> templateArgs = collections::vector<LinxcExpression>(GetCAllocator());
                     state->tokenizer->NextUntilValid();
                     bool expectComma = false;
                     while (true)
@@ -1186,14 +1180,14 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
                     if (result.value.ID == LinxcExpr_TypeRef)
                     {
                         ERR_MSG msg = ERR_MSG(this->allocator, "Type ");
-                        msg.AppendDeinit(token.ToString(GetDefaultAllocator()));
+                        msg.AppendDeinit(token.ToString(GetCAllocator()));
                         msg.Append(" is not a generic type");
                         state->parsingFile->errors.Add(msg);
                     }
                     else
                     {
                         ERR_MSG msg = ERR_MSG(this->allocator, "Function ");
-                        msg.AppendDeinit(token.ToString(GetDefaultAllocator()));
+                        msg.AppendDeinit(token.ToString(GetCAllocator()));
                         msg.Append(" is not a generic function");
                         state->parsingFile->errors.Add(msg);
                     }
@@ -1228,7 +1222,7 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
 
                             if (indexerExpression.resolvesTo.lastType != NULL)
                             {
-                                LinxcExpression* indexerExpressionPtr = (LinxcExpression*)this->allocator->Allocate(sizeof(LinxcExpression));
+                                LinxcExpression* indexerExpressionPtr = (LinxcExpression*)this->allocator.Allocate(sizeof(LinxcExpression));
                                 *indexerExpressionPtr = indexerExpression;
 
                                 LinxcIndexerCall indexerCall;
@@ -1294,7 +1288,7 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
                         LinxcTypeReference varType = result.value.resolvesTo;
                         LinxcFuncPtr* funcPtrDecl = &varType.lastType->delegateDecl;
 
-                        collections::vector<LinxcExpression> inputArgs = collections::vector<LinxcExpression>(GetDefaultAllocator());
+                        collections::vector<LinxcExpression> inputArgs = collections::vector<LinxcExpression>(GetCAllocator());
                         LinxcToken peekNext = state->tokenizer->PeekNextUntilValid();
                         if (peekNext.ID == Linxc_RParen)
                         {
@@ -1331,9 +1325,9 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
                                     if (!CanAssign(expectedType.value, fullExpression.resolvesTo))
                                     {
                                         ERR_MSG msg = ERR_MSG(this->allocator, "Argument of type ");
-                                        msg.AppendDeinit(fullExpression.resolvesTo.ToString(GetDefaultAllocator()));
+                                        msg.AppendDeinit(fullExpression.resolvesTo.ToString(GetCAllocator()));
                                         msg.Append(" cannot be implicitly converted to parameter type ");
-                                        msg.AppendDeinit(expectedType.value.ToString(GetDefaultAllocator()));
+                                        msg.AppendDeinit(expectedType.value.ToString(GetCAllocator()));
                                         state->parsingFile->errors.Add(msg);
                                     }
                                 }
@@ -1351,7 +1345,7 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
                                 else
                                 {
                                     ERR_MSG msg = ERR_MSG(this->allocator, "Expected , or ) after function input argument. Got ");
-                                    msg.AppendDeinit(peekNext.ToString(GetDefaultAllocator()));
+                                    msg.AppendDeinit(peekNext.ToString(GetCAllocator()));
                                     msg.Append(" instead.");
                                     state->parsingFile->errors.Add(msg);
                                 }
@@ -1408,7 +1402,7 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
                         //parse input args
                         LinxcFunc* func = result.value.data.functionRef;
 
-                        collections::vector<LinxcExpression> inputArgs = collections::vector<LinxcExpression>(GetDefaultAllocator());
+                        collections::vector<LinxcExpression> inputArgs = collections::vector<LinxcExpression>(GetCAllocator());
                         LinxcToken peekNext = state->tokenizer->PeekNextUntilValid();
                         if (peekNext.ID == Linxc_RParen)
                         {
@@ -1448,9 +1442,9 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
                                     if (!CanAssign(expectedType.value, fullExpression.resolvesTo))
                                     {
                                         ERR_MSG msg = ERR_MSG(this->allocator, "Argument of type ");
-                                        msg.AppendDeinit(fullExpression.resolvesTo.ToString(GetDefaultAllocator()));
+                                        msg.AppendDeinit(fullExpression.resolvesTo.ToString(GetCAllocator()));
                                         msg.Append(" cannot be implicitly converted to parameter type ");
-                                        msg.AppendDeinit(expectedType.value.ToString(GetDefaultAllocator()));
+                                        msg.AppendDeinit(expectedType.value.ToString(GetCAllocator()));
                                         state->parsingFile->errors.Add(msg);
                                     }
                                 }
@@ -1468,7 +1462,7 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
                                 else
                                 {
                                     ERR_MSG msg = ERR_MSG(this->allocator, "Expected , or ) after function input argument. Got ");
-                                    msg.AppendDeinit(peekNext.ToString(GetDefaultAllocator()));
+                                    msg.AppendDeinit(peekNext.ToString(GetCAllocator()));
                                     msg.Append(" instead.");
                                     state->parsingFile->errors.Add(msg);
                                 }
@@ -1535,23 +1529,23 @@ option<LinxcExpression> LinxcParser::ParseExpressionPrimary(LinxcParserState *st
             string temp;
             if (token.ID == Linxc_Keyword_true || token.ID == Linxc_Keyword_false)
             {
-                temp = string(GetDefaultAllocator(), "bool");
+                temp = string(GetCAllocator(), "bool");
             }
             else if (token.ID == Linxc_FloatLiteral)
             {
-                temp = string(GetDefaultAllocator(), "float");
+                temp = string(GetCAllocator(), "float");
             }
             else if (token.ID == Linxc_IntegerLiteral)
             {
-                temp = string(GetDefaultAllocator(), "i32");
+                temp = string(GetCAllocator(), "i32");
             }
             else if (token.ID == Linxc_CharLiteral)
             {
-                temp = string(GetDefaultAllocator(), "u8");
+                temp = string(GetCAllocator(), "u8");
             }
             else if (token.ID == Linxc_StringLiteral)
             {
-                temp = string(GetDefaultAllocator(), "u8");
+                temp = string(GetCAllocator(), "u8");
             }
             LinxcType* resolvesToType = this->globalNamespace.types.Get(temp);
             result.resolvesTo = LinxcTypeReference(resolvesToType);
@@ -1587,7 +1581,7 @@ LinxcExpression LinxcParser::ParseExpression(LinxcParserState *state, LinxcExpre
         //increment
         if (op.ID == Linxc_PlusPlus || op.ID == Linxc_MinusMinus)
         {
-            LinxcOperator* incrementCall = (LinxcOperator*)this->allocator->Allocate(sizeof(LinxcOperator));
+            LinxcOperator* incrementCall = (LinxcOperator*)this->allocator.Allocate(sizeof(LinxcOperator));
             incrementCall->leftExpr = lhs;
             incrementCall->rightExpr.ID = LinxcExpr_Literal;
             incrementCall->rightExpr.resolvesTo = LinxcTypeReference(incrementCall->leftExpr.resolvesTo.lastType);
@@ -1598,7 +1592,7 @@ LinxcExpression LinxcParser::ParseExpression(LinxcParserState *state, LinxcExpre
             if (!resolvesTo.present)
             {
                 ERR_MSG msg = ERR_MSG(this->allocator, "Type ");
-                msg.AppendDeinit(incrementCall->leftExpr.resolvesTo.ToString(GetDefaultAllocator()));
+                msg.AppendDeinit(incrementCall->leftExpr.resolvesTo.ToString(GetCAllocator()));
                 if (op.ID == Linxc_PlusPlus)
                 {
                     msg.Append(" cannot be incremented");
@@ -1633,7 +1627,7 @@ LinxcExpression LinxcParser::ParseExpression(LinxcParserState *state, LinxcExpre
         option<LinxcExpression> rhsOpt = this->ParseExpressionPrimary(state, prevScopeIfAny);
         if (!rhsOpt.present)
         {
-            //state->parsingFile->errors.Add(ERR_MSG(GetDefaultAllocator(), "Error parsing right side of operator"));
+            //state->parsingFile->errors.Add(ERR_MSG(GetCAllocator(), "Error parsing right side of operator"));
             break;
         }
 
@@ -1654,7 +1648,7 @@ LinxcExpression LinxcParser::ParseExpression(LinxcParserState *state, LinxcExpre
             rhsOpt.value = this->ParseExpression(state, rhsOpt.value, nextFuncPrecedence);
         }
 
-        LinxcOperator *operatorCall = (LinxcOperator*)this->allocator->Allocate(sizeof(LinxcOperator));
+        LinxcOperator *operatorCall = (LinxcOperator*)this->allocator.Allocate(sizeof(LinxcOperator));
         operatorCall->leftExpr = lhs;
         operatorCall->rightExpr = rhsOpt.value;
         operatorCall->operatorType = op.ID;
@@ -1667,11 +1661,11 @@ LinxcExpression LinxcParser::ParseExpression(LinxcParserState *state, LinxcExpre
                 printf("Left type: %i, right type: %i\n", operatorCall->leftExpr.resolvesTo.templateArgs.length, operatorCall->rightExpr.resolvesTo.templateArgs.length);
             }
             ERR_MSG msg = ERR_MSG(this->allocator, "Type ");
-            msg.AppendDeinit(operatorCall->leftExpr.resolvesTo.ToString(GetDefaultAllocator()));
+            msg.AppendDeinit(operatorCall->leftExpr.resolvesTo.ToString(GetCAllocator()));
             msg.Append(" cannot be ");
             msg.Append(LinxcTokenIDToString(op.ID));
             msg.Append("'d with ");
-            msg.AppendDeinit(operatorCall->rightExpr.resolvesTo.ToString(GetDefaultAllocator()));
+            msg.AppendDeinit(operatorCall->rightExpr.resolvesTo.ToString(GetCAllocator()));
             state->parsingFile->errors.Add(msg);
         }
         else
@@ -1689,7 +1683,7 @@ option<LinxcExpression> LinxcParser::ParseIdentifier(LinxcParserState *state, op
     result.priority = false;
     result.ID = LinxcExpr_None;
     LinxcToken token = state->tokenizer->NextUntilValid();
-    string identifierName = token.ToString(GetDefaultAllocator());
+    string identifierName = token.ToString(GetCAllocator());
 
     if (LinxcIsPrimitiveType(token.ID))
     {
@@ -1738,7 +1732,7 @@ option<LinxcExpression> LinxcParser::ParseIdentifier(LinxcParserState *state, op
                     varExpr.resolvesTo.isConst = localVar->isConst;
 
                     result.ID = LinxcExpr_OperatorCall;
-                    LinxcOperator* thisDereference = (LinxcOperator*)this->allocator->Allocate(sizeof(LinxcOperator));
+                    LinxcOperator* thisDereference = (LinxcOperator*)this->allocator.Allocate(sizeof(LinxcOperator));
                     thisDereference->leftExpr = thisExpr;
                     thisDereference->operatorType = Linxc_Arrow;
                     thisDereference->rightExpr = varExpr;
@@ -2248,7 +2242,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                 //-2 because its - (next.start + 1)
                 string macroString = string(this->allocator, tokenizer->buffer + next.start + 1, next.end - 2 - next.start);
 
-                string extension = path::GetExtension(GetDefaultAllocator(), macroString);
+                string extension = path::GetExtension(GetCAllocator(), macroString);
 
                 if (extension == ".linxc" || extension == ".hpp" || (extension == ".h" && macroString != "Linxc.h"))
                 {
@@ -2278,7 +2272,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                             //search include directories for file
                             for (usize i = 0; i < this->includeDirectories.count; i++)
                             {
-                                string filePath = this->includeDirectories.ptr[i].Clone(GetDefaultAllocator());
+                                string filePath = this->includeDirectories.ptr[i].Clone(GetCAllocator());
                                 filePath.Append("/");
                                 filePath.Append(macroString.buffer);
 
@@ -2292,9 +2286,9 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                                 }
                                 else filePath.deinit();
 
-                                filePath = this->includeDirectories.ptr[i].Clone(GetDefaultAllocator());
+                                filePath = this->includeDirectories.ptr[i].Clone(GetCAllocator());
                                 filePath.Append("/");
-                                filePath.AppendDeinit(path::SwapExtension(GetDefaultAllocator(), macroString, ".linxch"));
+                                filePath.AppendDeinit(path::SwapExtension(GetCAllocator(), macroString, ".linxch"));
 
                                 if (io::FileExists(filePath.buffer))
                                 {
@@ -2310,7 +2304,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
 
                         if (includedFile != NULL)
                         {
-                            string fileContents = io::ReadFile(GetDefaultAllocator(), includedFile->fullNameAndPath.buffer);
+                            string fileContents = io::ReadFile(GetCAllocator(), includedFile->fullNameAndPath.buffer);
                             printf("Parsing file %s\n", includedFile->fullNameAndPath.buffer);
                             LinxcParsedFile* parsedInclude = this->ParseFile(includedFile->fullNameAndPath, includedFile->includeName, fileContents);
                             if (parsedInclude->errors.count > 0)
@@ -2373,7 +2367,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
             }
             else
             {
-                string namespaceNameStrTemp = namespaceName.ToString(GetDefaultAllocator());
+                string namespaceNameStrTemp = namespaceName.ToString(GetCAllocator());
                 //LinxcNamespace* thisNamespace = state->currentNamespace->subNamespaces.Get(namespaceNameStrTemp);
                 LinxcPhoneyNamespace* thisNamespace = state->currentNamespace->subNamespaces.Get(namespaceNameStrTemp);
 
@@ -2435,7 +2429,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
             }
             else tokenizer->NextUntilValid();
 
-            collections::vector<string> templateArgs = collections::vector<string>(GetDefaultAllocator());
+            collections::vector<string> templateArgs = collections::vector<string>(GetCAllocator());
 
             bool expectComma = false;
             while (true)
@@ -2530,7 +2524,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                         if (next.ID == Linxc_Equal)
                         {
                             next = tokenizer->NextUntilValid();
-                            string literalString = next.ToString(GetDefaultAllocator());
+                            string literalString = next.ToString(GetCAllocator());
                             i32 value = 0;
                             if (next.ID == Linxc_Identifier)
                             {
@@ -2663,7 +2657,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                     if (next.ID != Linxc_Identifier)
                     {
                         ERR_MSG msg = ERR_MSG(this->allocator, "Invalid alias for type: ");
-                        msg.AppendDeinit(next.ToString(GetDefaultAllocator()));
+                        msg.AppendDeinit(next.ToString(GetCAllocator()));
                         errors->Add(msg);
                     }
                     else
@@ -2794,7 +2788,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
             }
 
             LinxcToken peekNext = tokenizer->PeekNextUntilValid();
-            collections::vector<LinxcExpression> argTypes = collections::vector<LinxcExpression>(GetDefaultAllocator());
+            collections::vector<LinxcExpression> argTypes = collections::vector<LinxcExpression>(GetCAllocator());
             if (peekNext.ID == Linxc_Comma)
             {
                 tokenizer->NextUntilValid();
@@ -2846,7 +2840,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
 
             LinxcType delegateType = LinxcType(this->allocator, delegateTypeNameStr, state->currentNamespace->actualNamespace, state->parentType);
 
-            LinxcExpression* returnTypeExprPtr = (LinxcExpression*)this->allocator->Allocate(sizeof(LinxcExpression));
+            LinxcExpression* returnTypeExprPtr = (LinxcExpression*)this->allocator.Allocate(sizeof(LinxcExpression));
             *returnTypeExprPtr = returnTypeExpr;
 
             delegateType.delegateDecl = LinxcFuncPtr(delegateTypeNameStr, returnTypeExprPtr);//LinxcFunc(delegateTypeNameStr, typeExpr);
@@ -2970,7 +2964,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                     if (identifier.ID != Linxc_Identifier)
                     {
                         ERR_MSG error = ERR_MSG(this->allocator, "Expected identifier after type name, token was ");
-                        error.AppendDeinit(identifier.ToString(GetDefaultAllocator()));
+                        error.AppendDeinit(identifier.ToString(GetCAllocator()));
                         errors->Add(error);
                         toBreak = true;
                         break;
@@ -3055,7 +3049,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                             LinxcVar* tempPtr = &result.Get(result.count - 1)->data.tempVarDeclaration;
                             state->varsInScope.Add(varDecl.name, tempPtr);*/
 
-                            LinxcVar* ptr = (LinxcVar*)this->allocator->Allocate(sizeof(LinxcVar));
+                            LinxcVar* ptr = (LinxcVar*)this->allocator.Allocate(sizeof(LinxcVar));
                             *ptr = varDecl;
 
                             LinxcStatement stmt;
@@ -3133,7 +3127,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                             {
                                 //the 'this' keyword counts as a variable within a function's scope if it is within a struct
 
-                                thisVar = (LinxcVar*)allocator->Allocate(sizeof(LinxcVar));
+                                thisVar = (LinxcVar*)allocator.Allocate(sizeof(LinxcVar));
                                 thisVar->name = this->thisKeyword;
                                 thisVar->type = state->parentType->AsExpression();
                                 thisVar->type.data.typeRef.pointerCount += 1;
@@ -3242,7 +3236,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                 nextState.currentFunction = state->currentFunction;
                 nextState.currentNamespace = state->currentNamespace;
                 nextState.parentType = state->parentType;
-                nextState.varsInScope = state->varsInScope.Clone(GetDefaultAllocator());
+                nextState.varsInScope = state->varsInScope.Clone(GetCAllocator());
 
                 option<collections::vector<LinxcStatement>> ifStatementResult = this->ParseCompoundStmt(&nextState);
                 
@@ -3273,7 +3267,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                         nextState = LinxcParserState(state->parser, state->parsingFile, state->tokenizer, LinxcEndOn_RBrace, false, false);
                         nextState.currentFunction = state->currentFunction;
                         nextState.parentType = state->parentType;
-                        nextState.varsInScope = state->varsInScope.Clone(GetDefaultAllocator());
+                        nextState.varsInScope = state->varsInScope.Clone(GetCAllocator());
 
                         option<collections::vector<LinxcStatement>> elseStatementResult = this->ParseCompoundStmt(&nextState);
                     
@@ -3295,7 +3289,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                         nextState.currentFunction = state->currentFunction;
                         nextState.parentType = state->parentType;
                         nextState.currentNamespace = state->currentNamespace;
-                        nextState.varsInScope = state->varsInScope.Clone(GetDefaultAllocator());
+                        nextState.varsInScope = state->varsInScope.Clone(GetCAllocator());
 
                         option<collections::vector<LinxcStatement>> elseStatementResult = this->ParseCompoundStmt(&nextState);
 
@@ -3327,7 +3321,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
                 nextState.currentFunction = state->currentFunction;
                 nextState.parentType = state->parentType;
                 nextState.currentNamespace = state->currentNamespace;
-                nextState.varsInScope = state->varsInScope.Clone(GetDefaultAllocator());
+                nextState.varsInScope = state->varsInScope.Clone(GetCAllocator());
 
                 option<collections::vector<LinxcStatement>> ifStatementResult = ParseCompoundStmt(&nextState);
 
@@ -3411,7 +3405,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
             nextState.currentFunction = state->currentFunction;
             nextState.currentNamespace = state->currentNamespace;
             nextState.parentType = state->parentType;
-            nextState.varsInScope = state->varsInScope.Clone(GetDefaultAllocator());
+            nextState.varsInScope = state->varsInScope.Clone(GetCAllocator());
             nextState.commaIsSemicolon = true;
 
             option<collections::vector<LinxcStatement>> init = this->ParseCompoundStmt(&nextState);
@@ -3589,7 +3583,7 @@ bool LinxcParser::TranspileFile(LinxcParsedFile* parsedFile, const char* outputP
         fs = io::CreateDirectoriesAndFile(outputPathC);
         if (fs != NULL)
         {
-            string swappedExtension = path::SwapExtension(GetDefaultAllocator(), parsedFile->includeName, ".h");
+            string swappedExtension = path::SwapExtension(GetCAllocator(), parsedFile->includeName, ".h");
             fprintf(fs, "#include <%s>\n", swappedExtension.buffer);
             swappedExtension.deinit();
 
@@ -3612,16 +3606,16 @@ void LinxcParser::TranspileStatementH(FILE* fs, LinxcStatement* stmt)
     if (stmt->ID == LinxcStmt_Include)
     {
         string includeName = stmt->data.includeStatement.includeString;
-        string extension = path::GetExtension(GetDefaultAllocator(), includeName);
+        string extension = path::GetExtension(GetCAllocator(), includeName);
         if (extension == ".linxc")
         {
-            includeName = path::SwapExtension(GetDefaultAllocator(), includeName, ".h");
+            includeName = path::SwapExtension(GetCAllocator(), includeName, ".h");
             //we only set the above to true here as before, we are just referencing the includeName as part of the include
             //statement. If we deinited that, we would have modified the statement in the AST
         }
 
         //make sure no harpy brain programmer uses '\' to specify include paths 
-        string replaced = ReplaceChar(GetDefaultAllocator(), includeName.buffer, '\\', '/');
+        string replaced = ReplaceChar(GetCAllocator(), includeName.buffer, '\\', '/');
         fprintf(fs, "#include <%s>\n", includeName.buffer);
         replaced.deinit();
 
@@ -3643,7 +3637,7 @@ void LinxcParser::TranspileStatementH(FILE* fs, LinxcStatement* stmt)
     {
         if (stmt->data.typeDeclaration->templateArgs.length > 0 )
         {
-            //collections::Array<string> typeTemplateArgs = templateArgs.CloneAdd(GetDefaultAllocator(), stmt->data.typeDeclaration->templateArgs);
+            //collections::Array<string> typeTemplateArgs = templateArgs.CloneAdd(GetCAllocator(), stmt->data.typeDeclaration->templateArgs);
 
             collections::hashmap<TemplateSpecialization, LinxcType>* specializations = &stmt->data.typeDeclaration->templateSpecializations;
             for (usize i = 0; i < specializations->bucketsCount; i++)
@@ -3652,7 +3646,7 @@ void LinxcParser::TranspileStatementH(FILE* fs, LinxcStatement* stmt)
                 {
                     for (usize j = 0; j < specializations->buckets[i].entries.count; j++)
                     {
-                        //collections::Array<LinxcTypeReference> typeTemplateSpecializations = templateSpecializations.CloneAdd(GetDefaultAllocator(), specializations->buckets[i].entries.ptr[j].key);
+                        //collections::Array<LinxcTypeReference> typeTemplateSpecializations = templateSpecializations.CloneAdd(GetCAllocator(), specializations->buckets[i].entries.ptr[j].key);
                         TranspileTypeH(fs, &specializations->buckets[i].entries.ptr[j].value);// , typeTemplateArgs, typeTemplateSpecializations);
                         //typeTemplateSpecializations.deinit();
                     }
@@ -3688,21 +3682,21 @@ void LinxcParser::TranspileTypeH(FILE* fs, LinxcType* type)//, collections::Arra
                 fprintf(fs, ",\n");
             }
         }
-        string typeName = type->GetCName(GetDefaultAllocator());
+        string typeName = type->GetCName(GetCAllocator());
         fprintf(fs, "\n} %s;\n", typeName.buffer);
         typeName.deinit();
     }
     else if (type->delegateDecl.name.buffer != NULL) //is delegate
     {
         //typedef returns (*name)(__VA_ARGS__)
-        string returnTypeName = type->delegateDecl.returnType->AsTypeReference().value.GetCName(GetDefaultAllocator(), false, collections::Array<string>(), TemplateSpecialization());
-        string delegateName = type->GetCName(GetDefaultAllocator());
+        string returnTypeName = type->delegateDecl.returnType->AsTypeReference().value.GetCName(GetCAllocator(), false, collections::Array<string>(), TemplateSpecialization());
+        string delegateName = type->GetCName(GetCAllocator());
 
         fprintf(fs, "typedef %s (*%s)(", returnTypeName.buffer, delegateName.buffer);
         for (usize i = 0; i < type->delegateDecl.arguments.length; i++)
         {
             LinxcTypeReference delegateArgType = type->delegateDecl.arguments.data[i].AsTypeReference().value;
-            string argumentTypeName = delegateArgType.GetCName(GetDefaultAllocator(), false, collections::Array<string>(), TemplateSpecialization());
+            string argumentTypeName = delegateArgType.GetCName(GetCAllocator(), false, collections::Array<string>(), TemplateSpecialization());
             
             fprintf(fs, "%s", argumentTypeName.buffer);
             argumentTypeName.deinit();
@@ -3725,7 +3719,7 @@ void LinxcParser::TranspileTypeH(FILE* fs, LinxcType* type)//, collections::Arra
             
             if (subType->templateSpecializations.Count > 0)
             {
-                //collections::Array<string> newTemplateArgs = templateArgs.CloneAdd(GetDefaultAllocator(), subType->templateArgs);
+                //collections::Array<string> newTemplateArgs = templateArgs.CloneAdd(GetCAllocator(), subType->templateArgs);
 
                 for (usize x = 0; x < subType->templateSpecializations.bucketsCount; x++)
                 {
@@ -3733,7 +3727,7 @@ void LinxcParser::TranspileTypeH(FILE* fs, LinxcType* type)//, collections::Arra
                     {
                         for (usize y = 0; y < subType->templateSpecializations.buckets[x].entries.count; y++)
                         {
-                            //collections::Array<LinxcTypeReference> newTemplateSpecializations = templateSpecialization.CloneAdd(GetDefaultAllocator(), subType->templateSpecializations.buckets[x].entries.ptr[y].key);
+                            //collections::Array<LinxcTypeReference> newTemplateSpecializations = templateSpecialization.CloneAdd(GetCAllocator(), subType->templateSpecializations.buckets[x].entries.ptr[y].key);
 
                             TranspileTypeH(fs, subType);// , newTemplateArgs, newTemplateSpecializations);
                             //newTemplateSpecializations.deinit();
@@ -3753,7 +3747,7 @@ void LinxcParser::TranspileTypeH(FILE* fs, LinxcType* type)//, collections::Arra
             this->TranspileVar(fs, type->variables.Get(i), &tempIndex, collections::Array<string>(), TemplateSpecialization());//templateArgs, templateSpecialization);
             fprintf(fs, ";\n");
         }
-        string typeName = type->GetCName(GetDefaultAllocator());// , templateArgs, templateSpecialization);
+        string typeName = type->GetCName(GetCAllocator());// , templateArgs, templateSpecialization);
         fprintf(fs, "} %s;\n", typeName.buffer);
         typeName.deinit();
 
@@ -3776,11 +3770,11 @@ void LinxcParser::TranspileFuncHeader(FILE *fs, LinxcFunc* func)//, collections:
 {
     LinxcTypeReference typeRef = func->returnType.AsTypeReference().value;
 
-    string returnTypeName = typeRef.GetCName(GetDefaultAllocator());
+    string returnTypeName = typeRef.GetCName(GetCAllocator());
     fprintf(fs, "%s ", returnTypeName.buffer);
     returnTypeName.deinit();
 
-    string funcName = func->GetCName(GetDefaultAllocator());// , templateArgs, templateSpecializations);
+    string funcName = func->GetCName(GetCAllocator());// , templateArgs, templateSpecializations);
 
     fprintf(fs, "%s(", funcName.buffer);
     funcName.deinit();
@@ -3788,7 +3782,7 @@ void LinxcParser::TranspileFuncHeader(FILE *fs, LinxcFunc* func)//, collections:
     //if we are a member function of a struct, the first argument will always be 'this'
     if (func->methodOf != NULL)
     {
-        string thisTypeName = func->methodOf->GetCName(GetDefaultAllocator());// , templateArgs, templateSpecializations);
+        string thisTypeName = func->methodOf->GetCName(GetCAllocator());// , templateArgs, templateSpecializations);
 
         fprintf(fs, "%s *this", thisTypeName.buffer);
         if (func->arguments.length > 0)
@@ -3820,7 +3814,7 @@ void LinxcParser::TranspileExpr(FILE* fs, LinxcExpression* expr, bool writePrior
         break;
     case LinxcExpr_TypeRef:
     {
-        string typeString = expr->data.typeRef.GetCName(GetDefaultAllocator(), false, templateArgs, templateSpecializations);
+        string typeString = expr->data.typeRef.GetCName(GetCAllocator(), false, templateArgs, templateSpecializations);
         fprintf(fs, "%s", typeString.buffer);
         typeString.deinit();
     }
@@ -3848,7 +3842,7 @@ void LinxcParser::TranspileExpr(FILE* fs, LinxcExpression* expr, bool writePrior
     break;
     case LinxcExpr_TypeCast:
     {
-        string typeString = expr->data.typeCast->castToType.AsTypeReference().value.GetCName(GetDefaultAllocator());
+        string typeString = expr->data.typeCast->castToType.AsTypeReference().value.GetCName(GetCAllocator());
         fprintf(fs, "(%s)", typeString.buffer);
         typeString.deinit();
         this->TranspileExpr(fs, &expr->data.typeCast->expressionToCast, false, templateArgs, templateSpecializations);
@@ -3881,7 +3875,7 @@ void LinxcParser::TranspileExpr(FILE* fs, LinxcExpression* expr, bool writePrior
     break;
     case LinxcExpr_FuncCall:
     {
-        string name = expr->data.functionCall.func->GetCName(GetDefaultAllocator());// , templateArgs, templateSpecializations);
+        string name = expr->data.functionCall.func->GetCName(GetCAllocator());// , templateArgs, templateSpecializations);
         fprintf(fs, "%s(", name.buffer);
         name.deinit();
         if (expr->data.functionCall.thisAsParam != NULL)
@@ -3905,7 +3899,7 @@ void LinxcParser::TranspileExpr(FILE* fs, LinxcExpression* expr, bool writePrior
     break;
     case LinxcExpr_FunctionRef:
     {
-        string name = expr->data.functionRef->GetCName(GetDefaultAllocator());// , templateArgs, templateSpecializations);
+        string name = expr->data.functionRef->GetCName(GetCAllocator());// , templateArgs, templateSpecializations);
         fprintf(fs, "%s", name.buffer);
         name.deinit();
     }
@@ -3927,8 +3921,8 @@ void LinxcParser::TranspileExpr(FILE* fs, LinxcExpression* expr, bool writePrior
             if (expr->data.operatorCall->leftExpr.ID == LinxcExpr_TypeRef && expr->data.operatorCall->leftExpr.data.typeRef.lastType != NULL)
             {
                 collections::Array<LinxcExpression>* leftExprSpecializations = &expr->data.operatorCall->leftExpr.data.typeRef.templateArgs;
-                collections::Array<string> newTemplateArgs = templateArgs.CloneAdd(GetDefaultAllocator(), expr->data.operatorCall->leftExpr.data.typeRef.lastType->templateArgs);
-                collections::Array<LinxcTypeReference> newTemplateSpecializations = collections::Array<LinxcTypeReference>(GetDefaultAllocator(), templateSpecializations.length + leftExprSpecializations->length);
+                collections::Array<string> newTemplateArgs = templateArgs.CloneAdd(GetCAllocator(), expr->data.operatorCall->leftExpr.data.typeRef.lastType->templateArgs);
+                collections::Array<LinxcTypeReference> newTemplateSpecializations = collections::Array<LinxcTypeReference>(GetCAllocator(), templateSpecializations.length + leftExprSpecializations->length);
                 for (usize i = 0; i < newTemplateSpecializations.length; i++)
                 {
                     if (i < templateSpecializations.length)
@@ -4033,14 +4027,14 @@ void LinxcParser::RotateFuncCallExpression(LinxcExpression* expr, LinxcExpressio
                         //parent becomes root
                         //(left, due to precedence) sibling of parent becomes our first input
                         //because sibling of parent would have lived in the exprRoot, which is now replaced by parent, we need to reallocate it
-                        LinxcExpression* siblingOfParentHeap = (LinxcExpression*)this->allocator->Allocate(sizeof(LinxcExpression));
+                        LinxcExpression* siblingOfParentHeap = (LinxcExpression*)this->allocator.Allocate(sizeof(LinxcExpression));
                         *siblingOfParentHeap = grandParent->data.operatorCall->leftExpr;
                         *exprRoot = *parent;
                         expr->data.functionCall.thisAsParam = siblingOfParentHeap;
                     }
                     else
                     {
-                        LinxcExpression* originalRootHeap = (LinxcExpression*)this->allocator->Allocate(sizeof(LinxcExpression));
+                        LinxcExpression* originalRootHeap = (LinxcExpression*)this->allocator.Allocate(sizeof(LinxcExpression));
                         *originalRootHeap = *exprRoot;
                         *grandParent = grandParent->data.operatorCall->leftExpr;
                         *exprRoot = *parent;
@@ -4058,7 +4052,7 @@ void LinxcParser::RotateFuncCallExpression(LinxcExpression* expr, LinxcExpressio
                     if (parent == exprRoot)
                     {
                         //parent gets disposed of as we are now the root
-                        LinxcExpression* newInput = (LinxcExpression*)this->allocator->Allocate(sizeof(LinxcExpression));
+                        LinxcExpression* newInput = (LinxcExpression*)this->allocator.Allocate(sizeof(LinxcExpression));
                         *newInput = parent->data.operatorCall->leftExpr;
                         //whatever was to the left of our parent becomes our input
                         //we need to heap allocate the thing on the left now
@@ -4073,7 +4067,7 @@ void LinxcParser::RotateFuncCallExpression(LinxcExpression* expr, LinxcExpressio
                         //root becomes param
                         //param resolves to becomes expr sibling
                         //we become root
-                        LinxcExpression* newInput = (LinxcExpression*)this->allocator->Allocate(sizeof(LinxcExpression));
+                        LinxcExpression* newInput = (LinxcExpression*)this->allocator.Allocate(sizeof(LinxcExpression));
                         exprRoot->resolvesTo = parent->data.operatorCall->leftExpr.resolvesTo;
                         *newInput = *exprRoot;
                         grandParent->data.operatorCall->rightExpr = parent->data.operatorCall->leftExpr;
@@ -4090,7 +4084,7 @@ void LinxcParser::RotateFuncCallExpression(LinxcExpression* expr, LinxcExpressio
 
                 if (&parent->data.operatorCall->rightExpr == expr)
                 {
-                    LinxcExpression* newInput = (LinxcExpression*)this->allocator->Allocate(sizeof(LinxcExpression));
+                    LinxcExpression* newInput = (LinxcExpression*)this->allocator.Allocate(sizeof(LinxcExpression));
                     *newInput = parent->data.operatorCall->leftExpr;
                     expr->data.functionCall.thisAsParam = newInput;
 
@@ -4140,7 +4134,7 @@ void LinxcParser::SegregateFuncCallExpression(FILE* fs, LinxcExpression* rotated
                     referencedTypeExpr.resolvesTo = rotatedExpr->data.functionCall.thisAsParam->data.variable->type.AsTypeReference().value;
                     referencedTypeExpr.resolvesTo.pointerCount += 1;
                     
-                    LinxcModifiedExpression* modifiedExpr = (LinxcModifiedExpression*)this->allocator->Allocate(sizeof(LinxcModifiedExpression));
+                    LinxcModifiedExpression* modifiedExpr = (LinxcModifiedExpression*)this->allocator.Allocate(sizeof(LinxcModifiedExpression));
                     modifiedExpr->modification = Linxc_Ampersand;
                     modifiedExpr->expression = *rotatedExpr->data.functionCall.thisAsParam;//the original expr
                     
@@ -4152,7 +4146,7 @@ void LinxcParser::SegregateFuncCallExpression(FILE* fs, LinxcExpression* rotated
                 {
                     SegregateFuncCallExpression(fs, rotatedExpr->data.functionCall.thisAsParam, tempIndex, templateArgs, templateSpecializations);
 
-                    string fullName = rotatedExpr->data.functionCall.thisAsParam->resolvesTo.GetCName(GetDefaultAllocator());
+                    string fullName = rotatedExpr->data.functionCall.thisAsParam->resolvesTo.GetCName(GetCAllocator());
                     fprintf(fs, "%s ", fullName.buffer);
                     fullName.deinit();
 
@@ -4176,7 +4170,7 @@ void LinxcParser::SegregateFuncCallExpression(FILE* fs, LinxcExpression* rotated
                     newVar.isConst = false;
                     newVar.memberOf = NULL;
 
-                    LinxcVar* varPtr = (LinxcVar*)this->allocator->Allocate(sizeof(LinxcVar));
+                    LinxcVar* varPtr = (LinxcVar*)this->allocator.Allocate(sizeof(LinxcVar));
                     *varPtr = newVar;
 
                     LinxcExpression newThisAsParam;
@@ -4185,7 +4179,7 @@ void LinxcParser::SegregateFuncCallExpression(FILE* fs, LinxcExpression* rotated
                     newThisAsParam.priority = false;
                     newThisAsParam.data.variable = varPtr;
 
-                    LinxcModifiedExpression* modifiedExpr = (LinxcModifiedExpression*)this->allocator->Allocate(sizeof(LinxcModifiedExpression));
+                    LinxcModifiedExpression* modifiedExpr = (LinxcModifiedExpression*)this->allocator.Allocate(sizeof(LinxcModifiedExpression));
                     modifiedExpr->modification = Linxc_Ampersand;
                     modifiedExpr->expression = newThisAsParam;//the original expr
 
@@ -4234,14 +4228,14 @@ void LinxcParser::TranspileTypeC(FILE* fs, LinxcType* type, collections::Array<s
 {
     if (type->templateArgs.length > 0)
     {
-        collections::Array<string> typeTemplateArgs = templateArgs.CloneAdd(GetDefaultAllocator(), type->templateArgs);
+        collections::Array<string> typeTemplateArgs = templateArgs.CloneAdd(GetCAllocator(), type->templateArgs);
         for (usize i = 0; i < type->templateSpecializations.bucketsCount; i++)
         {
             if (type->templateSpecializations.buckets[i].initialized)
             {
                 for (usize j = 0; j < type->templateSpecializations.buckets[i].entries.count; j++)
                 {
-                    collections::Array<LinxcTypeReference> typeTemplateSpecializations = templateSpecializations.CloneAdd(GetDefaultAllocator(), type->templateSpecializations.buckets[i].entries.ptr[j].key);
+                    collections::Array<LinxcTypeReference> typeTemplateSpecializations = templateSpecializations.CloneAdd(GetCAllocator(), type->templateSpecializations.buckets[i].entries.ptr[j].key);
 
                     for (usize c = 0; c < type->subTypes.count; c++)
                     {

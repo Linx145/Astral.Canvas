@@ -517,7 +517,7 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator allocat
 
     i32 vertexBufferInputIndex = -1;
 
-    collections::vector<CharSlice> tokenStrings = collections::vector<CharSlice>(&defaultAllocator);
+    collections::vector<CharSlice> tokenStrings = collections::vector<CharSlice>(GetCAllocator());
     LinxcTokenizer* tokenizer = &compiler.tokenizer;
     tokenizer->tokenStream = collections::vector<LinxcToken>(allocator);
 

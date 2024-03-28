@@ -1131,7 +1131,7 @@ LinxcToken LinxcTokenizer::TokenizeAdvance()
     return result;
 };
 
-string LinxcToken::ToString(IAllocator *allocator)
+string LinxcToken::ToString(IAllocator allocator)
 {
     return string(allocator, this->tokenizer->buffer + this->start, this->end - this->start);
 }
@@ -1173,7 +1173,7 @@ LinxcTokenizer::LinxcTokenizer(const char *buffer, usize bufferLength, collectio
 LinxcTokenID LinxcGetKeyword(const char *chars, usize strlen, bool isPreprocessorDirective, collections::hashmap<string, LinxcTokenID> *nameToToken)
 {
     IAllocator defaultAllocator = GetCAllocator();
-    string str = string(&defaultAllocator, chars, strlen); // string(chars, strlen);
+    string str = string(defaultAllocator, chars, strlen); // string(chars, strlen);
 
     LinxcTokenID *tokenIDPtr = nameToToken->Get(str);
 

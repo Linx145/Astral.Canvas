@@ -82,7 +82,7 @@ bool LinxcOperatorImplEql(LinxcOperatorImpl A, LinxcOperatorImpl B)
     //Thus, there is no need to check their implicity
     return A.myType == B.myType && A.otherType == B.otherType && A.ID == B.ID && A.op == B.op && A.implicit == B.implicit;
 }
-string LinxcOperatorImpl::ToString(IAllocator* allocator)
+string LinxcOperatorImpl::ToString(IAllocator allocator)
 {
     if (this->ID == LinxcOverloadIs_Cast)
     {
@@ -92,27 +92,27 @@ string LinxcOperatorImpl::ToString(IAllocator* allocator)
             str.Append("implicit ");
         }
         else str.Append("explicit ");
-        str.AppendDeinit(this->myType.ToString(GetDefaultAllocator()));
+        str.AppendDeinit(this->myType.ToString(GetCAllocator()));
         str.Append(" -> ");
-        str.AppendDeinit(this->otherType.ToString(GetDefaultAllocator()));
+        str.AppendDeinit(this->otherType.ToString(GetCAllocator()));
         //this->operation.cast.
         return str;
     }
     else
     {
         string str = string(allocator);
-        str.AppendDeinit(this->myType.ToString(GetDefaultAllocator()));
+        str.AppendDeinit(this->myType.ToString(GetCAllocator()));
         str.Append(LinxcTokenIDToString(this->op));
-        str.AppendDeinit(this->otherType.ToString(GetDefaultAllocator()));
+        str.AppendDeinit(this->otherType.ToString(GetCAllocator()));
         return str;
     }
 }
-string LinxcOperatorFunc::ToString(IAllocator* allocator)
+string LinxcOperatorFunc::ToString(IAllocator allocator)
 {
     string result = string(allocator);
-    result.AppendDeinit(this->operatorOverride.ToString(GetDefaultAllocator()));
+    result.AppendDeinit(this->operatorOverride.ToString(GetCAllocator()));
     result.Append(" returns ");
-    result.AppendDeinit(this->function.returnType.AsTypeReference().value.ToString(GetDefaultAllocator()));
+    result.AppendDeinit(this->function.returnType.AsTypeReference().value.ToString(GetCAllocator()));
     return result;
 }
 option<LinxcTypeReference> LinxcOperator::EvaluatePossible()
@@ -220,7 +220,7 @@ LinxcParsedFile::LinxcParsedFile()
     this->includeName = string();
     this->ast = collections::vector<LinxcStatement>();
 }
-LinxcParsedFile::LinxcParsedFile(IAllocator *allocator, string fullPath, string includeName)
+LinxcParsedFile::LinxcParsedFile(IAllocator allocator, string fullPath, string includeName)
 {
     this->isLinxcH = false;
     this->mustTranspileC = false;
@@ -304,7 +304,7 @@ LinxcNamespace::LinxcNamespace()
     this->types = collections::hashmap<string, LinxcType>();
     this->variables = collections::hashmap<string, LinxcVar>();
 }
-LinxcNamespace::LinxcNamespace(IAllocator *allocator, string name)
+LinxcNamespace::LinxcNamespace(IAllocator allocator, string name)
 {
     this->parentNamespace = NULL;
     this->name = name;
@@ -315,7 +315,7 @@ LinxcNamespace::LinxcNamespace(IAllocator *allocator, string name)
 }
 LinxcPhoneyNamespace::LinxcPhoneyNamespace()
 {
-    this->allocator = GetDefaultAllocator();
+    this->allocator = GetCAllocator();
     this->parentNamespace = NULL;
     this->actualNamespace = NULL;
     this->name = string();
@@ -325,7 +325,7 @@ LinxcPhoneyNamespace::LinxcPhoneyNamespace()
     this->variableRefs = collections::hashmap<string, LinxcVar*>();
     this->typedefs = collections::hashmap<string, LinxcTypeReference>();
 }
-LinxcPhoneyNamespace::LinxcPhoneyNamespace(IAllocator* allocator, LinxcNamespace* thisActualNamespace)
+LinxcPhoneyNamespace::LinxcPhoneyNamespace(IAllocator allocator, LinxcNamespace* thisActualNamespace)
 {
     this->allocator = allocator;
     this->parentNamespace = NULL;
@@ -428,7 +428,7 @@ LinxcType::LinxcType()
     this->enumMembers = collections::vector<LinxcEnumMember>();
     this->operatorOverloads = collections::hashmap<LinxcOperatorImpl, LinxcOperatorFunc>();
 }
-LinxcType::LinxcType(IAllocator *allocator, string name, LinxcNamespace *myNamespace, LinxcType *myParent)
+LinxcType::LinxcType(IAllocator allocator, string name, LinxcNamespace *myNamespace, LinxcType *myParent)
 {
     this->isSpecializedType = TemplateSpecialization();
     this->delegateDecl = LinxcFuncPtr();
@@ -444,7 +444,7 @@ LinxcType::LinxcType(IAllocator *allocator, string name, LinxcNamespace *myNames
     this->templateSpecializations = collections::hashmap<TemplateSpecialization, LinxcType>(allocator, &LinxcTemplateSpecializationsHash, &LinxcTemplateSpecializationsEql);
     this->operatorOverloads = collections::hashmap<LinxcOperatorImpl, LinxcOperatorFunc>(allocator, &LinxcOperatorImplHash, &LinxcOperatorImplEql);
 }
-LinxcType LinxcType::Specialize(IAllocator *allocator, collections::Array<string> inputArgs, TemplateSpecialization specialization)
+LinxcType LinxcType::Specialize(IAllocator allocator, collections::Array<string> inputArgs, TemplateSpecialization specialization)
 {
     if (this->enumMembers.count > 0)
     {
@@ -461,7 +461,7 @@ LinxcType LinxcType::Specialize(IAllocator *allocator, collections::Array<string
             printf("Specialized delegate arg of generic type %s as type %s\n", this->delegateDecl.arguments.data[i].AsTypeReference().value.genericTypeName.buffer, newDelegate.arguments.data[i].AsTypeReference().value.lastType->name.buffer);
         }
 
-        LinxcExpression* newReturnTypePtr = (LinxcExpression*)allocator->Allocate(sizeof(LinxcExpression));
+        LinxcExpression* newReturnTypePtr = (LinxcExpression*)allocator.Allocate(sizeof(LinxcExpression));
         *newReturnTypePtr = this->delegateDecl.returnType->SpecializeSignature(allocator, inputArgs, specialization);
 
         newDelegate.returnType = newReturnTypePtr;
@@ -514,7 +514,7 @@ LinxcType LinxcType::Specialize(IAllocator *allocator, collections::Array<string
         return clone;
     }
 }
-string LinxcType::GetFullName(IAllocator *allocator)
+string LinxcType::GetFullName(IAllocator allocator)
 {
     string result = string();
     result.allocator = allocator;
@@ -530,13 +530,13 @@ string LinxcType::GetFullName(IAllocator *allocator)
     
     return result;
 }
-string LinxcType::GetCName(IAllocator* allocator)
+string LinxcType::GetCName(IAllocator allocator)
 {
-    string result = string(GetDefaultAllocator());
+    string result = string(GetCAllocator());
 
     if (this->parentType != NULL)
     {
-        result.AppendDeinit(this->parentType->GetCName(GetDefaultAllocator()));
+        result.AppendDeinit(this->parentType->GetCName(GetCAllocator()));
         result.Append("_");
     }
     else
@@ -558,7 +558,7 @@ string LinxcType::GetCName(IAllocator* allocator)
     for (usize i = 0; i < this->isSpecializedType.length; i++)
     {
         result.Append("_");
-        string cName = this->isSpecializedType.data[i].GetCName(GetDefaultAllocator(), true);
+        string cName = this->isSpecializedType.data[i].GetCName(GetCAllocator(), true);
         result.AppendDeinit(cName);
     }
 
@@ -634,7 +634,7 @@ LinxcVar::LinxcVar(string varName, LinxcExpression varType, option<LinxcExpressi
     this->defaultValue = defaultVal;
     this->memberOf = NULL;
 }
-string LinxcVar::ToString(IAllocator *allocator)
+string LinxcVar::ToString(IAllocator allocator)
 {
     return string(allocator, this->name.buffer);
 }
@@ -695,7 +695,7 @@ LinxcFunc::LinxcFunc(string name, LinxcExpression returnType)
     this->necessaryArguments = 0;
     this->asType = LinxcType();
 }
-LinxcFuncPtr LinxcFunc::GetSignature(IAllocator *allocator)
+LinxcFuncPtr LinxcFunc::GetSignature(IAllocator allocator)
 {
     LinxcFuncPtr result = LinxcFuncPtr(this->name, &this->returnType);
     result.necessaryArguments = this->necessaryArguments;
@@ -706,7 +706,7 @@ LinxcFuncPtr LinxcFunc::GetSignature(IAllocator *allocator)
     }
     return result;
 }
-LinxcFunc LinxcFunc::SpecializeSignature(IAllocator* allocator, collections::Array<string> templateArgs, TemplateSpecialization specialization)
+LinxcFunc LinxcFunc::SpecializeSignature(IAllocator allocator, collections::Array<string> templateArgs, TemplateSpecialization specialization)
 {
     LinxcFunc specializedFunc = LinxcFunc(this->name, this->returnType.SpecializeSignature(allocator, templateArgs, specialization));
     specializedFunc.methodOf = this->methodOf; //may not be equivalent to 'this' if we are transpiling generic subtype of a generic type
@@ -719,21 +719,21 @@ LinxcFunc LinxcFunc::SpecializeSignature(IAllocator* allocator, collections::Arr
     }
     return specializedFunc;
 }
-string LinxcFunc::GetCName(IAllocator *allocator)//, collections::Array<string> scopeTemplateArgs, collections::Array<LinxcTypeReference> scopeTemplateSpecializations)
+string LinxcFunc::GetCName(IAllocator allocator)//, collections::Array<string> scopeTemplateArgs, collections::Array<LinxcTypeReference> scopeTemplateSpecializations)
 {
-    string result = string(GetDefaultAllocator());
+    string result = string(GetCAllocator());
 
     /*for (usize i = 0; i < templateSpecializations.length; i++)
     {
         //TODO
-        result.AppendDeinit(templateSpecializations.data[i].GetCName(GetDefaultAllocator(), true));
+        result.AppendDeinit(templateSpecializations.data[i].GetCName(GetCAllocator(), true));
         result.Append("_");
     }*/
 
     if (this->methodOf != NULL)
     {
         result.Prepend("_");
-        string typeCName = this->methodOf->GetCName(GetDefaultAllocator());
+        string typeCName = this->methodOf->GetCName(GetCAllocator());
         result.Prepend(typeCName.buffer);
         typeCName.deinit();
     }
@@ -752,14 +752,14 @@ string LinxcFunc::GetCName(IAllocator *allocator)//, collections::Array<string> 
     return result.CloneDeinit(allocator);
 }
 
-string LinxcFunctionCall::ToString(IAllocator *allocator)
+string LinxcFunctionCall::ToString(IAllocator allocator)
 {
-    string result = string(GetDefaultAllocator());
+    string result = string(GetCAllocator());
     result.Append(this->func->name.buffer);
     result.Append("(");
     for (int i = 0; i < this->inputParams.length; i++)
     {
-        result.AppendDeinit(this->inputParams.data[i].ToString(GetDefaultAllocator()));
+        result.AppendDeinit(this->inputParams.data[i].ToString(GetCAllocator()));
         if (i < this->inputParams.length - 1)
         {
             result.Append(", ");
@@ -769,16 +769,16 @@ string LinxcFunctionCall::ToString(IAllocator *allocator)
     return result.CloneDeinit(allocator);
 }
 
-string LinxcTypeReference::ToString(IAllocator *allocator)
+string LinxcTypeReference::ToString(IAllocator allocator)
 {
-    string result = string(GetDefaultAllocator());
+    string result = string(GetCAllocator());
     if (this->isConst)
     {
         result.Append("const ");
     }
     if (this->lastType != NULL)
     {
-        result.AppendDeinit(this->lastType->GetFullName(GetDefaultAllocator()));
+        result.AppendDeinit(this->lastType->GetFullName(GetCAllocator()));
     }
     else
     {
@@ -790,9 +790,9 @@ string LinxcTypeReference::ToString(IAllocator *allocator)
     }
     return result.CloneDeinit(allocator);
 }
-string LinxcTypeReference::GetCName(IAllocator* allocator, bool pointerAsPtr, collections::Array<string> scopeTemplateArgs, TemplateSpecialization scopeTemplateSpecializations)
+string LinxcTypeReference::GetCName(IAllocator allocator, bool pointerAsPtr, collections::Array<string> scopeTemplateArgs, TemplateSpecialization scopeTemplateSpecializations)
 {
-    string result = string(GetDefaultAllocator());
+    string result = string(GetCAllocator());
     if (this->isConst)
     {
         result.Append("const ");
@@ -803,18 +803,18 @@ string LinxcTypeReference::GetCName(IAllocator* allocator, bool pointerAsPtr, co
         if (findResult.present)
         {
             //Not sure if wise to pass templateArgs, templateSpecializations to this
-            result.AppendDeinit(scopeTemplateSpecializations.data[findResult.value].GetCName(GetDefaultAllocator(), true, scopeTemplateArgs, scopeTemplateSpecializations));
+            result.AppendDeinit(scopeTemplateSpecializations.data[findResult.value].GetCName(GetCAllocator(), true, scopeTemplateArgs, scopeTemplateSpecializations));
         }
     }
     else
     {
-        string cName = this->lastType->GetCName(GetDefaultAllocator());
+        string cName = this->lastType->GetCName(GetCAllocator());
         result.AppendDeinit(cName);
-    }// result.AppendDeinit(this->lastType->GetCName(GetDefaultAllocator()));
+    }// result.AppendDeinit(this->lastType->GetCName(GetCAllocator()));
     for (usize i = 0; i < this->templateArgs.length; i++)
     {
         result.Append("_");
-        string cName = this->templateArgs.data[i].AsTypeReference().value.GetCName(GetDefaultAllocator(), true, scopeTemplateArgs, scopeTemplateSpecializations);
+        string cName = this->templateArgs.data[i].AsTypeReference().value.GetCName(GetCAllocator(), true, scopeTemplateArgs, scopeTemplateSpecializations);
         result.AppendDeinit(cName);
     }
     if (!pointerAsPtr) //pointer as *
@@ -838,7 +838,7 @@ LinxcExpressionData::LinxcExpressionData()
 {
     this->operatorCall = NULL;
 }
-string LinxcExpression::ToString(IAllocator *allocator)
+string LinxcExpression::ToString(IAllocator allocator)
 {
     switch (this->ID)
     {
@@ -856,7 +856,7 @@ string LinxcExpression::ToString(IAllocator *allocator)
         }
         case LinxcExpr_Modified:
         {
-            string result = string(GetDefaultAllocator());
+            string result = string(GetCAllocator());
             switch (this->data.modifiedExpression->modification)
             {
             case Linxc_Asterisk:
@@ -877,50 +877,50 @@ string LinxcExpression::ToString(IAllocator *allocator)
             default:
                 break;
             }
-            result.AppendDeinit(this->data.modifiedExpression->expression.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.modifiedExpression->expression.ToString(GetCAllocator()));
             return result.CloneDeinit(allocator);
         }
         case LinxcExpr_Nameof:
         {
-            string result = string(GetDefaultAllocator());
+            string result = string(GetCAllocator());
             result.Append("nameof(");
-            result.AppendDeinit(this->data.nameofCall.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.nameofCall.ToString(GetCAllocator()));
             result.Append(")");
             return result.CloneDeinit(allocator);
         }
         case LinxcExpr_OperatorCall:
         {
-            string result = string(GetDefaultAllocator());
+            string result = string(GetCAllocator());
             result.Append("(");
-            result.AppendDeinit(this->data.operatorCall->leftExpr.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.operatorCall->leftExpr.ToString(GetCAllocator()));
             result.Append(LinxcTokenIDToString(this->data.operatorCall->operatorType));
-            result.AppendDeinit(this->data.operatorCall->rightExpr.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.operatorCall->rightExpr.ToString(GetCAllocator()));
             result.Append(")");
             return result.CloneDeinit(allocator);
         }
         case LinxcExpr_Sizeof:
         {
-            string result = string(GetDefaultAllocator());
+            string result = string(GetCAllocator());
             result.Append("sizeof(");
-            result.AppendDeinit(this->data.sizeofCall.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.sizeofCall.ToString(GetCAllocator()));
             result.Append(")");
             return result.CloneDeinit(allocator);
         }
         case LinxcExpr_TypeCast:
         {
-            string result = string(GetDefaultAllocator());
+            string result = string(GetCAllocator());
             result.Append("(");
-            result.AppendDeinit(this->data.typeCast->castToType.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.typeCast->castToType.ToString(GetCAllocator()));
             result.Append(")");
-            result.AppendDeinit(this->data.typeCast->expressionToCast.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.typeCast->expressionToCast.ToString(GetCAllocator()));
             
             return result.CloneDeinit(allocator);
         }
         case LinxcExpr_Typeof:
         {
-            string result = string(GetDefaultAllocator());
+            string result = string(GetCAllocator());
             result.Append("typeof(");
-            result.AppendDeinit(this->data.typeofCall.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.typeofCall.ToString(GetCAllocator()));
             result.Append(")");
             return result.CloneDeinit(allocator);
         }
@@ -932,7 +932,7 @@ string LinxcExpression::ToString(IAllocator *allocator)
             return string(allocator, "NULL");
     }
 }
-LinxcExpression LinxcExpression::SpecializeSignature(IAllocator *allocator, collections::Array<string> args, TemplateSpecialization with)
+LinxcExpression LinxcExpression::SpecializeSignature(IAllocator allocator, collections::Array<string> args, TemplateSpecialization with)
 {
     LinxcExpression newExpr;
     newExpr.data.typeRef = LinxcTypeReference(NULL);
@@ -1029,9 +1029,9 @@ option<LinxcTypeReference> LinxcExpression::AsTypeReference()
     }
     return option<LinxcTypeReference>();
 }
-LinxcExpression *LinxcExpression::ToHeap(IAllocator *allocator)
+LinxcExpression *LinxcExpression::ToHeap(IAllocator allocator)
 {
-    LinxcExpression *result = (LinxcExpression*)allocator->Allocate(sizeof(LinxcExpression));
+    LinxcExpression *result = (LinxcExpression*)allocator.Allocate(sizeof(LinxcExpression));
     result->data = this->data;
     result->ID = this->ID;
     result->resolvesTo = this->resolvesTo;
@@ -1042,7 +1042,7 @@ LinxcStatementData::LinxcStatementData()
 {
     this->includeStatement = LinxcIncludeStatement();
 }
-string LinxcStatement::ToString(IAllocator *allocator)
+string LinxcStatement::ToString(IAllocator allocator)
 {
     switch (this->ID)
     {
@@ -1060,26 +1060,26 @@ string LinxcStatement::ToString(IAllocator *allocator)
     case LinxcStmt_Return:
     {
         string result = string(allocator, "return ");
-        result.AppendDeinit(this->data.returnStatement.ToString(GetDefaultAllocator()));
+        result.AppendDeinit(this->data.returnStatement.ToString(GetCAllocator()));
         return result;
     }
     case LinxcStmt_FuncDecl:
     {
         string result = string(allocator);
-        result.AppendDeinit(this->data.funcDeclaration->returnType.ToString(GetDefaultAllocator()));
+        result.AppendDeinit(this->data.funcDeclaration->returnType.ToString(GetCAllocator()));
         result.Append(" ");
         result.Append(this->data.funcDeclaration->name.buffer);
         result.Append("(");
         for (usize i = 0; i < this->data.funcDeclaration->arguments.length; i++)
         {
             LinxcVar* var = &this->data.funcDeclaration->arguments.data[i];
-            result.AppendDeinit(var->type.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(var->type.ToString(GetCAllocator()));
             result.Append(" ");
             result.Append(var->name.buffer);
             if (var->defaultValue.present)
             {
                 result.Append(" = ");
-                result.AppendDeinit(var->defaultValue.value.ToString(GetDefaultAllocator()));
+                result.AppendDeinit(var->defaultValue.value.ToString(GetCAllocator()));
             }
             if (i < this->data.funcDeclaration->arguments.length - 1)
             {
@@ -1090,7 +1090,7 @@ string LinxcStatement::ToString(IAllocator *allocator)
 
         for (usize i = 0; i < this->data.funcDeclaration->body.count; i++)
         {
-            result.AppendDeinit(this->data.funcDeclaration->body.ptr[i].ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.funcDeclaration->body.ptr[i].ToString(GetCAllocator()));
             result.Append("\n");
         }
         result.Append("}");
@@ -1098,12 +1098,12 @@ string LinxcStatement::ToString(IAllocator *allocator)
     }
     case LinxcStmt_Namespace:
     {
-        string result = string(GetDefaultAllocator());
+        string result = string(GetCAllocator());
         result.Append("namespace ");
         result.Append(" {\n");
         for (usize i = 0; i < this->data.namespaceScope.body.count; i++)
         {
-            result.AppendDeinit(this->data.namespaceScope.body.Get(i)->ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.namespaceScope.body.Get(i)->ToString(GetCAllocator()));
             result.Append("\n");
         }
         result.Append("}");
@@ -1118,13 +1118,13 @@ string LinxcStatement::ToString(IAllocator *allocator)
         {
             result.Append("const ");
         }
-        result.AppendDeinit(var->type.ToString(GetDefaultAllocator()));
+        result.AppendDeinit(var->type.ToString(GetCAllocator()));
         result.Append(" ");
         result.Append(var->name.buffer);
         if (var->defaultValue.present)
         {
             result.Append(" = ");
-            result.AppendDeinit(var->defaultValue.value.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(var->defaultValue.value.ToString(GetCAllocator()));
         }
         result.Append(";");
         return result;
@@ -1136,7 +1136,7 @@ string LinxcStatement::ToString(IAllocator *allocator)
         result.Append(" { \n");
         for (usize i = 0; i < this->data.typeDeclaration->body.count; i++)
         {
-            result.AppendDeinit(this->data.typeDeclaration->body.ptr[i].ToString(GetDefaultAllocator()));
+            result.AppendDeinit(this->data.typeDeclaration->body.ptr[i].ToString(GetCAllocator()));
             result.Append("\n");
         }
         result.Append("}");
@@ -1150,13 +1150,13 @@ string LinxcStatement::ToString(IAllocator *allocator)
         {
             result.Append("const ");
         }
-        result.AppendDeinit(var->type.ToString(GetDefaultAllocator()));
+        result.AppendDeinit(var->type.ToString(GetCAllocator()));
         result.Append(" ");
         result.Append(var->name.buffer);
         if (var->defaultValue.present)
         {
             result.Append(" = ");
-            result.AppendDeinit(var->defaultValue.value.ToString(GetDefaultAllocator()));
+            result.AppendDeinit(var->defaultValue.value.ToString(GetCAllocator()));
         }
         result.Append(";");
         return result;

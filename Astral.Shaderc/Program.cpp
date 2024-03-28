@@ -12,10 +12,9 @@ i32 main(int argc, char **argv)
         return 0;
     }
     IAllocator allocator = GetCAllocator();
-    SetDefaultAllocator(allocator);
 
-    ArenaAllocator arena = ArenaAllocator(&allocator);
-    string str = io::ReadFile(&arena.asAllocator, argv[1]);
+    ArenaAllocator arena = ArenaAllocator(allocator);
+    string str = io::ReadFile(arena.asAllocator, argv[1]);
 
     if (str.buffer == NULL)
     {
@@ -23,20 +22,20 @@ i32 main(int argc, char **argv)
         //to argv[2]
         if (io::DirectoryExists(argv[1]) && io::DirectoryExists(argv[2]))
         {
-            collections::Array<string> filesInDir = io::GetFilesInDirectory(&arena.asAllocator, argv[1]);
+            collections::Array<string> filesInDir = io::GetFilesInDirectory(arena.asAllocator, argv[1]);
 
             for (usize i = 0; i < filesInDir.length; i++)
             {
-                if (path::GetExtension(&arena.asAllocator, filesInDir.data[i]) != ".shader")
+                if (path::GetExtension(arena.asAllocator, filesInDir.data[i]) != ".shader")
                 {
                     continue;
                 }
-                string fullPath = string(&arena.asAllocator, argv[1]);
+                string fullPath = string(arena.asAllocator, argv[1]);
                 fullPath.Append("/");
                 fullPath.Append(filesInDir.data[i].buffer);
-                str = io::ReadFile(&arena.asAllocator, fullPath.buffer);
+                str = io::ReadFile(arena.asAllocator, fullPath.buffer);
 
-                AstralShadercCompileResult result = AstralShaderc_CompileShader(&arena.asAllocator, str);
+                AstralShadercCompileResult result = AstralShaderc_CompileShader(arena.asAllocator, str);
                 if (result.errorMessage.buffer != NULL)
                 {
                     fprintf(stderr, "%s: %s\n\n", filesInDir.data[i].buffer, result.errorMessage.buffer);
@@ -45,14 +44,14 @@ i32 main(int argc, char **argv)
                 else
                 {
                     usize argvLen = strlen(argv[2]);
-                    string newPath = string(&arena.asAllocator, argv[2]);
+                    string newPath = string(arena.asAllocator, argv[2]);
                     if (argv[2][argvLen - 2] != '\\' && argv[2][argvLen - 2] != '/')
                     {
                         newPath.Append("/");
                     }
                     newPath.AppendDeinit(path::GetFileName(GetCAllocator(), filesInDir.data[i]));
                     newPath.Append("obj");
-                    if (!AstralShaderc_WriteToFile(&arena.asAllocator, newPath, &result))
+                    if (!AstralShaderc_WriteToFile(arena.asAllocator, newPath, &result))
                     {
                         fprintf(stderr, "Failed to write shader to %s\n", newPath.buffer);
                     }
@@ -65,16 +64,16 @@ i32 main(int argc, char **argv)
         return 1;
     }
 
-    AstralShadercCompileResult result = AstralShaderc_CompileShader(&arena.asAllocator, str);
+    AstralShadercCompileResult result = AstralShaderc_CompileShader(arena.asAllocator, str);
     if (result.errorMessage.buffer != NULL)
     {
         fprintf(stderr, "%s\n", result.errorMessage.buffer);
     }
     else
     {
-        //string originalPath = string(&arena.asAllocator, argv[i]);
-        string newPath = string(&arena.asAllocator, argv[2]); // path::SwapExtension(&arena.asAllocator, originalPath, ".shaderobj");
-        if (!AstralShaderc_WriteToFile(&arena.asAllocator, newPath, &result))
+        //string originalPath = string(arena.asAllocator, argv[i]);
+        string newPath = string(arena.asAllocator, argv[2]); // path::SwapExtension(arena.asAllocator, originalPath, ".shaderobj");
+        if (!AstralShaderc_WriteToFile(arena.asAllocator, newPath, &result))
         {
             fprintf(stderr, "Failed to output shader file\n");
         }

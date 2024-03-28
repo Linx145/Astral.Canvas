@@ -25,7 +25,7 @@ void LinxcGenerateCHeaderForNamespace(FILE *fs, LinxcParser *parser, LinxcNamesp
 }
 void LinxcGenerateTypeCHeader(FILE *fs, LinxcParser *parser, LinxcType *type)
 {
-    string cName = type->GetCName(GetDefaultAllocator());
+    string cName = type->GetCName(GetCAllocator());
     fprintf(fs, "typedef void * %s;\n\n", cName.buffer);
 
     for (usize i = 0; i < type->variables.count; i++)
