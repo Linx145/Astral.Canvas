@@ -26,10 +26,10 @@ namespace AstralCanvas
     {
         this->attachments = collections::vector<RenderProgramImageAttachment>();
         this->renderPasses = collections::vector<RenderPass>();
-        this->allocator = NULL;
+        this->allocator = IAllocator{};
         this->handle = NULL;
     }
-    RenderProgram::RenderProgram(IAllocator *allocator)
+    RenderProgram::RenderProgram(IAllocator allocator)
     {
         this->allocator = allocator;
         this->attachments = collections::vector<RenderProgramImageAttachment>(allocator);
@@ -113,7 +113,7 @@ namespace AstralCanvas
                     return;
                 }
 
-                ArenaAllocator arena = ArenaAllocator(GetDefaultAllocator());
+                ArenaAllocator arena = ArenaAllocator(GetCAllocator());
                 VkSubpassDescription *subpassDescriptions = (VkSubpassDescription*)malloc(sizeof(VkSubpassDescription) * program->renderPasses.count);
                 
                 for (usize i = 0; i < program->renderPasses.count; i++)
@@ -320,12 +320,12 @@ namespace AstralCanvas
     }
     
 
-    RenderProgram *GetDynamicRenderProgram(IAllocator *allocator, ImageFormat imageFormat, ImageFormat depthFormat, bool mustClear, bool willDrawToWindow)
+    RenderProgram *GetDynamicRenderProgram(IAllocator allocator, ImageFormat imageFormat, ImageFormat depthFormat, bool mustClear, bool willDrawToWindow)
     {
-        if (dynamicProgramCache.allocator == NULL)
+        if (dynamicProgramCache.allocator.instance == NULL)
         {
             dynamicProgramCacheAllocator = GetCAllocator();
-            dynamicProgramCache = collections::hashmap<RenderProgramSignature, RenderProgram>(&dynamicProgramCacheAllocator, &RenderProgramSignatureHash, &RenderProgramSignatureEql);
+            dynamicProgramCache = collections::hashmap<RenderProgramSignature, RenderProgram>(dynamicProgramCacheAllocator, &RenderProgramSignatureHash, &RenderProgramSignatureEql);
         }
 
         RenderProgramSignature signature{imageFormat, depthFormat, mustClear, willDrawToWindow};

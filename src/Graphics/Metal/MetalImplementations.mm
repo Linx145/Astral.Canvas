@@ -14,7 +14,7 @@ AstralCanvas::ImageFormat AstralCanvasMetal_GetSwapchainFormat()
 bool AstralCanvasMetal_CreateRenderProgram(AstralCanvas::RenderProgram *program)
 {
     usize size = sizeof(void*) * program->renderPasses.count;
-    program->handle = program->allocator->Allocate(size);
+    program->handle = program->allocator.Allocate(size);
     
     for (usize i = 0; i < program->renderPasses.count; i++)
     {
@@ -94,7 +94,7 @@ void AstralCanvasMetal_DestroyRenderProgram(AstralCanvas::RenderProgram *program
             MTLRenderPassDescriptor *descriptor = (MTLRenderPassDescriptor *)((MTLRenderPassDescriptor**)program->handle)[i];
             [descriptor release];
         }
-        program->allocator->Free(program->handle);
+        program->allocator.Free(program->handle);
     }
 }
 
@@ -484,15 +484,15 @@ void AstralCanvasMetal_AddUniformDescriptorSets(AstralCanvas::Shader *shader)
                 case AstralCanvas::ShaderResourceType_Texture:
                 {
                     newMutableState.textures = collections::Array<AstralCanvas::Texture2D*>(shader->allocator, fmax(resource->arrayLength, 1));
-                    newMutableState.imageInfos = shader->allocator->Allocate(sizeof(void*) * newMutableState.textures.length);
-                    //newMutableState.imageInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
+                    newMutableState.imageInfos = shader->allocator.Allocate(sizeof(void*) * newMutableState.textures.length);
+                    //newMutableState.imageInfos = this->allocator.Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
                     break;
                 }
                 case AstralCanvas::ShaderResourceType_Sampler:
                 {
                     newMutableState.samplers = collections::Array<AstralCanvas::SamplerState*>(shader->allocator, fmax(resource->arrayLength, 1));
-                    newMutableState.samplerInfos = shader->allocator->Allocate(sizeof(void*) * newMutableState.samplers.length);
-                    //newMutableState.samplerInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.samplers.length);
+                    newMutableState.samplerInfos = shader->allocator.Allocate(sizeof(void*) * newMutableState.samplers.length);
+                    //newMutableState.samplerInfos = this->allocator.Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.samplers.length);
                     break;
                 }
                 default:

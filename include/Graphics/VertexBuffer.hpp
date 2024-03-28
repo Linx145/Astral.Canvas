@@ -19,7 +19,7 @@ namespace AstralCanvas
         VertexBuffer(VertexDeclaration *thisVertexType, usize vertexCount, bool isDynamic = false, bool canRead = false);
 
         void SetData(void* verticesData, usize count);
-        void *GetData(IAllocator *allocator, usize* dataLength);
+        void *GetData(IAllocator allocator, usize* dataLength);
         void Construct();
         void deinit();
     };

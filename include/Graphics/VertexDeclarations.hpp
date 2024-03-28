@@ -14,14 +14,14 @@ namespace AstralCanvas
     };
     struct VertexDeclaration
     {
-        IAllocator *allocator;
+        IAllocator allocator;
         collections::vector<VertexElement> elements;
         usize size;
         VertexInputRate inputRate;
 
         void deinit();
         VertexDeclaration();
-        VertexDeclaration(IAllocator *thisAllocator, usize size, VertexInputRate inputRate);
+        VertexDeclaration(IAllocator thisAllocator, usize size, VertexInputRate inputRate);
     };
 
     struct VertexPositionColor

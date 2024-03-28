@@ -109,7 +109,7 @@ void AstralCanvasMetal_RecreateDepthBuffers(usize frameWidth, usize frameHeight)
     
     if (AstralCanvasMetal_DepthBuffers.data == NULL)
     {
-        AstralCanvasMetal_DepthBuffers = collections::Array<AstralCanvas::Texture2D>(GetDefaultAllocator(), framesCount);
+        AstralCanvasMetal_DepthBuffers = collections::Array<AstralCanvas::Texture2D>(GetCAllocator(), framesCount);
     }
     else
     {

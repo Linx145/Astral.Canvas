@@ -2,13 +2,14 @@
 #include "Linxc.h"
 
 #ifdef WINDOWS
+#define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 #endif
 #ifdef POSIX
 #include "pthreads.h" //to test
 #endif
 
-namespace Threading
+namespace threading
 {
 #ifdef POSIX
     struct ConditionVariable
@@ -16,7 +17,7 @@ namespace Threading
         pthread_cond_t handle;
         pthread_mutex_t mutex;
 
-        inline ConditionVariable(bool initialState)
+        inline ConditionVariable()
         {
             pthread_cond_init(&handle, NULL);
             pthread_mutex_init(&mutex, NULL);
@@ -60,7 +61,7 @@ namespace Threading
         CONDITION_VARIABLE handle;
         CRITICAL_SECTION criticalSection;
 
-        inline ConditionVariable(bool initialState)
+        inline ConditionVariable()
         {
             InitializeConditionVariable(&handle);
             InitializeCriticalSection(&criticalSection);
@@ -161,5 +162,27 @@ namespace Threading
             return true;
         }
     };
+#endif
+
+#ifdef POSIX
+#define THREAD_RESULT void*
+    def_delegate(ThreadFunc, THREAD_RESULT, void*);
+    typedef pthread_t Thread;
+    inline Thread NewThread(ThreadFunc func, void *inputArgs)
+    {
+        Thread threadID;
+        pthread_create(&threadID, NULL, func, inputArgs);
+        return threadID;
+    }
+#endif
+
+#ifdef WINDOWS
+#define THREAD_RESULT unsigned long
+    def_delegate(ThreadFunc, THREAD_RESULT, void*);
+    typedef HANDLE Thread;
+    inline Thread NewThread(ThreadFunc func, void *inputArgs)
+    {
+        return CreateThread(NULL, 0, func, inputArgs, 0, NULL);
+    }
 #endif
 }

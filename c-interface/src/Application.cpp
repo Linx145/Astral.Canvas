@@ -29,9 +29,7 @@ void AstralCanvasApplication_AddWindow(AstralCanvasApplication ptr, const char *
 exportC 
 AstralCanvasApplication AstralCanvasApplication_Init(const char *appName, const char *engineName, u32 appVersion, u32 engineVersion, float framesPerSecond)
 {
-    SetDefaultAllocator(GetCAllocator());
-
-    AstralCanvas::ApplicationInit(GetDefaultAllocator(), string(GetDefaultAllocator(), appName), string(GetDefaultAllocator(), engineName), appVersion, engineVersion, framesPerSecond);
+    AstralCanvas::ApplicationInit(GetCAllocator(), string(GetCAllocator(), appName), string(GetCAllocator(), engineName), appVersion, engineVersion, framesPerSecond);
 
     return (AstralCanvasApplication)AstralCanvas::GetAppInstance();
 }

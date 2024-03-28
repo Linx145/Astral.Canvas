@@ -8,7 +8,7 @@
 
 struct AstralVulkanSwapchain
 {
-    IAllocator *allocator;
+    IAllocator allocator;
     AstralVkSwapchainSupportDetails supportDetails;
     AstralCanvas::Window *window;
     AstralVulkanGPU *gpu;
@@ -29,7 +29,7 @@ struct AstralVulkanSwapchain
     collections::Array<void *> imageHandles;
 };
 
-bool AstralCanvasVk_CreateSwapchain(IAllocator *allocator, AstralVulkanGPU *gpu, AstralCanvas::Window *window, AstralVulkanSwapchain *swapchain);
+bool AstralCanvasVk_CreateSwapchain(IAllocator allocator, AstralVulkanGPU *gpu, AstralCanvas::Window *window, AstralVulkanSwapchain *swapchain);
 void AstralCanvasVk_DestroySwapchain(AstralVulkanSwapchain *swapchain);
 
 bool AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain *swapchain, AstralVulkanGPU *gpu);

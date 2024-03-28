@@ -18,5 +18,5 @@ struct AstralVkSwapchainSupportDetails
     }
 };
 
-AstralVkSwapchainSupportDetails AstralCanvasVk_QuerySwapchainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR windowSurface, IAllocator *allocator);
+AstralVkSwapchainSupportDetails AstralCanvasVk_QuerySwapchainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR windowSurface, IAllocator allocator);
 #endif

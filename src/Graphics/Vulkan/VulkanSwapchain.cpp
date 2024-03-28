@@ -18,10 +18,10 @@ VkSurfaceFormatKHR AstralCanvasVk_FindSurfaceWith(VkColorSpaceKHR colorSpace, Vk
     return toSearch.data[0];
 }
 
-bool AstralCanvasVk_CreateSwapchain(IAllocator *allocator, AstralVulkanGPU *gpu, AstralCanvas::Window *window, AstralVulkanSwapchain* result)
+bool AstralCanvasVk_CreateSwapchain(IAllocator allocator, AstralVulkanGPU *gpu, AstralCanvas::Window *window, AstralVulkanSwapchain* result)
 {
     IAllocator cAllocator = GetCAllocator();
-    AstralVkSwapchainSupportDetails details = AstralCanvasVk_QuerySwapchainSupport(gpu->physicalDevice, (VkSurfaceKHR)window->windowSurfaceHandle,  &cAllocator);
+    AstralVkSwapchainSupportDetails details = AstralCanvasVk_QuerySwapchainSupport(gpu->physicalDevice, (VkSurfaceKHR)window->windowSurfaceHandle,  cAllocator);
 
     VkSurfaceFormatKHR surfaceFormat = AstralCanvasVk_FindSurfaceWith(VK_COLOR_SPACE_SRGB_NONLINEAR_KHR, VK_FORMAT_B8G8R8A8_UNORM, details.supportedSurfaceFormats);
 
@@ -75,7 +75,7 @@ bool AstralCanvasVk_SwapchainRecreate(AstralVulkanSwapchain* swapchain, AstralVu
     }
 
     IAllocator cAllocator = GetCAllocator();
-    AstralVkSwapchainSupportDetails details = AstralCanvasVk_QuerySwapchainSupport(gpu->physicalDevice, (VkSurfaceKHR)swapchain->window->windowSurfaceHandle,  &cAllocator);
+    AstralVkSwapchainSupportDetails details = AstralCanvasVk_QuerySwapchainSupport(gpu->physicalDevice, (VkSurfaceKHR)swapchain->window->windowSurfaceHandle,  cAllocator);
 
     VkExtent2D extents = {};
     while (extents.width == 0 || extents.height == 0)
@@ -181,7 +181,7 @@ bool AstralCanvasVk_SwapchainSwapBuffers(AstralVulkanGPU *gpu, AstralVulkanSwapc
         }
         else if (result != VK_SUBOPTIMAL_KHR)
         {
-            string str = string(GetDefaultAllocator(), "Failed to acquire next swapchain image, error code: ");
+            string str = string(GetCAllocator(), "Failed to acquire next swapchain image, error code: ");
             str.Append((i64)result);
             THROW_ERR(str.buffer);
             str.deinit();

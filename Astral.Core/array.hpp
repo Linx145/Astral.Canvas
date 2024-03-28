@@ -11,33 +11,33 @@ namespace collections
     {
         def_delegate(EqlFunc, bool, T, T);
 
-        IAllocator *allocator;
+        IAllocator allocator;
         T *data;
         usize length;
 
         Array()
         {
-            this->allocator = NULL;
+            this->allocator = IAllocator{};
             this->data = NULL;
             this->length = 0;
         }
-        Array(IAllocator* allocator)
+        Array(IAllocator allocator)
         {
             this->allocator = allocator;
             this->data = NULL;
             this->length = 0;
         }
-        Array(IAllocator* allocator, usize itemsCount)
+        Array(IAllocator allocator, usize itemsCount)
         {
             this->allocator = allocator;
             if (itemsCount == 0)
             {
                 this->data = NULL;
             }
-            else this->data = (T*)allocator->Allocate(sizeof(T) * itemsCount);
+            else this->data = (T*)allocator.Allocate(sizeof(T) * itemsCount);
             this->length = itemsCount;
         }
-        Array(IAllocator *allocator, T *data, usize itemsCount)
+        Array(IAllocator allocator, T *data, usize itemsCount)
         {
             this->allocator = allocator;
             this->data = data;
@@ -45,9 +45,9 @@ namespace collections
         }
         void deinit()
         {
-            if (data != NULL && allocator != NULL)
+            if (data != NULL && allocator.instance != NULL)
             {
-                allocator->FREEPTR(data);
+                allocator.FREEPTR(data);
             }
         }
         option<usize> Contains(T value, EqlFunc eqlFunc)
@@ -61,7 +61,7 @@ namespace collections
             }
             return option<usize>();
         }
-        Array<T> Clone(IAllocator *allocator)
+        Array<T> Clone(IAllocator allocator)
         {
             Array<T> result = Array<T>(allocator, this->length);
             for (usize i = 0; i < length; i++)
@@ -70,7 +70,7 @@ namespace collections
             }
             return result;
         }
-        Array<T> CloneAdd(IAllocator* allocator, Array<T> other)
+        Array<T> CloneAdd(IAllocator allocator, Array<T> other)
         {
             Array<T> result = Array<T>(allocator, this->length + other.length);
             for (usize i = 0; i < length; i++)

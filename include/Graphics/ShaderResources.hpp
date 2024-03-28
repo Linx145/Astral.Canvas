@@ -49,11 +49,11 @@ namespace AstralCanvas
     };
     struct ShaderVariables
     {
-        IAllocator *allocator;
+        IAllocator allocator;
         collections::sparseset<ShaderResource> uniforms;
 
         ShaderVariables();
-        ShaderVariables(IAllocator *allocator);
+        ShaderVariables(IAllocator allocator);
         void deinit();
     };
     typedef void *ShaderModule;

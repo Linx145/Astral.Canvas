@@ -7,7 +7,7 @@ namespace AstralCanvas
 {
     struct RenderTarget
     {
-        IAllocator *allocator;
+        IAllocator allocator;
         /// All textures that should be rendered to when using this render target. Normally
         /// consists of a color texture and depth buffer, but you may need to attach
         /// more in the case of more complex render programs.
@@ -27,9 +27,9 @@ namespace AstralCanvas
         bool isDisposed;
         bool constructed;
 
-        RenderTarget(IAllocator *allocator, u32 width, u32 height, collections::Array<Texture2D> texturesToUse);
-        RenderTarget(IAllocator *allocator, Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer);
-        RenderTarget(IAllocator *allocator, u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat);
+        RenderTarget(IAllocator allocator, u32 width, u32 height, collections::Array<Texture2D> texturesToUse);
+        RenderTarget(IAllocator allocator, Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer);
+        RenderTarget(IAllocator allocator, u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat);
         void deinit();
         void Construct(AstralCanvas::RenderProgram *renderProgram);
     };

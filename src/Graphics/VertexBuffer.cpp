@@ -105,7 +105,7 @@ namespace AstralCanvas
                 break;
         }
     }
-    void *VertexBuffer::GetData(IAllocator *allocator, usize* dataLength)
+    void *VertexBuffer::GetData(IAllocator allocator, usize* dataLength)
     {
         switch (GetActiveBackend())
         {
@@ -119,7 +119,7 @@ namespace AstralCanvas
 
                 AstralCanvasVk_CopyBufferToBuffer(gpu, (VkBuffer)this->handle, stagingBuffer, lengthOfBytes);
 
-                void *result = allocator->Allocate(lengthOfBytes);
+                void *result = allocator.Allocate(lengthOfBytes);
                 memcpy(result, stagingMemory.vkAllocationInfo.pMappedData, lengthOfBytes);
 
                 vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);

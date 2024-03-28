@@ -77,14 +77,14 @@ void Initialize()
         instanceDataBindlessDecl.elements.Add({AstralCanvas::VertexElement_Vector4, 64});
 #endif
 
-	string filePath = exeLocation.Clone(&cAllocator);
+	string filePath = exeLocation.Clone(cAllocator);
 	#ifdef BINDLESS
 	filePath.Append("/BindlessTexturing.shaderobj");
 	#else
 	filePath.Append(INSTANCE_COUNT > 1 ? "/Instancing.shaderobj" : "/Texture.shaderobj");
 	#endif
 
-	string fileContents = io::ReadFile(&cAllocator, filePath.buffer);
+	string fileContents = io::ReadFile(cAllocator, filePath.buffer);
 	filePath.deinit();
 
 	if (AstralCanvas::CreateShaderFromString(&resourcesArena.asAllocator, AstralCanvas::ShaderType_VertexFragment, fileContents, &shader) != 0)
@@ -124,23 +124,23 @@ void Initialize()
 		vertexDeclsUsed
 	); 
 
-	filePath = exeLocation.Clone(&cAllocator);
+	filePath = exeLocation.Clone(cAllocator);
 	filePath.Append("/tbh.png");
     tbh = AstralCanvas::CreateTextureFromFile(filePath.buffer);
 	filePath.deinit();
 
 	#ifdef BINDLESS
-	filePath = exeLocation.Clone(&cAllocator);
+	filePath = exeLocation.Clone(cAllocator);
 	filePath.Append("/RedSlime.png");
     red = AstralCanvas::CreateTextureFromFile(filePath.buffer);
 	filePath.deinit();
 
-	filePath = exeLocation.Clone(&cAllocator);
+	filePath = exeLocation.Clone(cAllocator);
 	filePath.Append("/GreenSlime.png");
     green = AstralCanvas::CreateTextureFromFile(filePath.buffer);
 	filePath.deinit();
 
-	filePath = exeLocation.Clone(&cAllocator);
+	filePath = exeLocation.Clone(cAllocator);
 	filePath.Append("/BlueSlime.png");
     blue = AstralCanvas::CreateTextureFromFile(filePath.buffer);
 	filePath.deinit();
@@ -321,13 +321,13 @@ void Draw(float time)
 i32 main(i32 argc, const char** argv)
 {
 	cAllocator = GetCAllocator();
-	resourcesArena = ArenaAllocator(&cAllocator);
+	resourcesArena = ArenaAllocator(cAllocator);
 	exeLocation = string(&resourcesArena.asAllocator, argv[0]);
 	exeLocation = path::GetDirectory(&resourcesArena.asAllocator, exeLocation);
 
-	string appName = string(&cAllocator, "test");
-	string engineName = string(&cAllocator, "Astral Gametech");
-	AstralCanvas::Application* appPtr = AstralCanvas::ApplicationInit(&cAllocator, appName, engineName, 0, 0, 0.0f);
+	string appName = string(cAllocator, "test");
+	string engineName = string(cAllocator, "Astral Gametech");
+	AstralCanvas::Application* appPtr = AstralCanvas::ApplicationInit(cAllocator, appName, engineName, 0, 0, 0.0f);
 	appPtr->AddWindow(1024, 768, true);
 	appPtr->Run(&Update, &Draw, &Initialize, &Deinitialize);
 

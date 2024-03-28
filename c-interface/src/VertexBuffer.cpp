@@ -11,7 +11,7 @@ exportC usize AstralCanvasVertexBuffer_GetCount(AstralCanvasVertexBuffer ptr)
 }
 exportC AstralCanvasVertexBuffer AstralCanvasVertexBuffer_Create(AstralCanvasVertexDeclaration thisVertexType, usize vertexCount, bool isDynamic, bool canRead)
 {
-    AstralCanvas::VertexBuffer *buffer = (AstralCanvas::VertexBuffer*)GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::VertexBuffer));
+    AstralCanvas::VertexBuffer *buffer = (AstralCanvas::VertexBuffer*)GetCAllocator().Allocate(sizeof(AstralCanvas::VertexBuffer));
     *buffer = AstralCanvas::VertexBuffer((AstralCanvas::VertexDeclaration*)thisVertexType, vertexCount, isDynamic, canRead);
     return buffer;
 }

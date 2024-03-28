@@ -50,19 +50,19 @@ exportC AstralCanvasRenderPipeline AstralCanvasRenderPipeline_Init(
     AstralCanvasVertexDeclaration* vertexDeclarations,
     usize vertexDeclarationCount)
 {
-    AstralCanvas::RenderPipeline* result = (AstralCanvas::RenderPipeline*)GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::RenderPipeline));
+    AstralCanvas::RenderPipeline* result = (AstralCanvas::RenderPipeline*)GetCAllocator().Allocate(sizeof(AstralCanvas::RenderPipeline));
     AstralCanvas::BlendState blendState;
     blendState.sourceAlphaBlend = (AstralCanvas::Blend)pipelineBlendState.srcAlpha;
     blendState.destinationAlphaBlend = (AstralCanvas::Blend)pipelineBlendState.destAlpha;
     blendState.sourceColorBlend = (AstralCanvas::Blend)pipelineBlendState.srcColor;
     blendState.destinationColorBlend = (AstralCanvas::Blend)pipelineBlendState.destColor;
 
-    collections::Array<AstralCanvas::VertexDeclaration *> vertexDecls = collections::Array<AstralCanvas::VertexDeclaration *>(GetDefaultAllocator(), vertexDeclarationCount);
+    collections::Array<AstralCanvas::VertexDeclaration *> vertexDecls = collections::Array<AstralCanvas::VertexDeclaration *>(GetCAllocator(), vertexDeclarationCount);
     for (usize i = 0; i < vertexDeclarationCount; i++)
     {
         vertexDecls.data[i] = (AstralCanvas::VertexDeclaration*)vertexDeclarations[i];
     }
 
-    *result = AstralCanvas::RenderPipeline(GetDefaultAllocator(), (AstralCanvas::Shader *)pipelineShader, (AstralCanvas::CullMode)pipelineCullMode, (AstralCanvas::PrimitiveType)pipelinePrimitiveType, blendState, testDepth, writeToDepth, vertexDecls);
+    *result = AstralCanvas::RenderPipeline(GetCAllocator(), (AstralCanvas::Shader *)pipelineShader, (AstralCanvas::CullMode)pipelineCullMode, (AstralCanvas::PrimitiveType)pipelinePrimitiveType, blendState, testDepth, writeToDepth, vertexDecls);
     return result;
 }

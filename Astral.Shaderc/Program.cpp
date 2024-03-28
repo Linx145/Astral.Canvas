@@ -50,7 +50,7 @@ i32 main(int argc, char **argv)
                     {
                         newPath.Append("/");
                     }
-                    newPath.AppendDeinit(path::GetFileName(GetDefaultAllocator(), filesInDir.data[i]));
+                    newPath.AppendDeinit(path::GetFileName(GetCAllocator(), filesInDir.data[i]));
                     newPath.Append("obj");
                     if (!AstralShaderc_WriteToFile(&arena.asAllocator, newPath, &result))
                     {

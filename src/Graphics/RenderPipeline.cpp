@@ -26,7 +26,7 @@ namespace AstralCanvas
         this->vertexDeclarations = collections::Array<VertexDeclaration *>();
         this->zoneToPipelineInstance = collections::hashmap<RenderPipelineBindZone, void *>();
     }
-    RenderPipeline::RenderPipeline(IAllocator *allocator, Shader *pipelineShader, CullMode pipelineCullMode, PrimitiveType pipelinePrimitiveType, BlendState pipelineBlendState, bool testDepth, bool writeToDepth, collections::Array<VertexDeclaration*> pipelineVertexDeclarations)
+    RenderPipeline::RenderPipeline(IAllocator allocator, Shader *pipelineShader, CullMode pipelineCullMode, PrimitiveType pipelinePrimitiveType, BlendState pipelineBlendState, bool testDepth, bool writeToDepth, collections::Array<VertexDeclaration*> pipelineVertexDeclarations)
     {
         this->shader = pipelineShader;
         this->cullMode = pipelineCullMode;
@@ -57,9 +57,9 @@ namespace AstralCanvas
                 RenderPipeline *pipeline = this;
 
                 IAllocator cAllocator = GetCAllocator();
-                ArenaAllocator arena = ArenaAllocator(&cAllocator);
+                ArenaAllocator arena = ArenaAllocator(cAllocator);
                 const i32 dynamicStateCount = 2;
-                collections::Array<VkDynamicState> dynamicStates = collections::Array<VkDynamicState>(&arena.asAllocator, dynamicStateCount);
+                collections::Array<VkDynamicState> dynamicStates = collections::Array<VkDynamicState>(arena.asAllocator, dynamicStateCount);
                 dynamicStates.data[0] = VK_DYNAMIC_STATE_VIEWPORT;
                 dynamicStates.data[1] = VK_DYNAMIC_STATE_SCISSOR;
 
@@ -80,7 +80,7 @@ namespace AstralCanvas
                 {
                     usize attribCount = 0;
 
-                    collections::Array<VkVertexInputBindingDescription> bindingDescriptions = collections::Array<VkVertexInputBindingDescription>(&arena.asAllocator, vertexDeclCount);
+                    collections::Array<VkVertexInputBindingDescription> bindingDescriptions = collections::Array<VkVertexInputBindingDescription>(arena.asAllocator, vertexDeclCount);
                     for (usize i = 0; i < vertexDeclCount; i++)
                     {
                         bindingDescriptions.data[i].inputRate = (VkVertexInputRate)pipeline->vertexDeclarations.data[i]->inputRate;
@@ -90,7 +90,7 @@ namespace AstralCanvas
                         attribCount += pipeline->vertexDeclarations.data[i]->elements.count;
                     }
 
-                    collections::Array<VkVertexInputAttributeDescription> attribDescriptions = collections::Array<VkVertexInputAttributeDescription>(&arena.asAllocator, attribCount);
+                    collections::Array<VkVertexInputAttributeDescription> attribDescriptions = collections::Array<VkVertexInputAttributeDescription>(arena.asAllocator, attribCount);
                     usize attribIndex = 0;
                     for (usize i = 0; i < vertexDeclCount; i++)
                     {

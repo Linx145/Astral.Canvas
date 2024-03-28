@@ -1,18 +1,22 @@
-#pragma once
+#ifndef LINXC_H
+#define LINXC_H
 
 #ifndef NULL
 #define NULL 0
 #endif
 
+#define trait struct
 #define def_delegate(name, returns, ...) typedef returns (*name)(__VA_ARGS__)
-#define impl_trait(name)
+#define impl(name)
 #define IsAttribute
-#define uselang(language)
-#define enduselang
+
 #ifdef __cplusplus
-#define exportC
-#else
 #define exportC extern "C"
+#else
+#define exportC
+#define true 1
+#define false 0
+typedef signed char bool;
 #endif
 
 #ifdef WINDOWS
@@ -38,3 +42,7 @@ typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 typedef unsigned long long usize;
+
+typedef const char *text;
+
+#endif

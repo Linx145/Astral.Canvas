@@ -13,12 +13,12 @@ namespace AstralCanvas
 
     VertexDeclaration::VertexDeclaration()
     {
-        this->allocator = NULL;
+        this->allocator = IAllocator{};
         this->elements = collections::vector<VertexElement>();
         this->inputRate = VertexInput_PerVertex;
         this->size = 0;
     }
-    VertexDeclaration::VertexDeclaration(IAllocator *thisAllocator, usize thisSize, VertexInputRate thisInputRate)
+    VertexDeclaration::VertexDeclaration(IAllocator thisAllocator, usize thisSize, VertexInputRate thisInputRate)
     {
         this->allocator = thisAllocator;
         this->elements = collections::vector<VertexElement>(thisAllocator);
@@ -32,12 +32,12 @@ namespace AstralCanvas
 
     VertexDeclaration *GetVertexPositionColorDecl()
     {
-        if (vertexPositionColorDecl.allocator != NULL)
+        if (vertexPositionColorDecl.allocator.instance != NULL)
         {
             return &vertexPositionColorDecl;
         }
         vertexPositionColorDecl = VertexDeclaration(
-            &vertexElementsAllocator, 
+            vertexElementsAllocator, 
             sizeof(VertexPositionColor),
             VertexInput_PerVertex);
 
@@ -48,12 +48,12 @@ namespace AstralCanvas
     }
     VertexDeclaration *GetVertexPositionColorTextureDecl()
     {
-        if (vertexPositionColorTextureDecl.allocator != NULL)
+        if (vertexPositionColorTextureDecl.allocator.instance != NULL)
         {
             return &vertexPositionColorTextureDecl;
         }
         vertexPositionColorTextureDecl = VertexDeclaration(
-            &vertexElementsAllocator, 
+            vertexElementsAllocator, 
             sizeof(VertexPositionColorTexture),
             VertexInput_PerVertex);
 
@@ -65,12 +65,12 @@ namespace AstralCanvas
     }
     VertexDeclaration *GetVertexPositionTextureColorDecl()
     {
-        if (vertexPositionTextureColorDecl.allocator != NULL)
+        if (vertexPositionTextureColorDecl.allocator.instance != NULL)
         {
             return &vertexPositionTextureColorDecl;
         }
         vertexPositionTextureColorDecl = VertexDeclaration(
-            &vertexElementsAllocator, 
+            vertexElementsAllocator, 
             sizeof(VertexPositionTextureColor),
             VertexInput_PerVertex);
 
@@ -82,12 +82,12 @@ namespace AstralCanvas
     }
     VertexDeclaration *GetVertexPositionNormalTextureDecl()
     {
-        if (vertexPositionNormalTextureDecl.allocator != NULL)
+        if (vertexPositionNormalTextureDecl.allocator.instance != NULL)
         {
             return &vertexPositionNormalTextureDecl;
         }
         vertexPositionNormalTextureDecl = VertexDeclaration(
-            &vertexElementsAllocator, 
+            vertexElementsAllocator, 
             sizeof(VertexPositionNormalTexture),
             VertexInput_PerVertex);
 
@@ -99,13 +99,13 @@ namespace AstralCanvas
     }
     VertexDeclaration *GetInstanceDataMatrixDecl()
     {
-        if (instanceDataMatrixDecl.allocator != NULL)
+        if (instanceDataMatrixDecl.allocator.instance != NULL)
         {
             return &instanceDataMatrixDecl;
         }
 
         instanceDataMatrixDecl = VertexDeclaration(
-            &vertexElementsAllocator, 
+            vertexElementsAllocator, 
             sizeof(Maths::Matrix4x4),
             VertexInput_PerInstance);
 

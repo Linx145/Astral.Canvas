@@ -21,34 +21,34 @@ inline const char* digits2(usize value)
 
 struct string
 {
-    IAllocator *allocator;
+    IAllocator allocator;
     char *buffer;
     usize length;
 
     inline string()
     {
-        this->allocator = NULL;
+        this->allocator = IAllocator{};
         this->buffer = NULL;
         this->length = 0;
     }
-    inline string(IAllocator *myAllocator)
+    inline string(IAllocator myAllocator)
     {
         this->allocator = myAllocator;
         this->buffer = NULL;
         this->length = 0;
     }
-    inline string(IAllocator *myAllocator, const char* source)
+    inline string(IAllocator myAllocator, const char* source)
     {
         this->allocator = myAllocator;
         this->length = strlen(source) + 1;
-        this->buffer = (char *)myAllocator->Allocate(this->length);
+        this->buffer = (char *)myAllocator.Allocate(this->length);
         strcpy(this->buffer, source);
         this->buffer[this->length - 1] = '\0';
     }
-    inline string(IAllocator *myAllocator, const char* source, usize length)
+    inline string(IAllocator myAllocator, const char* source, usize length)
     {
         this->allocator = myAllocator;
-        this->buffer = (char*)myAllocator->Allocate(length + 1);
+        this->buffer = (char*)myAllocator.Allocate(length + 1);
         this->buffer[length] = '\0';
         this->length = length + 1;
         memcpy(this->buffer, source, length);
@@ -58,7 +58,7 @@ struct string
     {
         if (buffer != NULL)
         {
-            this->allocator->FREEPTR(buffer);
+            this->allocator.FREEPTR(buffer);
         }
     }
     bool eql(const char *other)
@@ -78,7 +78,7 @@ struct string
         {
             newLength += 1;
         }
-        char *newBuffer = (char*)this->allocator->Allocate(newLength);
+        char *newBuffer = (char*)this->allocator.Allocate(newLength);
 
         if (this->buffer != NULL)
         {
@@ -93,7 +93,7 @@ struct string
 
         if (this->buffer != NULL)
         {
-            this->allocator->FREEPTR(this->buffer);
+            this->allocator.FREEPTR(this->buffer);
         }
         this->buffer = newBuffer;
         this->length = newLength;
@@ -106,7 +106,7 @@ struct string
         {
             newLength += 1;
         }
-        char *newBuffer = (char*)this->allocator->Allocate(newLength);
+        char *newBuffer = (char*)this->allocator.Allocate(newLength);
 
         if (this->buffer != NULL)
         {
@@ -121,7 +121,7 @@ struct string
 
         if (this->buffer != NULL)
         {
-            this->allocator->FREEPTR(this->buffer);
+            this->allocator.FREEPTR(this->buffer);
         }
         this->buffer = newBuffer;
         this->length = newLength;
@@ -230,13 +230,13 @@ struct string
         other.deinit();
     }
 
-    inline string CloneDeinit(IAllocator* allocator)
+    inline string CloneDeinit(IAllocator allocator)
     {
         string result = string(allocator, this->buffer);
         this->deinit();
         return result;
     }
-    inline string Clone(IAllocator* allocator)
+    inline string Clone(IAllocator allocator)
     {
         return string(allocator, this->buffer);
     }
@@ -278,6 +278,15 @@ struct CharSlice
     {
         buffer = stringLiteral;
         length = literalLength;
+    }
+    inline bool operator==(text str)
+    {
+        //use memcmp not strcmp as CharSlice is probably not null terminated
+        return memcmp(buffer, str, length) == 0;
+    }
+    inline bool operator!=(text str)
+    {
+        return memcmp(buffer, str, length) != 0;
     }
 };
 
@@ -357,11 +366,11 @@ inline option<usize> FindLast(const char *buffer, char character)
     return result;
 }
 
-inline string ReplaceChar(IAllocator *allocator, const char* input, char toReplace, char replaceWith)
+inline string ReplaceChar(IAllocator allocator, const char* input, char toReplace, char replaceWith)
 {
     usize inputLength = strlen(input) + 1;
     string str = string(allocator);
-    char* buffer = (char*)allocator->Allocate(inputLength);
+    char* buffer = (char*)allocator.Allocate(inputLength);
     str.length = inputLength;
 
     for (usize i = 0; i < inputLength - 1; i++)
@@ -378,7 +387,7 @@ inline string ReplaceChar(IAllocator *allocator, const char* input, char toRepla
     str.buffer = buffer;
     return str;
 }
-inline string ReplaceCharWithString(IAllocator *allocator, const char* input, char toReplace, const char* replaceWith)
+inline string ReplaceCharWithString(IAllocator allocator, const char* input, char toReplace, const char* replaceWith)
 {
     usize replaceWithLength = strlen(replaceWith);
     if (replaceWithLength == 1)
@@ -398,7 +407,7 @@ inline string ReplaceCharWithString(IAllocator *allocator, const char* input, ch
     }
 
     string str = string(allocator);
-    char* buffer = (char*)allocator->Allocate(outputLength);
+    char* buffer = (char*)allocator.Allocate(outputLength);
     str.length = outputLength;
 
     usize at = 0;
@@ -423,10 +432,10 @@ inline string ReplaceCharWithString(IAllocator *allocator, const char* input, ch
     return str;
 }
 
-inline collections::Array<string> SplitString(IAllocator *allocator, const char* input, char toSplitOn)
+inline collections::Array<string> SplitString(IAllocator allocator, const char* input, char toSplitOn)
 {
     IAllocator defaultAllocator = GetCAllocator();
-    collections::vector<string> results = collections::vector<string>(&defaultAllocator);
+    collections::vector<string> results = collections::vector<string>(defaultAllocator);
 
     usize lastIndex = 0;
     usize i = 0;
@@ -451,7 +460,7 @@ inline collections::Array<string> SplitString(IAllocator *allocator, const char*
     return results.ToOwnedArrayWith(allocator);
 }
 
-inline string ConcatFromCharSlices(IAllocator *allocator, CharSlice* strings, usize length)
+inline string ConcatFromCharSlices(IAllocator allocator, CharSlice* strings, usize length)
 {
     usize totalLength = 1; //1 to account for the null termination of the concatenated string
     for (usize i = 0; i < length; i++)
@@ -465,7 +474,7 @@ inline string ConcatFromCharSlices(IAllocator *allocator, CharSlice* strings, us
             }
         }
     }
-    char *buffer = (char *)allocator->Allocate(totalLength);
+    char *buffer = (char *)allocator.Allocate(totalLength);
     usize index = 0;
     for (usize i = 0; i < length; i++)
     {

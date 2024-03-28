@@ -57,7 +57,7 @@ void AstralCanvasWgpu_HandleRequestedDevice(WGPURequestDeviceStatus status, WGPU
     }
 }
 
-void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvas::Window* window, Array<AstralCanvas_GraphicsFeatures> requiredFeatures, Array<AstralCanvas_GraphicsFeatures> optionalFeatures)
+void AstralCanvasWgpu_Initialize(IAllocator allocator, AstralCanvas::Window* window, Array<AstralCanvas_GraphicsFeatures> requiredFeatures, Array<AstralCanvas_GraphicsFeatures> optionalFeatures)
 {
     IAllocator cAllocator = GetCAllocator();
 
@@ -153,7 +153,7 @@ void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvas::Window* wi
     }
 
     i32 supportedRequiredFeatures = 0;
-    vector<WGPUFeatureName> enabledWGPUFeatures = vector<WGPUFeatureName>(&cAllocator);
+    vector<WGPUFeatureName> enabledWGPUFeatures = vector<WGPUFeatureName>(cAllocator);
     engineInstance.enabledFeatures = vector<AstralCanvas_GraphicsFeatures>(allocator);
 
     WGPUFeatureName allSupportedFeatures[64];
@@ -262,7 +262,7 @@ void AstralCanvasWgpu_Deinit()
     printf("Deinit'd WGPU\n");
 }
 
-i32 AstralCanvasWgpu_CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader *result)
+i32 AstralCanvasWgpu_CreateShaderFromString(IAllocator allocator, ShaderType shaderType, string jsonString, Shader *result)
 {
     *result = AstralCanvas::Shader(allocator, shaderType);
     ArenaAllocator localArena = ArenaAllocator(allocator);

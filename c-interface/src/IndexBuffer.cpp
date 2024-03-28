@@ -12,14 +12,14 @@ exportC usize AstralCanvasIndexBuffer_GetCount(AstralCanvasIndexBuffer ptr)
 }
 exportC AstralCanvasIndexBuffer AstralCanvasIndexBuffer_Create(AstralCanvas_IndexBufferSize indexSize, usize indexCount)
 {
-    AstralCanvas::IndexBuffer *result = (AstralCanvas::IndexBuffer *)GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::IndexBuffer));
+    AstralCanvas::IndexBuffer *result = (AstralCanvas::IndexBuffer *)GetCAllocator().Allocate(sizeof(AstralCanvas::IndexBuffer));
     *result = AstralCanvas::IndexBuffer((AstralCanvas::IndexBufferSize)indexSize, indexCount);
     return result;
 }
 exportC void AstralCanvasIndexBuffer_Deinit(AstralCanvasIndexBuffer ptr)
 {
     ((AstralCanvas::IndexBuffer *)ptr)->deinit();
-    GetDefaultAllocator()->Free(ptr);
+    GetCAllocator().Free(ptr);
 }
 exportC void AstralCanvasIndexBuffer_SetData(AstralCanvasIndexBuffer ptr, u8* bytes, usize sizeOfBytes)
 {

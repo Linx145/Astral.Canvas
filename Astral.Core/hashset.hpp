@@ -19,7 +19,7 @@ namespace collections
         def_delegate(HashFunc, u32, T);
         def_delegate(EqlFunc, bool, T, T);
 
-        IAllocator *allocator;
+        IAllocator allocator;
         HashFunc hashFunc;
         EqlFunc eqlFunc;
 
@@ -30,7 +30,7 @@ namespace collections
 
         hashset()
         {
-            this->allocator = NULL;
+            this->allocator = IAllocator{};
             this->hashFunc = NULL;
             this->eqlFunc = NULL;
             this->Count = 0;
@@ -38,7 +38,7 @@ namespace collections
             this->bucketsCount = 32;
             this->buckets = NULL;
         }
-        hashset(IAllocator *allocator, HashFunc hashFunction, EqlFunc eqlFunc)
+        hashset(IAllocator allocator, HashFunc hashFunction, EqlFunc eqlFunc)
         {
             this->allocator = allocator;
             this->hashFunc = hashFunction;
@@ -46,7 +46,7 @@ namespace collections
             this->Count = 0;
             this->filledBuckets = 0;
             this->bucketsCount = 32;
-            this->buckets = (Bucket*)allocator->Allocate(this->bucketsCount * sizeof(Bucket));
+            this->buckets = (Bucket*)allocator.Allocate(this->bucketsCount * sizeof(Bucket));
             for (usize i = 0; i < this->bucketsCount; i++)
             {
                 this->buckets[i].initialized = false;
@@ -61,7 +61,7 @@ namespace collections
                     buckets[i].entries.deinit();
                 }
             }
-            this->allocator->FREEPTR(buckets);
+            this->allocator.FREEPTR(buckets);
         }
         void EnsureCapacity()
         {
@@ -72,7 +72,7 @@ namespace collections
             {
                 usize newSize = bucketsCount * 2;
 
-                Bucket *newBuckets = (Bucket*)this->allocator->Allocate(newSize * sizeof(Bucket));
+                Bucket *newBuckets = (Bucket*)this->allocator.Allocate(newSize * sizeof(Bucket));
 
                 for (usize i = 0; i < newSize; i++)
                 {
@@ -84,7 +84,7 @@ namespace collections
                     newBuckets[newIndex] = buckets[i];
                 }
 
-                this->allocator->FREEPTR(buckets);
+                this->allocator.FREEPTR(buckets);
                 buckets = newBuckets;
                 bucketsCount = newSize;
             }

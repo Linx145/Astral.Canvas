@@ -8,7 +8,7 @@
 
 dispatch_semaphore_t semaphore;
 
-bool AstralCanvasMetal_Initialize(IAllocator *allocator, AstralCanvas::Window* window)
+bool AstralCanvasMetal_Initialize(IAllocator allocator, AstralCanvas::Window* window)
 {
     id<MTLDevice> gpu = MTLCreateSystemDefaultDevice();
     AstralCanvasMetal_SetCurrentGPU(gpu);

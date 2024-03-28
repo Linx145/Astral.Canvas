@@ -5,11 +5,11 @@
 
 struct TrackingAllocator
 {
-	IAllocator* baseAllocator;
+	IAllocator baseAllocator;
 	IAllocator asAllocator;
 	collections::hashset<void*> allocated;
 
-	TrackingAllocator(IAllocator* base)
+	TrackingAllocator(IAllocator base)
 	{
 		baseAllocator = base;
 		allocated = collections::hashset<void*>(baseAllocator, &PointerHash<void>, &PointerEql<void>);
@@ -24,7 +24,7 @@ struct TrackingAllocator
 			{
 				for (usize j = 0; j < allocated.buckets[i].entries.count; j++)
 				{
-					baseAllocator->freeFunction(baseAllocator->instance, allocated.buckets[i].entries.ptr[j]);
+					baseAllocator.freeFunction(baseAllocator.instance, allocated.buckets[i].entries.ptr[j]);
 				}
 			}
 		}
@@ -34,18 +34,18 @@ struct TrackingAllocator
 void* TrackingAllocator_Allocate(void* instance, usize bytes)
 {
 	TrackingAllocator* allocator = (TrackingAllocator*)instance;
-	void* result = allocator->baseAllocator->allocFunction(allocator->baseAllocator->instance, bytes);
+	void* result = allocator.baseAllocator.allocFunction(allocator.baseAllocator.instance, bytes);
 	if (result != NULL)
 	{
-		allocator->allocated.Add(result);
+		allocator.allocated.Add(result);
 	}
 	return result;
 }
 void TrackingAllocator_Free(void* instance, void* ptr)
 {
 	TrackingAllocator* allocator = (TrackingAllocator*)instance;
-	if (allocator->allocated.Remove(ptr))
+	if (allocator.allocated.Remove(ptr))
 	{
-		allocator->baseAllocator->freeFunction(allocator->baseAllocator->instance, ptr);
+		allocator.baseAllocator.freeFunction(allocator.baseAllocator.instance, ptr);
 	}
 }

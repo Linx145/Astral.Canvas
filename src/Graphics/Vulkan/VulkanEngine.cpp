@@ -26,7 +26,7 @@ VkBool32 AstralCanvasVk_ErrorCallback(
 	return VK_FALSE;
 }
 
-collections::vector<const char*> AstralCanvasVk_GetDefaultInstanceExtensions(IAllocator* allocator)
+collections::vector<const char*> AstralCanvasVk_GetDefaultInstanceExtensions(IAllocator allocator)
 {
 	u32 count = 0;
 	const char** ptrs = glfwGetRequiredInstanceExtensions(&count);
@@ -41,7 +41,7 @@ collections::vector<const char*> AstralCanvasVk_GetDefaultInstanceExtensions(IAl
 	return result;
 }
 
-bool AstralCanvasVk_InitializeFor(IAllocator* allocator, Array<const char*> validationLayersToUse, Array<const char*> requiredExtensions, AstralCanvas::Window *window)
+bool AstralCanvasVk_InitializeFor(IAllocator allocator, Array<const char*> validationLayersToUse, Array<const char*> requiredExtensions, AstralCanvas::Window *window)
 {
 	if (AstralCanvasVk_GetInstance() != NULL)
 	{
@@ -191,7 +191,7 @@ bool AstralCanvasVk_InitializeFor(IAllocator* allocator, Array<const char*> vali
 	}
 }
 
-bool AstralCanvasVk_CreateInstance(IAllocator* allocator, Array<const char*> validationLayersToUse, const char* appName, const char* engineName, u32 applicationVersion, u32 engineVersion, u32 vulkanVersion)
+bool AstralCanvasVk_CreateInstance(IAllocator allocator, Array<const char*> validationLayersToUse, const char* appName, const char* engineName, u32 applicationVersion, u32 engineVersion, u32 vulkanVersion)
 {
 	VkApplicationInfo appInfo;
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -295,7 +295,7 @@ void AstralCanvasVk_AwaitShutdown()
 {
 	vkQueueWaitIdle(AstralCanvasVk_GetCurrentGPU()->DedicatedGraphicsQueue.queue);
 }
-void AstralCanvasVk_Deinitialize(IAllocator* allocator, AstralCanvas::Window* windows, u32 windowCount)
+void AstralCanvasVk_Deinitialize(IAllocator allocator, AstralCanvas::Window* windows, u32 windowCount)
 {
 	AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
 	AstralCanvas::DestroyDefaultSamplerStates();

@@ -20,7 +20,7 @@ namespace AstralCanvas
 {
     Shader::Shader()
     {
-        this->allocator = NULL;
+        this->allocator = IAllocator{};
         shaderType = ShaderType_VertexFragment;
         shaderModule1 = NULL;
         shaderModule2 = NULL;
@@ -31,7 +31,7 @@ namespace AstralCanvas
         this->descriptorForThisDrawCall = 0;
         this->descriptorSets = collections::vector<void *>();
     }
-    Shader::Shader(IAllocator *allocator, ShaderType type)
+    Shader::Shader(IAllocator allocator, ShaderType type)
     {
         this->allocator = allocator;
         shaderType = type;
@@ -235,19 +235,19 @@ namespace AstralCanvas
                             case ShaderResourceType_InputAttachment:
                             {
                                 newMutableState.textures = collections::Array<Texture2D*>(this->allocator, 1);
-                                newMutableState.imageInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
+                                newMutableState.imageInfos = this->allocator.Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
                                 break;
                             }
                             case ShaderResourceType_Texture:
                             {
                                 newMutableState.textures = collections::Array<Texture2D*>(this->allocator, max(resource->arrayLength, 1));
-                                newMutableState.imageInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
+                                newMutableState.imageInfos = this->allocator.Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
                                 break;
                             }
                             case ShaderResourceType_Sampler:
                             {
                                 newMutableState.samplers = collections::Array<SamplerState*>(this->allocator, max(resource->arrayLength, 1));
-                                newMutableState.samplerInfos = this->allocator->Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.samplers.length);
+                                newMutableState.samplerInfos = this->allocator.Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.samplers.length);
                                 break;
                             }
                         }
@@ -439,13 +439,13 @@ namespace AstralCanvas
 
         this->shaderVariables.deinit();
     }
-    i32 CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader* result)
+    i32 CreateShaderFromString(IAllocator allocator, ShaderType shaderType, string jsonString, Shader* result)
     {
         *result = AstralCanvas::Shader(allocator, shaderType);
         ArenaAllocator localArena = ArenaAllocator(allocator);
         
         JsonElement root;
-        usize parseJsonResult = ParseJsonDocument(&localArena.asAllocator, jsonString, &root);
+        usize parseJsonResult = ParseJsonDocument(localArena.asAllocator, jsonString, &root);
         if (parseJsonResult != 0)
         {
             localArena.deinit();
@@ -477,8 +477,8 @@ namespace AstralCanvas
                         JsonElement *vertexSpirv = vertexElement->GetProperty("spirv");
                         JsonElement *fragmentSpirv = fragmentElement->GetProperty("spirv");
 
-                        collections::Array<u32> vertexSpirvData = collections::Array<u32>(&localArena.asAllocator, vertexSpirv->arrayElements.length);
-                        collections::Array<u32> fragmentSpirvData = collections::Array<u32>(&localArena.asAllocator, fragmentSpirv->arrayElements.length);
+                        collections::Array<u32> vertexSpirvData = collections::Array<u32>(localArena.asAllocator, vertexSpirv->arrayElements.length);
+                        collections::Array<u32> fragmentSpirvData = collections::Array<u32>(localArena.asAllocator, fragmentSpirv->arrayElements.length);
 
                         for (usize i = 0; i < vertexSpirv->arrayElements.length; i++)
                         {
@@ -536,7 +536,7 @@ namespace AstralCanvas
                         result->shaderPipelineLayout = NULL;
                         if (layoutInfo.bindingCount > 0)
                         {
-                            collections::Array<VkDescriptorSetLayoutBinding> bindings = collections::Array<VkDescriptorSetLayoutBinding>(&localArena.asAllocator, layoutInfo.bindingCount);
+                            collections::Array<VkDescriptorSetLayoutBinding> bindings = collections::Array<VkDescriptorSetLayoutBinding>(localArena.asAllocator, layoutInfo.bindingCount);
 
                             for (usize i = 0; i < result->shaderVariables.uniforms.capacity; i++)
                             {

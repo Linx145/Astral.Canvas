@@ -228,7 +228,7 @@ namespace AstralCanvas
             keyStatuses = collections::sparseset<KeyStateStatus>();
             mouseStatuses = collections::sparseset<KeyStateStatus>();
         }
-        inline InputState(IAllocator *allocator)
+        inline InputState(IAllocator allocator)
         {
             textInputCharacter = 0;
             oldControllerStates[0] = {};

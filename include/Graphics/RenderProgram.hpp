@@ -55,13 +55,13 @@ namespace AstralCanvas
     };
     struct RenderProgram
     {
-        IAllocator *allocator;
+        IAllocator allocator;
         void *handle;
         collections::vector<RenderProgramImageAttachment> attachments;
         collections::vector<RenderPass> renderPasses;
 
         RenderProgram();
-        RenderProgram(IAllocator *allocator);
+        RenderProgram(IAllocator allocator);
 
         /// Adds an attachment to the render program. An attachment refers to the state of the textures passing in and out of each renderpass
         i32 AddAttachment(ImageFormat imageFormat, bool clearColor, bool clearDepth, RenderPassOutputType outputType);
@@ -76,5 +76,5 @@ namespace AstralCanvas
         void Begin();
     };
 
-    RenderProgram *GetDynamicRenderProgram(IAllocator *allocator, ImageFormat imageFormat, ImageFormat depthFormat, bool mustClear, bool willDrawToWindow);
+    RenderProgram *GetDynamicRenderProgram(IAllocator allocator, ImageFormat imageFormat, ImageFormat depthFormat, bool mustClear, bool willDrawToWindow);
 }

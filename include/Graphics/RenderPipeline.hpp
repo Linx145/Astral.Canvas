@@ -44,6 +44,6 @@ namespace AstralCanvas
         void *GetOrCreateFor(AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse);
 
         RenderPipeline();
-        RenderPipeline(IAllocator *allocator, Shader *pipelineShader, CullMode pipelineCullMode, PrimitiveType pipelinePrimitiveType, BlendState pipelineBlendState, bool testDepth, bool writeToDepth, collections::Array<VertexDeclaration*> pipelineVertexDeclarations);
+        RenderPipeline(IAllocator allocator, Shader *pipelineShader, CullMode pipelineCullMode, PrimitiveType pipelinePrimitiveType, BlendState pipelineBlendState, bool testDepth, bool writeToDepth, collections::Array<VertexDeclaration*> pipelineVertexDeclarations);
     };
 }

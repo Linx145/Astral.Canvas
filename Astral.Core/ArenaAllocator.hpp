@@ -5,22 +5,22 @@
 struct ArenaAllocator
 {
     collections::vector<void*> ptrs;
-    IAllocator* baseAllocator;
+    IAllocator baseAllocator;
     IAllocator asAllocator;
 
     inline ArenaAllocator()
     {
         ptrs = collections::vector<void *>();
-        baseAllocator = NULL;
+        baseAllocator = IAllocator();
         asAllocator = IAllocator();
     }
-    inline ArenaAllocator(IAllocator *base);
+    inline ArenaAllocator(IAllocator base);
 
     inline void deinit()
     {
         for (usize i = 0; i < this->ptrs.count; i++)
         {
-            this->baseAllocator->Free(*this->ptrs.Get(i));
+            this->baseAllocator.Free(*this->ptrs.Get(i));
         }
         ptrs.deinit();
     }
@@ -29,7 +29,7 @@ struct ArenaAllocator
 inline void* ArenaAllocator_Allocate(void* instance, usize bytes)
 {
     ArenaAllocator* self = (ArenaAllocator*)instance;
-    void* result = self->baseAllocator->Allocate(bytes);
+    void* result = self->baseAllocator.Allocate(bytes);
     self->ptrs.Add(result);
     return result;
 }
@@ -37,7 +37,7 @@ inline void ArenaAllocator_Free(void* instance, void* ptr)
 {
 
 }
-ArenaAllocator::ArenaAllocator(IAllocator* base)
+ArenaAllocator::ArenaAllocator(IAllocator base)
 {
     this->ptrs = collections::vector<void*>(base);
     this->baseAllocator = base;

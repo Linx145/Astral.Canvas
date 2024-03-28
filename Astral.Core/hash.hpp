@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Linxc.h"
+#include "string.h"
 
 inline u32 GetHash(u8* buffer, usize len)
 {
@@ -55,4 +56,66 @@ inline u32 i32Hash(i32 value)
 inline bool i32Eql(i32 A, i32 B)
 {
     return A == B;
+}
+
+inline bool IsLittleEndian()
+{
+    i32 n = 1;
+    return *((u8*)&n) == 1;
+}
+
+inline u16 ByteSwapU16(u16 num)
+{
+    return ((num & 0xffu) >> 8) | (num << 8);
+}
+inline u32 ByteSwapU32(u32 num)
+{
+    return ((num & 0xff000000u) >> 24) | ((num & 0x00ff0000u) >> 8) | ((num & 0x0000ff00u) << 8) | (num << 24);
+}
+inline u64 ByteSwapU64(u64 num)
+{
+    num = (num & 0x00000000FFFFFFFFllu) << 32 | (num & 0xFFFFFFFF00000000llu) >> 32;
+    num = (num & 0x0000FFFF0000FFFFllu) << 16 | (num & 0xFFFF0000FFFF0000llu) >> 16;
+    num = (num & 0x00FF00FF00FF00FFllu) << 8  | (num & 0xFF00FF00FF00FF00llu) >> 8;
+    return num;
+}
+inline u64 Murmur2Seeded(u8* ptr, u64 len, u64 seed)
+{
+    u64 m = 0xc6a4a7935bd1e995llu;
+    u64 h1 = seed ^ (len * m);
+    for (u32 i = 0; i < len / 8; i += 1)
+    {
+        u64 v = ((u64*)ptr)[i];
+        if (!IsLittleEndian())
+        {
+            v = ByteSwapU64(v);
+        }
+        v *= m;
+        v ^= v >> 47;
+        v *= m;
+        h1 ^= v;
+        h1 *= m;
+    }
+    u64 rest = len & 7;
+    u64 offset = len - rest;
+    if (rest > 0)
+    {
+        u64 k1 = 0;
+        memcpy(&k1, ptr + offset, rest);
+        //CopyMemory(ptr + offset, cast(u8*)&k1, rest);
+        if (!IsLittleEndian())
+        {
+            k1 = ByteSwapU64(k1);
+        }
+        h1 ^= k1;
+        h1 *= m;
+    }
+    h1 ^= h1 >> 47;
+    h1 *= m;
+    h1 ^= h1 >> 47;
+    return h1;
+}
+inline u64 Murmur2(u8* ptr, u64 len)
+{
+    return Murmur2Seeded(ptr, len, 0xc70f6907llu);
 }

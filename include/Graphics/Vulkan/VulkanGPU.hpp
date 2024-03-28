@@ -15,19 +15,19 @@ struct AstralCanvasVkCommandQueue
     VkDevice logicalDevice;
 
     VkQueue queue;
-    Threading::Mutex queueMutex;
+    threading::Mutex queueMutex;
     VkFence queueFence;
 
     VkCommandPool transientCommandPool;
-    Threading::Mutex commandPoolMutex;
+    threading::Mutex commandPoolMutex;
 
     inline AstralCanvasVkCommandQueue()
     {
         logicalDevice = NULL;
         queue = NULL;
-        queueMutex = Threading::Mutex();
+        queueMutex = threading::Mutex();
         transientCommandPool = NULL;
-        commandPoolMutex = Threading::Mutex();
+        commandPoolMutex = threading::Mutex();
         queueFence = NULL;
     }
     inline AstralCanvasVkCommandQueue(VkDevice thisLogicalDevice, VkQueue thisQueue, VkFence thisQueueFence, VkCommandPool thisTransientCommandPool)
@@ -36,8 +36,8 @@ struct AstralCanvasVkCommandQueue
         queue = thisQueue;
         queueFence = thisQueueFence;
         transientCommandPool = thisTransientCommandPool;
-        queueMutex = Threading::Mutex::init();
-        commandPoolMutex = Threading::Mutex::init();
+        queueMutex = threading::Mutex::init();
+        commandPoolMutex = threading::Mutex::init();
     }
     inline void deinit()
     {
@@ -93,9 +93,9 @@ struct AstralVulkanGPU
         DedicatedTransferQueue = AstralCanvasVkCommandQueue();
     }
 };
-bool AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstance instance, VkSurfaceKHR windowSurface, collections::Array<const char *> requiredExtensions, AstralVulkanGPU *output);
+bool AstralCanvasVk_SelectGPU(IAllocator allocator, VkInstance instance, VkSurfaceKHR windowSurface, collections::Array<const char *> requiredExtensions, AstralVulkanGPU *output);
 void AstralCanvasVk_ReleaseGPU(AstralVulkanGPU *gpu);
 bool AstralCanvasVk_GPUExtensionsSupported(AstralVulkanGPU *gpu);
 u32 AstralCanvasVk_GetGPUScore(AstralVulkanGPU* gpu, VkSurfaceKHR windowSurface);
-bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* allocator);
+bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator allocator);
 #endif

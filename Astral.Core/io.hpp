@@ -20,7 +20,7 @@
 
 namespace io
 {
-    inline string ReadFile(IAllocator* allocator, const char* path)
+    inline string ReadFile(IAllocator allocator, const char* path)
     {
         string result = string(allocator);
 
@@ -34,7 +34,7 @@ namespace io
             }
             fseek(fs, 0, SEEK_SET);
 
-            char* buffer = (char*)allocator->Allocate(size + 1);
+            char* buffer = (char*)allocator.Allocate(size + 1);
             if (buffer != NULL)
             {
                 fread(buffer, sizeof(char), size, fs);
@@ -84,13 +84,13 @@ namespace io
     inline FILE* CreateDirectoriesAndFile(const char* path)
     {
         IAllocator defaultAllocator = GetCAllocator();
-        collections::Array<string> paths = SplitString(&defaultAllocator, path, '/');
+        collections::Array<string> paths = SplitString(defaultAllocator, path, '/');
         if (paths.length <= 1) //C:/ is not a valid file
         {
             return NULL;
         }
         FILE* file = NULL;
-        string currentPath = paths.data[0].Clone(&defaultAllocator);
+        string currentPath = paths.data[0].Clone(defaultAllocator);
         for (usize i = 0; i < paths.length; i++)
         {
             if (i > 0)
@@ -122,7 +122,7 @@ namespace io
         return file;
     }
 
-    inline collections::Array<string> GetFilesInDirectory(IAllocator *allocator, const char *dirPath)
+    inline collections::Array<string> GetFilesInDirectory(IAllocator allocator, const char *dirPath)
     {
         IAllocator defaultAllocator = GetCAllocator();
 
@@ -137,7 +137,7 @@ namespace io
             return collections::Array<string>();
         }
 
-        collections::vector<string> results = collections::vector<string>(&defaultAllocator);
+        collections::vector<string> results = collections::vector<string>(defaultAllocator);
         while (true)
         {
             if (strcmp(findFileResult.cFileName, ".") != 0 && strcmp(findFileResult.cFileName, "..") != 0)
@@ -145,7 +145,7 @@ namespace io
                 //printf("%s\n", &findFileResult.cFileName[0]);
                 string replaced = ReplaceChar(allocator, &findFileResult.cFileName[0], '\\', '/');
 
-                string fullPath = string(&defaultAllocator, dirPath);
+                string fullPath = string(defaultAllocator, dirPath);
                 fullPath.Append("/");
                 fullPath.Append(replaced.buffer);
                 if (!io::DirectoryExists(fullPath.buffer))

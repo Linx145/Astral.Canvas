@@ -16,7 +16,7 @@ namespace AstralCanvas
 {
     struct Shader
     {
-        IAllocator *allocator;
+        IAllocator allocator;
         ShaderType shaderType;
         ShaderModule shaderModule1;
         ShaderModule shaderModule2;
@@ -32,13 +32,11 @@ namespace AstralCanvas
         void SyncUniformsWithGPU(void *commandEncoder);
 
         Shader();
-        Shader(IAllocator *allocator, ShaderType type);
+        Shader(IAllocator allocator, ShaderType type);
         void deinit();
     };
 
     void ParseShaderVariables(Json::JsonElement *json, ShaderVariables *results, ShaderInputAccessedBy accessedByShaderOfType);
 
-    i32 CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader *result);
+    i32 CreateShaderFromString(IAllocator allocator, ShaderType shaderType, string jsonString, Shader *result);
 }
-
-//i32 AstralCanvas_CreateShaderFromString(IAllocator *allocator, AstralCanvas_ShaderType shaderType, string jsonString, AstralCanvasShader* result);

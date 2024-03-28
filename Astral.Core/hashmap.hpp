@@ -11,7 +11,7 @@ namespace collections
     template <typename K, typename V>
     struct hashmap
     {
-        IAllocator *allocator;
+        IAllocator allocator;
         struct Entry
         {
             K key;
@@ -35,7 +35,7 @@ namespace collections
                 keyHash = 0;
                 entries = collections::vector<Entry>();
             }
-            Bucket(IAllocator *allocator)
+            Bucket(IAllocator allocator)
             {
                 initialized = false;
                 keyHash = 0;
@@ -55,7 +55,7 @@ namespace collections
 
         hashmap()
         {
-            this->allocator = NULL;
+            this->allocator = IAllocator{};
             this->hashFunc = NULL;
             this->eqlFunc = NULL;
             this->Count = 0;
@@ -63,7 +63,7 @@ namespace collections
             this->bucketsCount = 32;
             this->buckets = NULL;
         }
-        hashmap(IAllocator *myAllocator, HashFunc hashFunction, EqlFunc eqlFunc)
+        hashmap(IAllocator myAllocator, HashFunc hashFunction, EqlFunc eqlFunc)
         {
             this->allocator = myAllocator;
             this->hashFunc = hashFunction;
@@ -71,7 +71,7 @@ namespace collections
             this->Count = 0;
             this->filledBuckets = 0;
             this->bucketsCount = 32;
-            this->buckets = (Bucket*)this->allocator->Allocate(this->bucketsCount * sizeof(Bucket));
+            this->buckets = (Bucket*)this->allocator.Allocate(this->bucketsCount * sizeof(Bucket));
             for (usize i = 0; i < this->bucketsCount; i++)
             {
                 this->buckets[i] = Bucket(this->allocator);
@@ -89,7 +89,7 @@ namespace collections
                     }
                     //buckets[i].entries.~();
                 }
-                allocator->FREEPTR(buckets);
+                allocator.FREEPTR(buckets);
             }
         }
 
@@ -102,7 +102,7 @@ namespace collections
             {
                 usize newSize = bucketsCount * 2;
 
-                Bucket *newBuckets = (Bucket*)this->allocator->Allocate(newSize * sizeof(Bucket));
+                Bucket *newBuckets = (Bucket*)this->allocator.Allocate(newSize * sizeof(Bucket));
 
                 for (usize i = 0; i < newSize; i++)
                 {
@@ -124,7 +124,7 @@ namespace collections
                     }
                 }
 
-                this->allocator->FREEPTR(buckets);
+                this->allocator.FREEPTR(buckets);
                 buckets = newBuckets;
                 bucketsCount = newSize;
             }
@@ -235,7 +235,7 @@ namespace collections
             return false;
         }
 
-        hashmap<K, V> Clone(IAllocator *newAllocator)
+        hashmap<K, V> Clone(IAllocator newAllocator)
         {
             hashmap<K, V> result = hashmap<K, V>(newAllocator, this->hashFunc, this->eqlFunc);
 

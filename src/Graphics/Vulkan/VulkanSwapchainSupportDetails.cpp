@@ -3,7 +3,7 @@
 
 using namespace collections;
 
-AstralVkSwapchainSupportDetails AstralCanvasVk_QuerySwapchainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR windowSurface, IAllocator* allocator)
+AstralVkSwapchainSupportDetails AstralCanvasVk_QuerySwapchainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR windowSurface, IAllocator allocator)
 {
     AstralVkSwapchainSupportDetails details;
 

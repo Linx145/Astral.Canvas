@@ -1,6 +1,4 @@
 #pragma once
-#ifndef ASTRALCORE_ALLOCATORS
-#define ASTRALCORE_ALLOCATORS
 
 #include "Linxc.h"
 #include <stdlib.h>
@@ -52,26 +50,18 @@ struct IAllocator
         this->allocFunction = AllocateFunc;
         this->freeFunction = freeFunc;
     }
+
+    inline bool operator==(IAllocator other)
+    {
+        return other.allocFunction == allocFunction && other.freeFunction == freeFunction && other.instance == instance;
+    }
+    inline bool operator!=(IAllocator other)
+    {
+        return other.allocFunction != allocFunction || other.freeFunction != freeFunction || other.instance != instance;
+    }
 };
 
 inline IAllocator GetCAllocator()
 {
-    return IAllocator(NULL, &CAllocator_Allocate, &CAllocator_Free);
+    return IAllocator(NULL, CAllocator_Allocate, CAllocator_Free);
 }
-
-IAllocator *GetDefaultAllocator();
-void SetDefaultAllocator(IAllocator allocator);
-#endif
-
-#ifdef ASTRALCORE_DEFAULT_ALLOC_IMPL
-IAllocator defaultAllocator;
-
-IAllocator *GetDefaultAllocator()
-{
-    return &defaultAllocator;
-}
-void SetDefaultAllocator(IAllocator allocator)
-{
-    defaultAllocator = allocator;
-}
-#endif

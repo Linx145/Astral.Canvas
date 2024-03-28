@@ -54,7 +54,7 @@ struct AstralShadercShaderVariables
         samplers = collections::Array<AstralShadercResource>();
         inputAttachments = collections::Array<AstralShadercResource>();
     }
-    inline AstralShadercShaderVariables(IAllocator *allocator)
+    inline AstralShadercShaderVariables(IAllocator allocator)
     {
         uniforms = collections::Array<AstralShadercUniform>(allocator);
         textures = collections::Array<AstralShadercResource>(allocator);
@@ -72,7 +72,7 @@ struct AstralShadercShaderVariables
 
 struct AstralShadercCompileResult
 {
-    IAllocator *allocator;
+    IAllocator allocator;
     bool isCompute;
     collections::vector<u32> shaderData1;
     AstralShadercShaderVariables shaderVariables1;
@@ -82,7 +82,7 @@ struct AstralShadercCompileResult
     string shaderData2MSL;
     string errorMessage;
 
-    inline AstralShadercCompileResult(IAllocator *allocator)
+    inline AstralShadercCompileResult(IAllocator allocator)
     {
         this->allocator = allocator;
         isCompute = false;
@@ -124,7 +124,7 @@ struct AstralShadercCompileResult
 /// @param optimize Whether the SPIRV result should be optimized
 /// @param result The vector to dump the integer SPIRV assembly into
 /// @return A string with buffer != NULL if there is an error, else empty string if all clear
-inline string AstralShaderc_CompileSpirvBinary(IAllocator *allocator, shaderc::Compiler *compiler, const char* entryPoint, shaderc_shader_kind kind, string source, bool optimize, collections::vector<u32> *result)
+inline string AstralShaderc_CompileSpirvBinary(IAllocator allocator, shaderc::Compiler *compiler, const char* entryPoint, shaderc_shader_kind kind, string source, bool optimize, collections::vector<u32> *result)
 {
     shaderc::CompileOptions options;
 
@@ -157,7 +157,7 @@ struct AstralCanvasShaderCompiler
 {
     collections::hashmap<string, LinxcTokenID> nameToToken;
     LinxcTokenizer tokenizer;
-    inline AstralCanvasShaderCompiler(IAllocator *allocator, string fileContents)
+    inline AstralCanvasShaderCompiler(IAllocator allocator, string fileContents)
     {
         nameToToken = collections::hashmap<string, LinxcTokenID>(allocator, &stringHash, &stringEql);
         nameToToken.Add(string(nameToToken.allocator, "include"), Linxc_Keyword_include);
@@ -209,7 +209,7 @@ struct AstralCanvasShaderCompiler
     }
 };
 
-inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompileResult *compileResult, spvc_context context, bool reflectData1)
+inline bool AstralShaderc_CompileMSL(IAllocator allocator, AstralShadercCompileResult *compileResult, spvc_context context, bool reflectData1)
 {
     collections::vector<u32> *dataToReflect;
     string *resultString;
@@ -354,7 +354,7 @@ inline bool AstralShaderc_CompileMSL(IAllocator *allocator, AstralShadercCompile
     return true;
 }
 
-inline bool AstralShaderc_GenerateReflectionData(IAllocator *allocator, AstralShadercCompileResult *compileResult, spvc_context context, bool reflectData1)
+inline bool AstralShaderc_GenerateReflectionData(IAllocator allocator, AstralShadercCompileResult *compileResult, spvc_context context, bool reflectData1)
 {
     AstralShadercShaderVariables *shaderVariables;
     collections::vector<u32> *dataToReflect;
@@ -509,7 +509,7 @@ inline void AstralShaderc_AddTokenString(collections::vector<CharSlice> *tokenSt
     }
 }
 
-inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator *allocator, string fileContents)
+inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator allocator, string fileContents)
 {
     IAllocator defaultAllocator = GetCAllocator();
     AstralCanvasShaderCompiler compiler = AstralCanvasShaderCompiler(allocator, fileContents);
@@ -901,14 +901,14 @@ inline void AstralShaderc_WriteShaderData(Json::JsonWriter *writer, collections:
     {
         writer->WritePropertyName("msl");
         //need to replace all " with \"
-        string formatted1 = ReplaceCharWithString(GetDefaultAllocator(), msl.buffer, '"', "\\\"");
-        string formatted2 = ReplaceCharWithString(GetDefaultAllocator(), formatted1.buffer, '\n', "\\n");
+        string formatted1 = ReplaceCharWithString(GetCAllocator(), msl.buffer, '"', "\\\"");
+        string formatted2 = ReplaceCharWithString(GetCAllocator(), formatted1.buffer, '\n', "\\n");
         formatted1.deinit();
         writer->WriteString(formatted2.buffer);
         formatted2.deinit();
     }
 }
-inline bool AstralShaderc_WriteToFile(IAllocator *allocator, string filePath, AstralShadercCompileResult *compiledShader)
+inline bool AstralShaderc_WriteToFile(IAllocator allocator, string filePath, AstralShadercCompileResult *compiledShader)
 {
     FILE *fs = NULL;
     if (fopen_s(&fs, filePath.buffer, "w") != 0)

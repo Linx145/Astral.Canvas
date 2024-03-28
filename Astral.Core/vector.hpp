@@ -13,37 +13,37 @@ namespace collections
     {
         def_delegate(EqlFunc, bool, T, T);
 
-        IAllocator *allocator;
+        IAllocator allocator;
         T *ptr;
         usize capacity;
         usize count;
 
         vector()
         {
-            allocator = NULL;
+            allocator = IAllocator{};
             ptr = NULL;
             capacity = 0;
             count = 0;
         }
-        vector(IAllocator *myAllocator)
+        vector(IAllocator myAllocator)
         {
             allocator = myAllocator;
             ptr = NULL;
             capacity = 0;
             count = 0;
         }
-        vector(IAllocator *myAllocator, usize minCapacity)
+        vector(IAllocator myAllocator, usize minCapacity)
         {
             this->allocator = myAllocator;
-            ptr = (T*)this->allocator->Allocate(sizeof(T) * minCapacity);
+            ptr = (T*)this->allocator.Allocate(sizeof(T) * minCapacity);
             capacity = minCapacity;
             count = 0;
         }
         void deinit()
         {
-            if (ptr != NULL && this->allocator != NULL)
+            if (ptr != NULL && this->allocator.instance != NULL)
             {
-                this->allocator->FREEPTR(ptr);
+                this->allocator.FREEPTR(ptr);
             }
             count = 0;
             capacity = 0;
@@ -58,16 +58,16 @@ namespace collections
                 {
                     newCapacity = 4;
                 }
-                while (newCapacity < minCapacity)
+                while (newCapacity <= minCapacity)
                 {
                     newCapacity *= 2;
                 }
-                T *newPtr = (T*)allocator->Allocate(sizeof(T) * newCapacity);
+                T *newPtr = (T*)allocator.Allocate(sizeof(T) * newCapacity);
                 for (usize i = 0; i < capacity; i += 1)
                 {
                     newPtr[i] = ptr[i];
                 }
-                allocator->FREEPTR(ptr);
+                allocator.FREEPTR(ptr);
                 ptr = newPtr;
                 capacity = newCapacity;
             }
@@ -113,7 +113,7 @@ namespace collections
             {
                 return collections::Array<T>();
             }
-            T *slice = (T*)allocator->Allocate(sizeof(T) * this->count);
+            T *slice = (T*)allocator.Allocate(sizeof(T) * this->count);
             for (usize i = 0; i < this->count; i++)
             {
                 slice[i] = this->ptr[i];
@@ -122,13 +122,13 @@ namespace collections
             deinit();
             return result;
         }
-        collections::Array<T> ToOwnedArrayWith(IAllocator *newAllocator)
+        collections::Array<T> ToOwnedArrayWith(IAllocator newAllocator)
         {
             if (this->ptr == NULL)
             {
                 return collections::Array<T>(newAllocator);
             }
-            T *slice = (T*)newAllocator->Allocate(sizeof(T) * this->count);
+            T *slice = (T*)newAllocator.Allocate(sizeof(T) * this->count);
             for (usize i = 0; i < this->count; i++)
             {
                 slice[i] = this->ptr[i];

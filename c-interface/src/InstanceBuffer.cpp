@@ -11,14 +11,14 @@ exportC usize AstralCanvasInstanceBuffer_GetCount(AstralCanvasInstanceBuffer ptr
 }
 exportC AstralCanvasInstanceBuffer AstralCanvasInstanceBuffer_Create(usize instanceSize, usize instanceCount, bool canRead)
 {
-    AstralCanvas::InstanceBuffer *result = (AstralCanvas::InstanceBuffer *)GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::InstanceBuffer));
+    AstralCanvas::InstanceBuffer *result = (AstralCanvas::InstanceBuffer *)GetCAllocator().Allocate(sizeof(AstralCanvas::InstanceBuffer));
     *result = AstralCanvas::InstanceBuffer(instanceSize, instanceCount, canRead);
     return result;
 }
 exportC void AstralCanvasInstanceBuffer_Deinit(AstralCanvasInstanceBuffer ptr)
 {
     ((AstralCanvas::InstanceBuffer *)ptr)->deinit();
-    GetDefaultAllocator()->Free(ptr);
+    GetCAllocator().Free(ptr);
 }
 exportC void AstralCanvasInstanceBuffer_SetData(AstralCanvasInstanceBuffer ptr, void* instanceData, usize instanceCount)
 {

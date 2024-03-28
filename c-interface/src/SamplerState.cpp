@@ -4,14 +4,14 @@
 
 exportC AstralCanvasSamplerState AstralCanvasSamplerState_Init(AstralCanvas_SampleMode thisSampleMode, AstralCanvas_RepeatMode thisRepeatMode, bool isAnisotropic, float thisAnisotropyLevel)
 {
-    AstralCanvas::SamplerState *result = (AstralCanvas::SamplerState *)GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::SamplerState));
+    AstralCanvas::SamplerState *result = (AstralCanvas::SamplerState *)GetCAllocator().Allocate(sizeof(AstralCanvas::SamplerState));
     *result = AstralCanvas::SamplerState((AstralCanvas::SampleMode)thisSampleMode, (AstralCanvas::RepeatMode)thisRepeatMode, isAnisotropic, thisAnisotropyLevel);
     return result;
 }
 exportC void AstralCanvasSamplerState_Deinit(AstralCanvasSamplerState ptr)
 {
     ((AstralCanvas::SamplerState *)ptr)->deinit();
-    GetDefaultAllocator()->Free(ptr);
+    GetCAllocator().Free(ptr);
 }
 
 /*exportC AstralCanvasSamplerState AstralCanvasSampler_GetPointClamp()

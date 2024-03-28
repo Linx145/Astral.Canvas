@@ -5,7 +5,7 @@
 exportC AstralCanvasRenderProgram AstralCanvasRenderProgram_Init()
 {
     AstralCanvas::RenderProgram *result = (AstralCanvas::RenderProgram *)malloc(sizeof(AstralCanvas::RenderProgram));
-    *result = AstralCanvas::RenderProgram(GetDefaultAllocator());
+    *result = AstralCanvas::RenderProgram(GetCAllocator());
     return result;
 }
 exportC i32 AstralCanvasRenderProgram_AddAttachment(AstralCanvasRenderProgram ptr, AstralCanvas_ImageFormat imageFormat, bool clearColor, bool clearDepth, AstralCanvas_RenderPassOutputType outputType)

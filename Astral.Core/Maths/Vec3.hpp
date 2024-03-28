@@ -10,39 +10,91 @@ namespace Maths
         float Y;
         float Z;
 
-        Vec3()
+        inline Vec3()
         {
             X = 0.0f;
             Y = 0.0f;
             Z = 0.0f;
         }
-        Vec3(float x, float y, float z)
+        inline Vec3(float x, float y, float z)
         {
             X = x;
             Y = y;
             Z = z;
         }
-        Vec3(Vec2 vec2, float z)
+        inline Vec3(Vec2 vec2, float z)
         {
             X = vec2.X;
             Y = vec2.Y;
             Z = z;
         }
+        inline Vec3(float component)
+        {
+            X = component;
+            Y = component;
+            Z = component;
+        }
         inline Vec3 operator+(Vec3 other)
         {
             return Vec3(X + other.X, Y + other.Y, Z + other.Z);
+        }
+        inline void operator+=(Vec3 other)
+        {
+            X += other.X;
+            Y += other.Y;
+            Z += other.Z;
         }
         inline Vec3 operator-(Vec3 other)
         {
             return Vec3(X - other.X, Y - other.Y, Z - other.Z);
         }
+        inline void operator-=(Vec3 other)
+        {
+            X -= other.X;
+            Y -= other.Y;
+            Z -= other.Z;
+        }
         inline Vec3 operator*(Vec3 other)
         {
             return Vec3(X * other.X, Y * other.Y, Z * other.Z);
         }
+        inline void operator*=(Vec3 other)
+        {
+            X *= other.X;
+            Y *= other.Y;
+            Z *= other.Z;
+        }
         inline Vec3 operator/(Vec3 other)
         {
             return Vec3(X / other.X, Y / other.Y, Z / other.Z);
+        }
+        inline void operator/=(Vec3 other)
+        {
+            X /= other.X;
+            Y /= other.Y;
+            Z /= other.Z;
+        }
+        inline Vec3 operator*(float amount)
+        {
+            return Vec3(X * amount, Y * amount, Z * amount);
+        }
+        inline void operator*=(float amount)
+        {
+            X *= amount;
+            Y *= amount;
+            Z *= amount;
+        }
+        inline Vec3 operator/(float amount)
+        {
+            float oneOver = 1.0f / amount;
+            return Vec3(X * oneOver, Y * oneOver, Z * oneOver);
+        }
+        inline void operator/=(float amount)
+        {
+            float oneOver = 1.0f / amount;
+            X *= oneOver;
+            Y *= oneOver;
+            Z *= oneOver;
         }
         inline Vec3 operator-()
         {

@@ -4,7 +4,7 @@
 
 using namespace collections;
 
-bool AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstance instance, VkSurfaceKHR windowSurface, Array<const char*> requiredExtensions, AstralVulkanGPU* output)
+bool AstralCanvasVk_SelectGPU(IAllocator allocator, VkInstance instance, VkSurfaceKHR windowSurface, Array<const char*> requiredExtensions, AstralVulkanGPU* output)
 {
 	u32 deviceCount = 0;
 	if (vkEnumeratePhysicalDevices(instance, &deviceCount, NULL) != VK_SUCCESS || deviceCount == 0)
@@ -15,8 +15,8 @@ bool AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstance instance, VkSurf
 
 	IAllocator cAllocator = GetCAllocator();
 
-	Array<AstralVulkanGPU> gpus = Array<AstralVulkanGPU>(&cAllocator, deviceCount);
-	Array<VkPhysicalDevice> physicalDevices = Array<VkPhysicalDevice>(&cAllocator, deviceCount);
+	Array<AstralVulkanGPU> gpus = Array<AstralVulkanGPU>(cAllocator, deviceCount);
+	Array<VkPhysicalDevice> physicalDevices = Array<VkPhysicalDevice>(cAllocator, deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDevices.data);
 
 	for (usize i = 0; i < physicalDevices.length; i++)
@@ -54,7 +54,7 @@ bool AstralCanvasVk_SelectGPU(IAllocator *allocator, VkInstance instance, VkSurf
 	}
 	AstralVulkanGPU result = gpus.data[bestGPU];
 
-	AstralCanvasVk_CreateLogicalDevice(&result, &cAllocator);
+	AstralCanvasVk_CreateLogicalDevice(&result, cAllocator);
 
 	for (usize i = 0; i < gpus.length; i++)
 	{
@@ -86,7 +86,7 @@ u32 AstralCanvasVk_GetGPUScore(AstralVulkanGPU* gpu, VkSurfaceKHR windowSurface)
 	}
 
 	IAllocator cAllocator = GetCAllocator();
-	AstralVkSwapchainSupportDetails details = AstralCanvasVk_QuerySwapchainSupport(gpu->physicalDevice, windowSurface, &cAllocator);
+	AstralVkSwapchainSupportDetails details = AstralCanvasVk_QuerySwapchainSupport(gpu->physicalDevice, windowSurface, cAllocator);
 	bool swapchainSupports = details.presentModes.length > 0 && details.supportedSurfaceFormats.length > 0;
 	details.deinit();
 	if (!swapchainSupports) //the gpu doesn't support the swapchain
@@ -107,7 +107,7 @@ bool AstralCanvasVk_GPUExtensionsSupported(AstralVulkanGPU *gpu)
 	u32 supportedExtensionsCount = 0;
 	vkEnumerateDeviceExtensionProperties(gpu->physicalDevice, NULL, &supportedExtensionsCount, NULL);
 
-	Array<VkExtensionProperties> properties = Array<VkExtensionProperties>(&cAllocator);
+	Array<VkExtensionProperties> properties = Array<VkExtensionProperties>(cAllocator);
 
 	vkEnumerateDeviceExtensionProperties(gpu->physicalDevice, NULL, &supportedExtensionsCount, properties.data);
 
@@ -128,7 +128,7 @@ bool AstralCanvasVk_GPUExtensionsSupported(AstralVulkanGPU *gpu)
 	return totalSupported == gpu->requiredExtensions.length;
 }
 
-bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator* allocator)
+bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator allocator)
 {
 	collections::vector<VkDeviceQueueCreateInfo> createInfos = collections::vector<VkDeviceQueueCreateInfo>(allocator);
 	float queuePriorities = 1.0f;

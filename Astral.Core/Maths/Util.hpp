@@ -8,8 +8,48 @@
 constexpr float Degree2Radian = 3.1415927f / 180.0f;
 constexpr float Radian2Degree = 180.0f / 3.1415927f;
 
+#define LERP(A, B, amount) A + (B - A) * amount
+#define FloatMin -3.40282347E+38f
+#define FloatMax 3.40282347E+38f
+#define U64Min 0
+#define U64Max 18446744073709551615llu
+#define U32Min 0
+#define U32Max 4294967295
+#define U16Min 0
+#define U16Max 65535
+#define U8Min 0
+#define U8Max 255
+#define I64Min -9223372036854775808ll
+#define I64Max 9223372036854775807ll
+#define I32Min -2147483648
+#define I32Max 2147483647
+#define I16Min -32768
+#define I16Max 32767
+#define I8Min -128
+#define I8Max 127
+
 namespace Maths
 {
+	u64 inline rotl64(u64 value, u64 amount)
+	{
+		amount %= 64;
+		return (value << amount) | (value >> (64 - amount));
+	}
+	u32 inline rotl32(u32 value, u32 amount)
+	{
+		amount %= 32;
+		return (value << amount) | (value >> (32 - amount));
+	}
+	u64 inline rotr64(u64 value, u64 amount)
+	{
+		amount %= 64;
+		return (value >> amount) | (value << (64 - amount));
+	}
+	u32 inline rotr32(u32 value, u32 amount)
+	{
+		amount %= 32;
+		return (value >> amount) | (value << (32 - amount));
+	}
 	float inline LengthdirX(float len, float dirInRadians)
 	{
 		return cosf(dirInRadians) * len;
@@ -113,10 +153,6 @@ namespace Maths
 				v1;
 		}
 		return (float)result;
-	}
-	float inline Lerp(float A, float B, float amount)
-	{
-		return A + (B - A) * amount;
 	}
 	float inline ModuloFloat(float A, float B)
 	{

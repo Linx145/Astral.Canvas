@@ -32,8 +32,8 @@ exportC void AstralCanvasRenderTarget_SetUseStatus(AstralCanvasRenderTarget ptr,
 }
 exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateFromTextures(AstralCanvasTexture2D thisBackendTexture, AstralCanvasTexture2D thisDepthBuffer, bool isBackbuffer)
 {
-    AstralCanvasRenderTarget result = GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::RenderTarget));
-    *((AstralCanvas::RenderTarget *)result) = AstralCanvas::RenderTarget(GetDefaultAllocator(), *((AstralCanvas::Texture2D*)thisBackendTexture), *((AstralCanvas::Texture2D*)thisDepthBuffer), isBackbuffer);
+    AstralCanvasRenderTarget result = GetCAllocator().Allocate(sizeof(AstralCanvas::RenderTarget));
+    *((AstralCanvas::RenderTarget *)result) = AstralCanvas::RenderTarget(GetCAllocator(), *((AstralCanvas::Texture2D*)thisBackendTexture), *((AstralCanvas::Texture2D*)thisDepthBuffer), isBackbuffer);
     if (thisBackendTexture != NULL)
         free(thisBackendTexture);
     if (thisDepthBuffer != NULL)
@@ -42,14 +42,14 @@ exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateFromTextures(Ast
 }
 exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_Create(u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, AstralCanvas_ImageFormat depthFormat)
 {
-    AstralCanvasRenderTarget result = GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::RenderTarget));
-    *((AstralCanvas::RenderTarget *)result) = AstralCanvas::RenderTarget(GetDefaultAllocator(), width, height, (AstralCanvas::ImageFormat)imageFormat, (AstralCanvas::ImageFormat)depthFormat);
+    AstralCanvasRenderTarget result = GetCAllocator().Allocate(sizeof(AstralCanvas::RenderTarget));
+    *((AstralCanvas::RenderTarget *)result) = AstralCanvas::RenderTarget(GetCAllocator(), width, height, (AstralCanvas::ImageFormat)imageFormat, (AstralCanvas::ImageFormat)depthFormat);
     return result;
 }
 exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateWithInputTextures(u32 width, u32 height, AstralCanvasTexture2D* textures, usize numTextures)
 {
-    AstralCanvasRenderTarget result = GetDefaultAllocator()->Allocate(sizeof(AstralCanvas::RenderTarget));
-    collections::Array<AstralCanvas::Texture2D> arr = collections::Array<AstralCanvas::Texture2D>(GetDefaultAllocator(), numTextures);
+    AstralCanvasRenderTarget result = GetCAllocator().Allocate(sizeof(AstralCanvas::RenderTarget));
+    collections::Array<AstralCanvas::Texture2D> arr = collections::Array<AstralCanvas::Texture2D>(GetCAllocator(), numTextures);
     for (usize i = 0; i < numTextures; i++)
     {
         arr.data[i] = *(AstralCanvas::Texture2D*)textures[i];
@@ -58,7 +58,7 @@ exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateWithInputTexture
         //we need to free the heap allocation for each texture.
         free(textures[i]);
     }
-    *((AstralCanvas::RenderTarget *)result) = AstralCanvas::RenderTarget(GetDefaultAllocator(), width, height, arr);
+    *((AstralCanvas::RenderTarget *)result) = AstralCanvas::RenderTarget(GetCAllocator(), width, height, arr);
     //dont deinit arr as it's ownership is now transferred to RenderTarget
     return result;
 }

@@ -22,19 +22,19 @@ namespace collections
 	template<typename T>
 	struct linkedlist
 	{
-		IAllocator* allocator;
+		IAllocator allocator;
 		linkednode<T>* first;
 		linkednode<T>* last;
 		usize count;
 
 		linkedlist()
 		{
-			allocator = NULL;
+			allocator = IAllocator{};
 			first = NULL;
 			last = NULL;
 			count = 0;
 		}
-		linkedlist(IAllocator* myAllocator)
+		linkedlist(IAllocator myAllocator)
 		{
 			allocator = myAllocator;
 			first = NULL;
@@ -70,7 +70,7 @@ namespace collections
 		}
 		linkednode<T>* AddBefore(T item, linkednode<T>* before)
 		{
-			linkednode<T>* node = (linkednode<T>*)allocator->Allocate(sizeof(linkednode<T>));
+			linkednode<T>* node = (linkednode<T>*)allocator.Allocate(sizeof(linkednode<T>));
 			node->list = this;
 			node->value = item;
 			linkednode<T>* originalPrev = before->prev;
@@ -90,7 +90,7 @@ namespace collections
 		}
 		linkednode<T>* AddAfter(T item, linkednode<T>* after)
 		{
-			linkednode<T>* node = (linkednode<T>*)allocator->Allocate(sizeof(linkednode<T>));
+			linkednode<T>* node = (linkednode<T>*)allocator.Allocate(sizeof(linkednode<T>));
 			node->list = this;
 			node->value = item;
 			linkednode<T>* originalNext = after->next;
@@ -114,7 +114,7 @@ namespace collections
 			{
 				return AddAfter(item, this->last);
 			}
-			linkednode<T>* node = (linkednode<T>*)allocator->Allocate(sizeof(linkednode<T>));
+			linkednode<T>* node = (linkednode<T>*)allocator.Allocate(sizeof(linkednode<T>));
 			node->list = this;
 			node->value = item;
 			node->prev = NULL;
@@ -130,7 +130,7 @@ namespace collections
 			{
 				return AddBefore(item, this->first);
 			}
-			linkednode<T>* node = (linkednode<T>*)allocator->Allocate(sizeof(linkednode<T>));
+			linkednode<T>* node = (linkednode<T>*)allocator.Allocate(sizeof(linkednode<T>));
 			node->list = this;
 			node->value = item;
 			node->prev = NULL;
@@ -171,7 +171,7 @@ namespace collections
 			while (node != NULL)
 			{
 				linkednode<T>* next = node->next;
-				this->allocator->Free(node);
+				this->allocator.Free(node);
 				node = next;
 			}
 			count = 0;

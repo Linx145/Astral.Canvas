@@ -8,35 +8,35 @@ namespace collections
     template <typename T>
     struct sparseset
     {
-        IAllocator *allocator;
+        IAllocator allocator;
         T *ptr;
         usize capacity;
 
         sparseset()
         {
-            allocator = NULL;
+            allocator = IAllocator{};
             ptr = NULL;
             capacity = 0;
         }
-        sparseset(IAllocator *myAllocator)
+        sparseset(IAllocator myAllocator)
         {
             allocator = myAllocator;
             ptr = NULL;
             capacity = 0;
         }
-        sparseset(IAllocator *myAllocator, usize minCapacity)
+        sparseset(IAllocator myAllocator, usize minCapacity)
         {
             this->allocator = myAllocator;
-            ptr = NULL;//(T*)this->allocator->Allocate(sizeof(T) * minCapacity);
+            ptr = NULL;
             capacity = 0;
             //capacity = minCapacity;
             EnsureArrayCapacity(minCapacity);
         }
         void deinit()
         {
-            if (ptr != NULL && this->allocator != NULL)
+            if (ptr != NULL && this->allocator.instance != NULL)
             {
-                this->allocator->FREEPTR(ptr);
+                this->allocator.FREEPTR(ptr);
             }
             capacity = 0;
         }
@@ -53,7 +53,7 @@ namespace collections
                 {
                     newCapacity *= 2;
                 }
-                T *newPtr = (T*)allocator->Allocate(sizeof(T) * newCapacity);
+                T *newPtr = (T*)allocator.Allocate(sizeof(T) * newCapacity);
                 for (usize i = 0; i < capacity; i += 1)
                 {
                     newPtr[i] = ptr[i];
@@ -64,7 +64,7 @@ namespace collections
                 }
                 if (ptr != NULL)
                 {
-                    allocator->Free(ptr);
+                    allocator.Free(ptr);
                 }
                 ptr = newPtr;
                 capacity = newCapacity;

@@ -20,7 +20,7 @@ struct AstralVulkanQueueResult
 };
 struct AstralVulkanQueueProperties
 {
-    IAllocator *allocator;
+    IAllocator allocator;
     collections::vector<AstralVulkanQueueResult> queueCreationResults;
     collections::Array<VkQueueFamilyProperties> all;
     i32 generalPurposeQueueIndex;
@@ -39,7 +39,7 @@ struct AstralVulkanQueueProperties
         dedicatedTransferQueueIndex = -1;
         windowSurface = NULL;
     }
-    inline AstralVulkanQueueProperties(IAllocator *thisAllocator, collections::Array<VkQueueFamilyProperties> allFamilyProperties, VkSurfaceKHR thisWindowSurface)
+    inline AstralVulkanQueueProperties(IAllocator thisAllocator, collections::Array<VkQueueFamilyProperties> allFamilyProperties, VkSurfaceKHR thisWindowSurface)
     {
         this->allocator = thisAllocator;
         queueCreationResults = collections::vector<AstralVulkanQueueResult>(thisAllocator);

@@ -246,7 +246,7 @@ namespace AstralCanvas
 	}
 	void WindowFramebufferSizeChanged(GLFWwindow* window, i32 width, i32 height)
 	{
-		string str = string(GetDefaultAllocator(), "Framebuffer size changed: ");
+		string str = string(GetCAllocator(), "Framebuffer size changed: ");
 		str.Append((i64)width);
 		str.Append(", ");
 		str.Append((i64)height);
@@ -261,7 +261,7 @@ namespace AstralCanvas
 		}
 	}
 
-	bool WindowInit(IAllocator *allocator, const char *name, Window * result, i32 width, i32 height, bool resizeable, void *iconData, u32 iconWidth, u32 iconHeight)
+	bool WindowInit(IAllocator allocator, const char *name, Window * result, i32 width, i32 height, bool resizeable, void *iconData, u32 iconWidth, u32 iconHeight)
 	{
 		*result = {};
 		if (!windowLibraryInitialized)

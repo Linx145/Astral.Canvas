@@ -96,7 +96,7 @@ namespace AstralCanvas
         }
         this->constructed = true;
     }
-    RenderTarget::RenderTarget(IAllocator *allocator, u32 width, u32 height, collections::Array<Texture2D> texturesToUse)
+    RenderTarget::RenderTarget(IAllocator allocator, u32 width, u32 height, collections::Array<Texture2D> texturesToUse)
     {
         this->allocator = allocator;
         this->textures = texturesToUse;
@@ -108,7 +108,7 @@ namespace AstralCanvas
         this->isBackbuffer = false;
         this->renderTargetHandle = NULL;
     }
-    RenderTarget::RenderTarget(IAllocator *allocator, Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer)
+    RenderTarget::RenderTarget(IAllocator allocator, Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer)
     {
         this->allocator = allocator;
         this->textures = collections::Array<Texture2D>(allocator, 2);
@@ -122,7 +122,7 @@ namespace AstralCanvas
         this->isBackbuffer = isBackbuffer;
         this->renderTargetHandle = NULL;
     }
-    RenderTarget::RenderTarget(IAllocator *allocator, u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat)
+    RenderTarget::RenderTarget(IAllocator allocator, u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat)
     {
         this->allocator = allocator;
         this->width = width;

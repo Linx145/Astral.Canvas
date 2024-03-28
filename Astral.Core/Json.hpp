@@ -55,7 +55,7 @@ namespace Json
             this->currentIndex = 0;
             this->currentLine = 0;
         }
-        inline string GetString(IAllocator *allocator, JsonToken token)
+        inline string GetString(IAllocator allocator, JsonToken token)
         {
             if (token.tokenType == JsonToken_StringLiteral)
             {
@@ -105,6 +105,51 @@ namespace Json
             elementType = JsonElement_Array;
         }
         
+        inline JsonTokenType CheckElementType()
+        {
+            JsonTokenType tokenType = JsonToken_IntegerLiteral;
+
+            //this is not possible unless we are a string "" so
+            if (this->value.length == 0)
+            {
+                tokenType = JsonToken_StringLiteral;
+            }
+            else
+            {
+                for (usize i = 0; i < this->value.length; i++)
+                {
+                    if ((this->value.buffer[i] == '-' && i > 0) || !isdigit(this->value.buffer[i]))
+                    {
+                        if (this->value.buffer[i] == '.')
+                        {
+                            if (tokenType == JsonToken_FloatLiteral)
+                            {
+                                tokenType = JsonToken_StringLiteral;
+                            }
+                            else
+                                tokenType = JsonToken_FloatLiteral;
+                        }
+                        else
+                        {
+                            tokenType = JsonToken_StringLiteral;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (tokenType == JsonToken_StringLiteral)
+            {
+                if (value == "true" || value == "false")
+                {
+                    tokenType = JsonToken_BoolLiteral;
+                }
+                else if (value == "null")
+                {
+                    tokenType = JsonToken_NullLiteral;
+                }
+            }
+            return tokenType;
+        }
         inline i32 GetInt32()
         {
             if (elementType != JsonElement_Property)
@@ -170,9 +215,9 @@ namespace Json
 
             return result;
         }
-        inline string GetString(IAllocator *allocator)
+        inline string GetString(IAllocator allocator)
         {
-            collections::vector<CharSlice> charSlices = collections::vector<CharSlice>(GetDefaultAllocator());
+            collections::vector<CharSlice> charSlices = collections::vector<CharSlice>(GetCAllocator());
             usize start = 0;
             for (usize i = 0; i < value.length - 1; i++)
             {
@@ -202,7 +247,7 @@ namespace Json
             charSlices.deinit();
             return result;
         }
-        inline string GetStringRaw(IAllocator *allocator)
+        inline string GetStringRaw(IAllocator allocator)
         {
             return string(allocator, value.buffer);
         }
@@ -220,17 +265,21 @@ namespace Json
             {
                 IAllocator allocator = GetCAllocator();
                 
-                string propertyName = string(&allocator, ptr);
+                string propertyName = string(allocator, ptr);
                 JsonElement *result = childObjects.Get(propertyName);
                 propertyName.deinit();
                 return result;
             }
             return NULL;
         }
+        /// @brief Parses all child objects recursively, collecting their properties 
+        /// and aggregating them into raw byte data
+        /// @return the Json object as raw data
+        collections::Array<u8> GetAsRawData(IAllocator allocator);
         void DumpJsonToStdout(i32 indents);
     };
-    bool ParseJsonElement(IAllocator *allocator, JsonTokenizer *tokenizer, JsonElement *result);
-    inline usize ParseJsonDocument(IAllocator *allocator, string contents, JsonElement* result)
+    bool ParseJsonElement(IAllocator allocator, JsonTokenizer *tokenizer, JsonElement *result);
+    inline usize ParseJsonDocument(IAllocator allocator, string contents, JsonElement* result)
     {
         JsonTokenizer tokenizer = JsonTokenizer(contents);
         if (!ParseJsonElement(allocator, &tokenizer, result))
@@ -239,10 +288,10 @@ namespace Json
         }
         return 0;
     }
-    inline usize ReadJsonFile(IAllocator *allocator, string fileFullPath, JsonElement* result)
+    inline usize ReadJsonFile(IAllocator allocator, string fileFullPath, JsonElement* result)
     {
         IAllocator cAllocator = GetCAllocator();
-        string fileContents = io::ReadFile(&cAllocator, fileFullPath.buffer);
+        string fileContents = io::ReadFile(cAllocator, fileFullPath.buffer);
         if (fileContents.buffer == NULL)
         {
             return false;
@@ -262,7 +311,7 @@ namespace Json
         collections::vector<JsonTokenType> indentTypes;
         bool shouldIndent;
 
-        inline JsonWriter(IAllocator *allocator, FILE *fileStream, bool writerShouldIndent)
+        inline JsonWriter(IAllocator allocator, FILE *fileStream, bool writerShouldIndent)
         {
             stream = fileStream;
             previousToken = JsonToken_Invalid;
@@ -525,8 +574,77 @@ namespace Json
 }
 
 #ifdef ASTRALCORE_JSON_IMPL
-#include "Json.hpp"
+collections::Array<u8> Json::JsonElement::GetAsRawData(IAllocator allocator)
+{
+    collections::vector<u8> results = collections::vector<u8>(GetCAllocator());
+    if (this->elementType == JsonElement_Object)
+    {
+        for (usize i = 0; i < childObjects.filledBuckets; i++)
+        {
+            if (childObjects.buckets[i].initialized)
+            {
+                for (usize j = 0; j < childObjects.buckets[i].entries.count; j++)
+                {
+                    collections::Array<u8> toAppend = childObjects.buckets[i].entries.ptr[j].value.GetAsRawData(GetCAllocator());
+                    if (toAppend.data != NULL)
+                    {
+                        for (usize c = 0; c < toAppend.length; c++)
+                        {
+                            results.Add(toAppend.data[c]);
+                        }
+                        toAppend.deinit();
+                    }
+                }
+            }
+        }
+    }
+    else if (this->elementType == JsonElement_Property)
+    {
+        //have to check the string to know if it's a integer, float or string
+        if (this->value == "true")
+        {
+            results.Add(1);
+        }
+        else if (this->value == "false" || this->value == "null")
+        {
+            results.Add(0);
+        }
+        else
+        {
+            // reuse tokenType;
+            Json::JsonTokenType tokenType = this->CheckElementType();
 
+            if (tokenType == JsonToken_BoolLiteral)
+            {
+                results.Add(this->value == "true" ? 1 : 0);
+            }
+            if (tokenType == JsonToken_FloatLiteral)
+            {
+                float parsed = atof(this->value.buffer);
+                for (i32 i = 0; i < 4; i++)
+                {
+                    results.Add(((u8*)&parsed)[i]);
+                }
+            }
+            else if (tokenType == JsonToken_IntegerLiteral)
+            {
+                i32 integer = atoi(this->value.buffer);
+                for (i32 i = 0; i < 4; i++)
+                {
+                    results.Add(((u8*)&integer)[i]);
+                }
+            }
+            else
+            {
+                for (i32 i = 0; i < sizeof(char *); i++)
+                {
+                    results.Add(0);
+                }
+            }
+        }
+    }
+    return results.ToOwnedArrayWith(allocator);
+}
 void Json::JsonElement::DumpJsonToStdout(i32 indents)
 {
     if (this->elementType == JsonElement_Property)
@@ -748,7 +866,7 @@ Json::JsonToken Json::JsonTokenizer::Next()
 
     return result;
 }
-bool Json::ParseJsonElement(IAllocator *allocator, JsonTokenizer *tokenizer, JsonElement *result)
+bool Json::ParseJsonElement(IAllocator allocator, JsonTokenizer *tokenizer, JsonElement *result)
 {
     JsonToken peekNext = tokenizer->PeekNext();
     if (peekNext.tokenType == JsonToken_StringLiteral || peekNext.tokenType == JsonToken_IntegerLiteral || peekNext.tokenType == JsonToken_FloatLiteral || peekNext.tokenType == JsonToken_BoolLiteral || peekNext.tokenType == JsonToken_NullLiteral)
@@ -762,7 +880,7 @@ bool Json::ParseJsonElement(IAllocator *allocator, JsonTokenizer *tokenizer, Jso
         //printf("Entering array\n");
         IAllocator cAllocator = GetCAllocator();
 
-        collections::vector<JsonElement> arrayMembers = collections::vector<JsonElement>(&cAllocator);
+        collections::vector<JsonElement> arrayMembers = collections::vector<JsonElement>(cAllocator);
         tokenizer->Next();
         //empty array
         if (tokenizer->PeekNext().tokenType == JsonToken_RBracket)

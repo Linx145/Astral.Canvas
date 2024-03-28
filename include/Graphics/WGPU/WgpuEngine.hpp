@@ -28,11 +28,11 @@ void AstralCanvasWgpu_InitLogging(WGPULogLevel logLevel);
 void AstralCanvasWgpu_HandleRequestedDevice(WGPURequestDeviceStatus status, WGPUDevice device, char const *message, void *userdata);
 
 AstralCanvasWgpu_Engine* AstralCanvasWgpu_GetEngineInstance();
-void AstralCanvasWgpu_Initialize(IAllocator *allocator, AstralCanvas::Window* window, collections::Array<AstralCanvas_GraphicsFeatures> requiredFeatures, collections::Array<AstralCanvas_GraphicsFeatures> optionalFeatures);
+void AstralCanvasWgpu_Initialize(IAllocator allocator, AstralCanvas::Window* window, collections::Array<AstralCanvas_GraphicsFeatures> requiredFeatures, collections::Array<AstralCanvas_GraphicsFeatures> optionalFeatures);
 
 void AstralCanvasWgpu_ResizeWindow(AstralCanvas::Window *window);
 
 void AstralCanvasWgpu_Deinit();
 
-i32 AstralCanvasWgpu_CreateShaderFromString(IAllocator *allocator, ShaderType shaderType, string jsonString, Shader *result);
+i32 AstralCanvasWgpu_CreateShaderFromString(IAllocator allocator, ShaderType shaderType, string jsonString, Shader *result);
 #endif

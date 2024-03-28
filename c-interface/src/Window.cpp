@@ -43,7 +43,7 @@ exportC void AstralCanvasWindow_SetTitle(AstralCanvasWindow ptr, const char *tit
     {
         ((AstralCanvas::Window *)ptr)->windowTitle.deinit();
     }
-    ((AstralCanvas::Window *)ptr)->SetWindowTitle(string(GetDefaultAllocator(), title));
+    ((AstralCanvas::Window *)ptr)->SetWindowTitle(string(GetCAllocator(), title));
 }
 exportC bool AstralCanvasWindow_GetIsFullscreen(AstralCanvasWindow ptr)
 {
