@@ -31,27 +31,31 @@ AstralCanvasRenderProgram renderProgram = NULL;
 
 void Update(float deltaTime)
 {
+    AstralCanvasComputeBuffer from = computeBufferA;
+    AstralCanvasComputeBuffer to = computeBufferB;
+    if (onBufferB)
+    {
+        from = computeBufferB;
+        to = computeBufferA;
+    }
+    onBufferB = !onBufferB;
+
+    AstralCanvasShader_SetShaderVariableComputeBuffer(computeShader, "ParticlesIn", from);
+    AstralCanvasShader_SetShaderVariableComputeBuffer(computeShader, "ParticlesOut", to);
+    AstralCanvasShader_SetShaderVariable(computeShader, "TimeData", &deltaTime, sizeof(float));
+
+    AstralCanvasComputePipeline_DispatchNow(computePipeline, 1, 1, 1);
+
+
     if (AstralCanvasInput_IsKeyPressed(AstralCanvas_Keys_Space))
     {
-        float fauxDeltaTime = 1.0f;
-        AstralCanvasComputeBuffer from = computeBufferA;
-        AstralCanvasComputeBuffer to = computeBufferB;
-        if (onBufferB)
-        {
-            from = computeBufferB;
-            to = computeBufferA;
-        }
-        onBufferB = !onBufferB;
-
-        AstralCanvasShader_SetShaderVariableComputeBuffer(computeShader, "ParticlesIn", from);
-        AstralCanvasShader_SetShaderVariableComputeBuffer(computeShader, "ParticlesOut", to);
-        AstralCanvasShader_SetShaderVariable(computeShader, "TimeData", &fauxDeltaTime, sizeof(float));
-
-        AstralCanvasComputePipeline_DispatchNow(computePipeline, PARTICLES_COUNT, 1, 1);
-
         usize dataLength;
         Particle* data = (Particle*)AstralCanvasComputeBuffer_GetData(to, &dataLength);
-        printf("Particle 0 position.X = %f, velocity.X = %f\n", data[0].position.X, data[0].velocity.X);
+        for (i32 i = 0; i < 1; i++)
+        {
+            printf("Particle %i position.X = %f, velocity.X = %f\n", i, data[i].position.X, data[i].velocity.X);
+        }
+        printf("\n");
         free(data);
     }
 }

@@ -87,6 +87,7 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_VULKAN
             case Backend_Vulkan:
             {
+                shader->uniformsHasBeenSet = false;
                 shader->SyncUniformsWithGPU(NULL);
 
                 AstralCanvasVkCommandQueue* queueToUse = &AstralCanvasVk_GetCurrentGPU()->DedicatedComputeQueue;
@@ -100,11 +101,12 @@ namespace AstralCanvas
                     0, 1, //descriptor set count
                     (VkDescriptorSet*)&shader->descriptorSets.ptr[shader->descriptorForThisDrawCall],
                     0, NULL); //dynamic offsets count
-                shader->descriptorForThisDrawCall += 1;
 
                 vkCmdDispatch(commandBuffer, threadsX, threadsY, threadsZ);
 
                 AstralCanvasVk_EndTransientCommandBuffer(AstralCanvasVk_GetCurrentGPU(), queueToUse, commandBuffer);
+                
+                shader->descriptorForThisDrawCall = 0;
                 break;
             }
             #endif
