@@ -13,6 +13,13 @@
 
 namespace AstralCanvas
 {
+    struct DrawIndexedIndirectCommand {
+        u32    indexCount;
+        u32    instanceCount;
+        u32    firstIndex;
+        i32     vertexOffset;
+        u32    firstInstance;
+    };
     struct Graphics
     {
         AstralCanvas::Window *currentWindow;
@@ -51,7 +58,8 @@ namespace AstralCanvas
         void SetShaderVariableSamplers(const char* variableName, SamplerState **samplers, usize count);
 
         void SendUpdatedUniforms();
-        
+
+        void DrawIndexedPrimitivesIndirectCount(ComputeBuffer *drawDataBuffer, usize drawDataBufferOffset, ComputeBuffer *drawCountBuffer, usize drawCountBufferOffset, u32 maxDrawCount);
         void DrawIndexedPrimitives(u32 indexCount, u32 instanceCount, u32 firstIndex = 0, u32 vertexOffset = 0, u32 firstInstance = 0);
     };
 }
