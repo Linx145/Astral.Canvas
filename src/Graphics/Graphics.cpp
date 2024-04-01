@@ -455,6 +455,35 @@ namespace AstralCanvas
 
     }
 
+    void Graphics::DrawIndexedPrimitivesIndirect(ComputeBuffer* drawDataBuffer, usize drawDataBufferOffset, u32 drawCount)
+    {
+        if (this->currentRenderPipeline != NULL && this->currentRenderProgram != NULL)
+        {
+            SendUpdatedUniforms();
+            switch (GetActiveBackend())
+            {
+                #ifdef ASTRALCANVAS_VULKAN
+                case Backend_Vulkan:
+                {
+                    VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
+
+                    vkCmdDrawIndexedIndirect(cmdBuffer, (VkBuffer)drawDataBuffer->handle, drawDataBufferOffset, drawCount, sizeof(DrawIndexedIndirectCommand));
+                    //vkCmdDrawIndexed(cmdBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+                    break;
+                }
+                #endif
+#ifdef ASTRALCANVAS_METAL
+                case Backend_Metal:
+                {
+                    AstralCanvasMetal_DrawIndexedPrimitives(this->currentCommandEncoderInstance, this->currentIndexBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+                    break;
+                }
+#endif
+                default:
+                    break;
+            }
+        }
+    }
     void Graphics::DrawIndexedPrimitivesIndirectCount(ComputeBuffer *drawDataBuffer, usize drawDataBufferOffset, ComputeBuffer *drawCountBuffer, usize drawCountBufferOffset, u32 maxDrawCount)
     {
         if (this->currentRenderPipeline != NULL && this->currentRenderProgram != NULL)
@@ -475,7 +504,7 @@ namespace AstralCanvas
 #ifdef ASTRALCANVAS_METAL
                 case Backend_Metal:
                 {
-                    AstralCanvasMetal_DrawIndexedPrimitives(this->currentCommandEncoderInstance, this->currentIndexBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+                    
                     break;
                 }
 #endif

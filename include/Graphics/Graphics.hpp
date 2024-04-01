@@ -59,6 +59,7 @@ namespace AstralCanvas
 
         void SendUpdatedUniforms();
 
+        void DrawIndexedPrimitivesIndirect(ComputeBuffer* drawDataBuffer, usize drawDataBufferOffset, u32 drawCount);
         void DrawIndexedPrimitivesIndirectCount(ComputeBuffer *drawDataBuffer, usize drawDataBufferOffset, ComputeBuffer *drawCountBuffer, usize drawCountBufferOffset, u32 maxDrawCount);
         void DrawIndexedPrimitives(u32 indexCount, u32 instanceCount, u32 firstIndex = 0, u32 vertexOffset = 0, u32 firstInstance = 0);
     };

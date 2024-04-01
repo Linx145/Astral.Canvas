@@ -74,6 +74,55 @@ struct AstralShadercShaderVariables
     }
 };
 
+struct AstralShadercMaterialParameter
+{
+    string parameterName;
+    usize size;
+
+    AstralShadercMaterialParameter()
+    {
+        parameterName = string();
+        size = 0;
+    }
+    AstralShadercMaterialParameter(string name, usize size)
+    {
+        parameterName = name;
+        this->size = size;
+    }
+    void deinit()
+    {
+        parameterName.deinit();
+    }
+};
+struct AstralShadercMaterialData
+{
+    IAllocator allocator;
+    string materialName;
+    collections::Array<AstralShadercMaterialParameter> parameters;
+
+    inline AstralShadercMaterialData()
+    {
+        this->allocator = IAllocator{};
+        materialName = string();
+        parameters = collections::Array<AstralShadercMaterialParameter>();
+    }
+    inline AstralShadercMaterialData(IAllocator allocator, string name)
+    {
+        this->allocator = allocator;
+        materialName = name;
+        parameters = collections::Array<AstralShadercMaterialParameter>();
+    }
+    inline void deinit()
+    {
+        materialName.deinit();
+        for (usize i = 0; i < parameters.length; i++)
+        {
+            parameters.data[i].deinit();
+        }
+        parameters.deinit();
+    }
+};
+
 struct AstralShadercCompileResult
 {
     IAllocator allocator;
@@ -85,6 +134,7 @@ struct AstralShadercCompileResult
     string shaderData1MSL;
     string shaderData2MSL;
     string errorMessage;
+    collections::hashmap<string, AstralShadercMaterialData> definedMaterials;
 
     inline AstralShadercCompileResult(IAllocator allocator)
     {
@@ -203,6 +253,7 @@ struct AstralCanvasShaderCompiler
         nameToToken.Add(string(nameToToken.allocator, "in"), Acsl_Keyword_In);
         nameToToken.Add(string(nameToToken.allocator, "out"), Acsl_Keyword_Out);
         nameToToken.Add(string(nameToToken.allocator, "location"), Acsl_Keyword_Location);
+        nameToToken.Add(string(nameToToken.allocator, "material"), Acsl_Keyword_Material);
 
         tokenizer = LinxcTokenizer(fileContents.buffer, fileContents.length, &nameToToken);
     }
@@ -237,7 +288,7 @@ inline bool AstralShaderc_CompileMSL(IAllocator allocator, AstralShadercCompileR
     spvc_compiler compiler;
     if (spvc_context_create_compiler(context, SPVC_BACKEND_MSL, parsedIR, SPVC_CAPTURE_MODE_COPY, &compiler) != SPVC_SUCCESS)
     {
-        printf("Error creating MSL compiler\n");
+        fprintf(stderr, "Error creating MSL compiler\n");
         return false;
     }
 
@@ -249,7 +300,7 @@ inline bool AstralShaderc_CompileMSL(IAllocator allocator, AstralShadercCompileR
     spvc_compiler_options_set_uint(options, SPVC_COMPILER_OPTION_MSL_VERSION, SPVC_MAKE_MSL_VERSION(2, 0, 0));
     if (spvc_compiler_install_compiler_options(compiler, options) != SPVC_SUCCESS)
     {
-        printf("Error installing MSL compiler options\n");
+        fprintf(stderr, "Error installing MSL compiler options\n");
         return false;
     }
     spvc_resources resources;
@@ -351,7 +402,7 @@ inline bool AstralShaderc_CompileMSL(IAllocator allocator, AstralShadercCompileR
     
     if (spvc_compiler_compile(compiler, &result) != SPVC_SUCCESS)
     {
-        printf("Error compiling MSL: %s\n", spvc_context_get_last_error_string(context));
+        fprintf(stderr, "Error compiling MSL: %s\n", spvc_context_get_last_error_string(context));
         return false;
     }
     *resultString = string(allocator, result);
@@ -376,33 +427,33 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator allocator, AstralSha
     spvc_parsed_ir parsedIR;
     if (spvc_context_parse_spirv(context, dataToReflect->ptr, dataToReflect->count, &parsedIR) != SPVC_SUCCESS)
     {
-        printf("Failed to parse spirv\n");
+        fprintf(stderr, "Failed to parse spirv\n");
         return false;
     }
 
     spvc_compiler compiler;
     if (spvc_context_create_compiler(context, SPVC_BACKEND_NONE, parsedIR, SPVC_CAPTURE_MODE_COPY, &compiler) != SPVC_SUCCESS)
     {
-        printf("Failed to create compiler\n");
+        fprintf(stderr, "Failed to create compiler\n");
         return false;
     }
 
     spvc_compiler_options options;
     if (spvc_compiler_create_compiler_options(compiler, &options) != SPVC_SUCCESS)
     {
-        printf("Failed to create compiler options\n");
+        fprintf(stderr, "Failed to create compiler options\n");
         return false;
     }
     if (spvc_compiler_install_compiler_options(compiler, options) != SPVC_SUCCESS)
     {
-        printf("Failed to install compiler options\n");
+        fprintf(stderr, "Failed to install compiler options\n");
         return false;
     }
 
     spvc_resources resources;
     if (spvc_compiler_create_shader_resources(compiler, &resources) != SPVC_SUCCESS)
     {
-        printf("Failed to create shader resources\n");
+        fprintf(stderr, "Failed to create shader resources\n");
         return false;
     }
 
@@ -418,7 +469,7 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator allocator, AstralSha
         usize structSize;
         if (spvc_compiler_get_declared_struct_size(compiler, spvc_compiler_get_type_handle(compiler, allResources[i].type_id), &structSize) != SPVC_SUCCESS)
         {
-            printf("Failed to find struct size\n");
+            fprintf(stderr, "Failed to find struct size\n");
             return false;
         }
         u32 set = spvc_compiler_get_decoration(compiler, allResources[i].id, SpvDecorationDescriptorSet);
@@ -502,6 +553,7 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator allocator, AstralSha
 
     spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STORAGE_BUFFER, &allResources, &resourcesCount);
 
+    //get SSBOs
     shaderVariables->computeBuffers = collections::Array<AstralShadercResource>(allocator, resourcesCount);
     mslBinding = 0;
     for (usize i = 0; i < resourcesCount; i++)
@@ -514,6 +566,37 @@ inline bool AstralShaderc_GenerateReflectionData(IAllocator allocator, AstralSha
 
         shaderVariables->computeBuffers.data[i] = resourceData;
         mslBinding += 1;
+
+        //should get material type
+        spvc_type ssboType = spvc_compiler_get_type_handle(compiler, allResources[i].base_type_id);
+        //u32 numMemberTypes = spvc_type_get_num_member_types(ssboType);
+        //for (u32 j = 0; j < numMemberTypes; j++)
+        //{
+        spvc_type_id memberTypeID = spvc_type_get_member_type(ssboType, 0);
+        spvc_type memberType = spvc_compiler_get_type_handle(compiler, memberTypeID);
+
+        spvc_type_id materialTypeID = spvc_type_get_base_type_id(memberType);
+        spvc_type materialType = spvc_compiler_get_type_handle(compiler, materialTypeID);
+        string materialName = string(GetCAllocator(), spvc_compiler_get_name(compiler, materialTypeID));
+        AstralShadercMaterialData *materialData = compileResult->definedMaterials.Get(materialName);
+        if (materialData != NULL && materialData->parameters.data == NULL)
+        {
+            u32 materialParamsCount = spvc_type_get_num_member_types(memberType);
+            materialData->parameters = collections::Array<AstralShadercMaterialParameter>(allocator, materialParamsCount);
+
+            for (usize j = 0; j < materialParamsCount; j++)
+            {
+                string paramName = string(allocator, spvc_compiler_get_member_name(compiler, materialTypeID, j));
+
+                materialData->parameters.data[j].parameterName = paramName;
+                if (spvc_compiler_get_declared_struct_member_size(compiler, materialType, j, &materialData->parameters.data[j].size) != SPVC_SUCCESS)
+                {
+                    materialData->parameters.data[j].size = 0;
+                    fprintf(stderr, "Failed to find struct size of material member variable %s\n", materialData->parameters.data[j].parameterName.buffer);
+                }
+            }
+        }
+        materialName.deinit();
     }
 
     return true;
@@ -534,6 +617,7 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator allocat
     IAllocator defaultAllocator = GetCAllocator();
     AstralCanvasShaderCompiler compiler = AstralCanvasShaderCompiler(allocator, fileContents);
     AstralShadercParsingState parsingState = AstralShaderc_ParsingNone;
+    collections::hashmap<string, AstralShadercMaterialData> definedMaterials = collections::hashmap<string, AstralShadercMaterialData>(allocator, &stringHash, &stringEql);
 
     i32 vertexBufferInputIndex = -1;
 
@@ -643,6 +727,24 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator allocat
                     SHADER_COMPILE_ERR("#end declaration without any form of begin");
                 }
             }
+            else if (next.ID == Acsl_Keyword_Material)
+            {
+                //next identifier is a material
+                next = tokenizer->Next();
+                if (next.ID != Linxc_Identifier)
+                {
+                    SHADER_COMPILE_ERR("Expected material name after #material declaration");
+                }
+                //register the thing first
+                //reflection of material data params is gotten later
+                string materialName = next.ToString(allocator);
+                if (definedMaterials.Contains(materialName))
+                {
+                    materialName.deinit();
+                    SHADER_COMPILE_ERR("Declaring the same material twice");
+                }
+                definedMaterials.Add(materialName, AstralShadercMaterialData(allocator, materialName));
+            }
             else
             {
                 //copy over as usual
@@ -684,11 +786,10 @@ inline AstralShadercCompileResult AstralShaderc_CompileShader(IAllocator allocat
 
     shaderc::Compiler shadercCompiler = shaderc::Compiler();
     AstralShadercCompileResult result = AstralShadercCompileResult(allocator);
+    result.definedMaterials = definedMaterials;
 
     if (fragmentShaderData.buffer != NULL && vertexShaderData.buffer != NULL)
     {
-        //printf("%s\n___\n%s\n", vertexShaderData.buffer, fragmentShaderData.buffer);
-
         string vertexError = AstralShaderc_CompileSpirvBinary(allocator, &shadercCompiler, "vertex", shaderc_vertex_shader, vertexShaderData, false, &result.shaderData1);
         if (vertexError.buffer != NULL)
         {
@@ -801,7 +902,7 @@ inline void AstralShaderc_WriteShaderData(Json::JsonWriter *writer, collections:
     {
         if (!writer->WritePropertyName("uniforms"))
         {
-            printf("Failed to write 'uniforms'\n");
+            fprintf(stderr, "Failed to write 'uniforms'\n");
         }
         writer->WriteStartArray();
         for (usize i = 0; i < variables->uniforms.length; i++)
@@ -958,7 +1059,7 @@ inline bool AstralShaderc_WriteToFile(IAllocator allocator, string filePath, Ast
     FILE *fs = NULL;
     if (fopen_s(&fs, filePath.buffer, "w") != 0)
     {
-        printf("Failed to create file\n");
+        fprintf(stderr, "Failed to create file\n");
         return false;
     }
 
@@ -966,6 +1067,30 @@ inline bool AstralShaderc_WriteToFile(IAllocator allocator, string filePath, Ast
 
     writer.WriteStartObject();
     
+    if (compiledShader->definedMaterials.Count > 0)
+    {
+        writer.WritePropertyName("materials");
+        writer.WriteStartObject();
+        for (usize i = 0; i < compiledShader->definedMaterials.bucketsCount; i++)
+        {
+            if (compiledShader->definedMaterials.buckets[i].initialized)
+            {
+                for (usize j = 0; j < compiledShader->definedMaterials.buckets[i].entries.count; j++)
+                {
+                    AstralShadercMaterialData *material = &compiledShader->definedMaterials.buckets[i].entries.ptr[j].value;
+                    writer.WritePropertyName(material->materialName.buffer);
+                    writer.WriteStartObject();
+                    for (usize c = 0; c < material->parameters.length; c++)
+                    {
+                        writer.WritePropertyName(material->parameters.data[c].parameterName.buffer);
+                        writer.WriteUintValue(material->parameters.data[c].size);
+                    }
+                    writer.WriteEndObject();
+                }
+            }
+        }
+        writer.WriteEndObject();
+    }
     if (compiledShader->isCompute)
     {
         writer.WritePropertyName("compute");

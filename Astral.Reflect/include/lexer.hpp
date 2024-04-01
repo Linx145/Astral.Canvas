@@ -163,6 +163,7 @@ enum LinxcTokenID
     Acsl_Keyword_Vertex,
     Acsl_Keyword_Fragment,
     Acsl_Keyword_Compute,
+    Acsl_Keyword_Material,
     Acsl_Keyword_Layout,
     Acsl_Keyword_Version,
     Acsl_Keyword_Buffer,

@@ -42,6 +42,7 @@ extern "C"
     DynamicFunction void AstralCanvasGraphics_SendUpdatedUniforms(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_DrawIndexedPrimitives(AstralCanvasGraphics ptr, u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance);
     DynamicFunction void AstralCanvasGraphics_DrawIndexedPrimitivesIndirectCount(AstralCanvasGraphics ptr, AstralCanvasComputeBuffer drawDataBuffer, usize drawDataBufferOffset, AstralCanvasComputeBuffer drawCountBuffer, usize drawCountBufferOffset, u32 maxDrawCount);
+    DynamicFunction void AstralCanvasGraphics_DrawIndexedPrimitivesIndirect(AstralCanvasGraphics ptr, AstralCanvasComputeBuffer drawDataBuffer, usize drawDataBufferOffset, u32 drawCount);
     DynamicFunction void AstralCanvasGraphics_NextRenderPass(AstralCanvasGraphics ptr);
     DynamicFunction AstralCanvasClipArea AstralCanvasGraphics_GetClipArea(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_SetClipArea(AstralCanvasGraphics ptr, i32 x, i32 y, i32 w, i32 h);

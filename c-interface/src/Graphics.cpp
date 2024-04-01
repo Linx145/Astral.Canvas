@@ -77,6 +77,10 @@ exportC void AstralCanvasGraphics_DrawIndexedPrimitivesIndirectCount(AstralCanva
 {
     ((AstralCanvas::Graphics *)ptr)->DrawIndexedPrimitivesIndirectCount((AstralCanvas::ComputeBuffer*)drawDataBuffer, drawDataBufferOffset, (AstralCanvas::ComputeBuffer*)drawCountBuffer, drawCountBufferOffset, maxDrawCount);
 }
+exportC void AstralCanvasGraphics_DrawIndexedPrimitivesIndirect(AstralCanvasGraphics ptr, AstralCanvasComputeBuffer drawDataBuffer, usize drawDataBufferOffset, u32 drawCount)
+{
+    ((AstralCanvas::Graphics *)ptr)->DrawIndexedPrimitivesIndirect((AstralCanvas::ComputeBuffer*)drawDataBuffer, drawDataBufferOffset, drawCount);
+}
 exportC void AstralCanvasGraphics_NextRenderPass(AstralCanvasGraphics ptr)
 {
     ((AstralCanvas::Graphics *)ptr)->NextRenderPass();
