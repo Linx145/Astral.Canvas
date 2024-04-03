@@ -31,15 +31,23 @@ struct uuid
         u64* otherAsPointer = (u64*)&other;
         return asPointer[0] != otherAsPointer[0] || asPointer[1] != otherAsPointer[1];
     }
-    inline bool Equals(void* other)
+    inline bool Equals(uuid other)
     {
         //lol
         u64* asPointer = (u64*)this;
-        u64* otherAsPointer = (u64*)other;
+        u64* otherAsPointer = (u64*)&other;
         return asPointer[0] == otherAsPointer[0] && asPointer[1] == otherAsPointer[1];
     }
-    inline u64 GetHashCode()
+    inline u32 GetHashCode()
     {
-        return Murmur2((u8*)this, 16);
+        return Murmur3((u8*)this, 16);
     }
 };
+inline u32 UuidHash(uuid ID)
+{
+    return ID.GetHashCode();
+}
+inline bool UuidEql(uuid A, uuid B)
+{
+    return A.Equals(B);
+}

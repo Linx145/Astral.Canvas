@@ -16,6 +16,12 @@ extern "C"
         AstralCanvas_Blend destAlpha;
     } AstralCanvasBlendState;
 
+    #define DISABLE_BLEND AstralCanvasBlendState{AstralCanvas_Blend_Disable, AstralCanvas_Blend_Disable, AstralCanvas_Blend_Disable, AstralCanvas_Blend_Disable}
+    #define ADDITIVE_BLEND AstralCanvasBlendState{AstralCanvas_Blend_SourceAlpha, AstralCanvas_Blend_SourceAlpha, AstralCanvas_Blend_One, AstralCanvas_Blend_One}
+    #define ALPHA_BLEND AstralCanvasBlendState{AstralCanvas_Blend_One, AstralCanvas_Blend_One, AstralCanvas_Blend_InverseSourceAlpha, AstralCanvas_Blend_InverseSourceAlpha}
+    #define NON_PREMULTIPLIED_BLEND AstralCanvasBlendState{AstralCanvas_Blend_SourceAlpha, AstralCanvas_Blend_SourceAlpha, AstralCanvas_Blend_InverseSourceAlpha, AstralCanvas_Blend_InverseSourceAlpha}
+    #define OPAQUE_BLEND AstralCanvasBlendState{AstralCanvas_Blend_One, AstralCanvas_Blend_One, AstralCanvas_Blend_Zero, AstralCanvas_Blend_Zero}
+
     typedef void *AstralCanvasRenderPipeline;
 
     DynamicFunction void *AstralCanvasRenderPipeline_GetLayout(AstralCanvasRenderPipeline ptr);

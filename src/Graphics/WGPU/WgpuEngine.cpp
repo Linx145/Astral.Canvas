@@ -268,7 +268,7 @@ i32 AstralCanvasWgpu_CreateShaderFromString(IAllocator allocator, ShaderType sha
     ArenaAllocator localArena = ArenaAllocator(allocator);
 
     JsonElement root;
-    usize parseJsonResult = ParseJsonDocument(&localArena.asAllocator, jsonString, &root);
+    usize parseJsonResult = ParseJsonDocument(&localArena.AsAllocator(), jsonString, &root);
     if (parseJsonResult != 0)
     {
         localArena.deinit();
@@ -291,8 +291,8 @@ i32 AstralCanvasWgpu_CreateShaderFromString(IAllocator allocator, ShaderType sha
             JsonElement *vertexSpirv = vertexElement->GetProperty("spirv");
             JsonElement *fragmentSpirv = fragmentElement->GetProperty("spirv");
 
-            collections::Array<u32> vertexSpirvData = collections::Array<u32>(&localArena.asAllocator, vertexSpirv->arrayElements.length);
-            collections::Array<u32> fragmentSpirvData = collections::Array<u32>(&localArena.asAllocator, fragmentSpirv->arrayElements.length);
+            collections::Array<u32> vertexSpirvData = collections::Array<u32>(&localArena.AsAllocator(), vertexSpirv->arrayElements.length);
+            collections::Array<u32> fragmentSpirvData = collections::Array<u32>(&localArena.AsAllocator(), fragmentSpirv->arrayElements.length);
 
             for (usize i = 0; i < vertexSpirv->arrayElements.length; i++)
             {

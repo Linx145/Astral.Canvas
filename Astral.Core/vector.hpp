@@ -107,6 +107,20 @@ namespace collections
             }
             count -= 1;
         }
+        collections::Array<T> ToClonedArray(IAllocator newAllocator)
+        {
+            if (this->ptr == NULL)
+            {
+                return collections::Array<T>();
+            }
+            T *slice = (T*)newAllocator.Allocate(sizeof(T) * this->count);
+            for (usize i = 0; i < this->count; i++)
+            {
+                slice[i] = this->ptr[i];
+            }
+            collections::Array<T> result = collections::Array<T>(this->allocator, slice, this->count);
+            return result;
+        }
         collections::Array<T> ToOwnedArray()
         {
             if (this->ptr == NULL)

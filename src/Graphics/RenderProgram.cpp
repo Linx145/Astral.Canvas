@@ -125,7 +125,7 @@ namespace AstralCanvas
                     //input attachments
                     if (renderPassData.readsAttachments.count > 0)
                     {
-                        VkAttachmentReference *references = (VkAttachmentReference *)arena.asAllocator.Allocate(sizeof(VkAttachmentReference)
+                        VkAttachmentReference *references = (VkAttachmentReference *)arena.AsAllocator().Allocate(sizeof(VkAttachmentReference)
                         * renderPassData.readsAttachments.count);
                         for (usize j = 0; j < renderPassData.readsAttachments.count; j++)
                         {
@@ -143,7 +143,7 @@ namespace AstralCanvas
                     //can have multiple color attachments (The shader can write to multiple input buffers)
                     if (renderPassData.colorAttachmentIndices.length > 0)
                     {
-                        VkAttachmentReference *references = (VkAttachmentReference *)arena.asAllocator.Allocate(sizeof(VkAttachmentReference)
+                        VkAttachmentReference *references = (VkAttachmentReference *)arena.AsAllocator().Allocate(sizeof(VkAttachmentReference)
                         * renderPassData.colorAttachmentIndices.length);
                         for (usize j = 0; j < renderPassData.colorAttachmentIndices.length; j++)
                         {
@@ -160,7 +160,7 @@ namespace AstralCanvas
                     //output depth attachment (if any)
                     if (renderPassData.depthAttachmentIndex > -1)
                     {
-                        VkAttachmentReference *references = (VkAttachmentReference *)arena.asAllocator.Allocate(sizeof(VkAttachmentReference));
+                        VkAttachmentReference *references = (VkAttachmentReference *)arena.AsAllocator().Allocate(sizeof(VkAttachmentReference));
                         references->attachment = renderPassData.depthAttachmentIndex;
                         references->layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 

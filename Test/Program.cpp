@@ -66,7 +66,7 @@ void Initialize()
 {
 #ifdef BINDLESS
         instanceDataBindlessDecl = AstralCanvas::VertexDeclaration(
-            &resourcesArena.asAllocator, 
+            &resourcesArena.AsAllocator(), 
             sizeof(BindlessData),
             AstralCanvas::VertexInput_PerInstance);
 
@@ -87,7 +87,7 @@ void Initialize()
 	string fileContents = io::ReadFile(cAllocator, filePath.buffer);
 	filePath.deinit();
 
-	if (AstralCanvas::CreateShaderFromString(&resourcesArena.asAllocator, AstralCanvas::ShaderType_VertexFragment, fileContents, &shader) != 0)
+	if (AstralCanvas::CreateShaderFromString(&resourcesArena.AsAllocator(), AstralCanvas::ShaderType_VertexFragment, fileContents, &shader) != 0)
 	{
 		printf("Failed to create shader!\n");
 		return;
@@ -96,25 +96,25 @@ void Initialize()
 	collections::Array<AstralCanvas::VertexDeclaration*> vertexDeclsUsed;
 
 	#ifdef BINDLESS
-		vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.asAllocator, 2);
+		vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.AsAllocator(), 2);
 		vertexDeclsUsed.data[0] = AstralCanvas::GetVertexPositionColorTextureDecl();
 		vertexDeclsUsed.data[1] = &instanceDataBindlessDecl;
 	#else
 	if (INSTANCE_COUNT > 1)
 	{
-		vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.asAllocator, 2);
+		vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.AsAllocator(), 2);
 		vertexDeclsUsed.data[0] = AstralCanvas::GetVertexPositionColorTextureDecl();
 		vertexDeclsUsed.data[1] = AstralCanvas::GetInstanceDataMatrixDecl();
 	}
 	else
 	{
-		vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.asAllocator, 1);
+		vertexDeclsUsed = collections::Array<AstralCanvas::VertexDeclaration*>(&resourcesArena.AsAllocator(), 1);
 		vertexDeclsUsed.data[0] = AstralCanvas::GetVertexPositionColorTextureDecl();
 	}
 	#endif
 
 	pipeline = AstralCanvas::RenderPipeline(
-		&resourcesArena.asAllocator,
+		&resourcesArena.AsAllocator(),
 		&shader,
 		AstralCanvas::CullMode_CullNone,
 		AstralCanvas::PrimitiveType_TriangleList,
@@ -187,7 +187,7 @@ void Initialize()
 		srand(time(NULL));
 
 		instanceBuffer = AstralCanvas::InstanceBuffer(&instanceDataBindlessDecl, INSTANCE_COUNT, true);
-		datas = (BindlessData *)resourcesArena.asAllocator.Allocate(sizeof(BindlessData) * INSTANCE_COUNT);
+		datas = (BindlessData *)resourcesArena.AsAllocator().Allocate(sizeof(BindlessData) * INSTANCE_COUNT);
 		for (usize i = 0; i < INSTANCE_COUNT; i++)
 		{
 			float randFloatX = (float)rand() / (float)RAND_MAX;
@@ -202,7 +202,7 @@ void Initialize()
 		srand(time(NULL));
 
 		instanceBuffer = AstralCanvas::InstanceBuffer(AstralCanvas::GetInstanceDataMatrixDecl(), INSTANCE_COUNT, true);
-		matrices = (Maths::Matrix4x4 *)resourcesArena.asAllocator.Allocate(sizeof(Maths::Matrix4x4) * INSTANCE_COUNT);
+		matrices = (Maths::Matrix4x4 *)resourcesArena.AsAllocator().Allocate(sizeof(Maths::Matrix4x4) * INSTANCE_COUNT);
 		for (usize i = 0; i < INSTANCE_COUNT; i++)
 		{
 			float randFloatX = (float)rand() / (float)RAND_MAX;
@@ -213,7 +213,7 @@ void Initialize()
 	}
 	#endif
 
-	renderProgram = AstralCanvas::RenderProgram(&resourcesArena.asAllocator);
+	renderProgram = AstralCanvas::RenderProgram(&resourcesArena.AsAllocator());
 	i32 color = renderProgram.AddAttachment(AstralCanvas::ImageFormat_BackbufferFormat, true, false, AstralCanvas::RenderPassOutput_ToWindow);
 #ifdef MACOS
     i32 depth = -1;
@@ -322,8 +322,8 @@ i32 main(i32 argc, const char** argv)
 {
 	cAllocator = GetCAllocator();
 	resourcesArena = ArenaAllocator(cAllocator);
-	exeLocation = string(&resourcesArena.asAllocator, argv[0]);
-	exeLocation = path::GetDirectory(&resourcesArena.asAllocator, exeLocation);
+	exeLocation = string(&resourcesArena.AsAllocator(), argv[0]);
+	exeLocation = path::GetDirectory(&resourcesArena.AsAllocator(), exeLocation);
 
 	string appName = string(cAllocator, "test");
 	string engineName = string(cAllocator, "Astral Gametech");

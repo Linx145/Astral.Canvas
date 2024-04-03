@@ -844,8 +844,8 @@ bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator allocator, 
 
                             ArenaAllocator arena = ArenaAllocator(GetCAllocator());
                             
-                            collections::vector<LinxcToken> tokensInArg = collections::vector<LinxcToken>(arena.asAllocator);
-                            collections::hashmap<string, collections::Array<LinxcToken>> argsInMacro = collections::hashmap<string, collections::Array<LinxcToken>>(arena.asAllocator, &stringHash, &stringEql);
+                            collections::vector<LinxcToken> tokensInArg = collections::vector<LinxcToken>(arena.AsAllocator());
+                            collections::hashmap<string, collections::Array<LinxcToken>> argsInMacro = collections::hashmap<string, collections::Array<LinxcToken>>(arena.AsAllocator(), &stringHash, &stringEql);
 
                             while (next.ID != Linxc_RParen)
                             {
@@ -857,9 +857,9 @@ bool LinxcParser::TokenizeFile(LinxcTokenizer* tokenizer, IAllocator allocator, 
                                 if (next.ID == Linxc_RParen || next.ID == Linxc_Comma)
                                 {
                                     collections::Array<LinxcToken> argsTokenStream = tokensInArg.ToOwnedArray();
-                                    string currentArgName = macro->arguments.data[argsInMacro.Count].ToString(arena.asAllocator);
+                                    string currentArgName = macro->arguments.data[argsInMacro.Count].ToString(arena.AsAllocator());
                                     argsInMacro.Add(currentArgName, argsTokenStream);
-                                    tokensInArg = collections::vector<LinxcToken>(arena.asAllocator);
+                                    tokensInArg = collections::vector<LinxcToken>(arena.AsAllocator());
                                 }
                                 if (next.ID == Linxc_RParen)
                                 {

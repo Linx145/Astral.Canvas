@@ -150,10 +150,53 @@ namespace io
                 fullPath.Append(replaced.buffer);
                 if (!io::DirectoryExists(fullPath.buffer))
                 {
-                    results.Add(replaced);
+                    results.Add(fullPath);
                 }
-                else replaced.deinit();
-                fullPath.deinit();
+                replaced.deinit();
+            }
+            if (!FindNextFileA(handle, &findFileResult))
+            {
+                break;
+            }
+        }
+
+        FindClose(handle);
+
+        return results.ToOwnedArrayWith(allocator);
+#endif
+    }
+
+    inline collections::Array<string> GetFoldersInDirectory(IAllocator allocator, const char *dirPath)
+    {
+        IAllocator defaultAllocator = GetCAllocator();
+
+#if WINDOWS
+        WIN32_FIND_DATAA findFileResult;
+        char sPath[1024];
+        sprintf(sPath, "%s/*.*", dirPath);
+
+        HANDLE handle = FindFirstFileA(sPath, &findFileResult);
+        if (handle == INVALID_HANDLE_VALUE)
+        {
+            return collections::Array<string>();
+        }
+
+        collections::vector<string> results = collections::vector<string>(defaultAllocator);
+        while (true)
+        {
+            if (strcmp(findFileResult.cFileName, ".") != 0 && strcmp(findFileResult.cFileName, "..") != 0)
+            {
+                //printf("%s\n", &findFileResult.cFileName[0]);
+                string replaced = ReplaceChar(allocator, &findFileResult.cFileName[0], '\\', '/');
+
+                string fullPath = string(defaultAllocator, dirPath);
+                fullPath.Append("/");
+                fullPath.Append(replaced.buffer);
+                if (io::DirectoryExists(fullPath.buffer))
+                {
+                    results.Add(fullPath);
+                }
+                replaced.deinit();
             }
             if (!FindNextFileA(handle, &findFileResult))
             {

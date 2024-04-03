@@ -63,5 +63,5 @@ struct IAllocator
 
 inline IAllocator GetCAllocator()
 {
-    return IAllocator(NULL, CAllocator_Allocate, CAllocator_Free);
+    return IAllocator(NULL, &CAllocator_Allocate, &CAllocator_Free);
 }

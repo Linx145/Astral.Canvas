@@ -92,7 +92,20 @@ namespace collections
                 allocator.FREEPTR(buckets);
             }
         }
-
+        void Clear()
+        {
+            if (buckets != NULL)
+            {
+                for (usize i = 0; i < bucketsCount; i++)
+                {
+                    if (buckets[i].initialized)
+                    {
+                        buckets[i].entries.Clear();
+                    }
+                }
+                Count = 0;
+            }
+        }
         void EnsureCapacity()
         {
             //in all likelihood, we may have to fill an additional bucket

@@ -2,6 +2,7 @@
 
 #include "Linxc.h"
 #include "string.h"
+#include "Maths/Util.hpp"
 
 inline u32 GetHash(u8* buffer, usize len)
 {
@@ -118,4 +119,55 @@ inline u64 Murmur2Seeded(u8* ptr, u64 len, u64 seed)
 inline u64 Murmur2(u8* ptr, u64 len)
 {
     return Murmur2Seeded(ptr, len, 0xc70f6907llu);
+}
+inline u32 Murmur3Seeded(u8* ptr, u64 len, u32 seed)
+{
+    const u32 c1 = 0xcc9e2d51;
+    const u32 c2 = 0x1b873593;
+    u32 h1 = seed;
+    for (u32 i = 0; i < (len >> 2); i++) //divide by 4
+    {
+        u32 v = ((u32*)ptr)[i];
+        u32 k1 = v;
+        if (!IsLittleEndian())
+        {
+            v = ByteSwapU32(v);
+        }
+        k1 *= c1;
+        k1 = Maths::rotl32(k1, 15);
+        k1 *= c2;
+        h1 ^= k1;
+        h1 = Maths::rotl32(h1, 13);
+        h1 *= 5;
+        h1 += 0xe6546b64;
+    }
+    {
+        u32 k1 = 0;
+        const u32 offset = len & 0xfffffffc;
+        const u32 rest = len & 3;
+        if (rest == 3) {
+            k1 ^= *((u32*)&ptr[offset + 2]) << 16;
+        }
+        if (rest >= 2) {
+            k1 ^= *((u32*)&ptr[offset + 1]) << 8;
+        }
+        if (rest >= 1) {
+            k1 ^= *((u32 *)&ptr[offset]);
+            k1 *= c1;
+            k1 = Maths::rotl32(k1, 15);
+            k1 *= c2;
+            h1 ^= k1;
+        }
+    }
+    h1 ^= len;
+    h1 ^= h1 >> 16;
+    h1 *= 0x85ebca6b;
+    h1 ^= h1 >> 13;
+    h1 *= 0xc2b2ae35;
+    h1 ^= h1 >> 16;
+    return h1;
+}
+inline u32 Murmur3(u8* ptr, u64 len)
+{
+    return Murmur3Seeded(ptr, len, 0xc70f6907);
 }

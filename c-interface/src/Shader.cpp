@@ -57,7 +57,7 @@ exportC void AstralCanvasShader_Deinit(AstralCanvasShader ptr)
 {
     ((AstralCanvas::Shader *)ptr)->deinit();
 }
-exportC i32 AstralCanvasShader_FromString(AstralCanvas_ShaderType shaderType, const char* jsonString, AstralCanvasShader *result)
+exportC i32 AstralCanvasShader_FromString(const char* jsonString, AstralCanvasShader *result)
 {
     if (jsonString == NULL)
     {
@@ -65,7 +65,7 @@ exportC i32 AstralCanvasShader_FromString(AstralCanvas_ShaderType shaderType, co
     }
     AstralCanvas::Shader *shader = (AstralCanvas::Shader *)GetCAllocator().Allocate(sizeof(AstralCanvas::Shader));
     string inputString = string(GetCAllocator(), jsonString);
-    i32 errorLine = AstralCanvas::CreateShaderFromString(GetCAllocator(), (AstralCanvas::ShaderType)shaderType, inputString, shader);
+    i32 errorLine = AstralCanvas::CreateShaderFromString(GetCAllocator(), inputString, shader);
 
     *result = shader;
     return errorLine;

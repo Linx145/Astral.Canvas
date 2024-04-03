@@ -59,9 +59,10 @@ struct string
         if (buffer != NULL)
         {
             this->allocator.FREEPTR(buffer);
+            length = 0;
         }
     }
-    bool eql(const char *other)
+    inline bool eql(const char *other)
     {
         if (this->buffer == NULL || other == NULL)
         {
@@ -70,7 +71,7 @@ struct string
         return strcmp(buffer, other) == 0;
     }
 
-    void Prepend(const char *other)
+    inline string *Prepend(const char *other)
     {
         usize otherLen = strlen(other);
         usize newLength = otherLen + this->length;
@@ -97,8 +98,9 @@ struct string
         }
         this->buffer = newBuffer;
         this->length = newLength;
+        return this;
     }
-    void Append(const char *other)
+    inline string *Append(const char *other)
     {
         usize otherLen = strlen(other);
         usize newLength = otherLen + this->length;
@@ -125,8 +127,9 @@ struct string
         }
         this->buffer = newBuffer;
         this->length = newLength;
+        return this;
     }
-    void Append(i64 integer)
+    inline string *Append(i64 integer)
     {
         //max integer is 19 characters, with - sign its 20
         char chars[20];
@@ -150,8 +153,7 @@ struct string
                 *(chars + index) = '-';
             }
             
-            this->Append(chars + index);
-            return;
+            return this->Append(chars + index);
         }
         index -= 2;
         memcpy(chars + index, digits2(positive), 2);
@@ -160,9 +162,9 @@ struct string
             index -= 1;
             *(chars + index) = '-';
         }
-        this->Append(chars + index);
+        return this->Append(chars + index);
     }
-    void Append(u64 integer)
+    inline string *Append(u64 integer)
     {
         //max integer is 20 characters
         char chars[21];
@@ -179,19 +181,18 @@ struct string
             index -= 1;
             chars[index] = '0' + integer;
 
-            this->Append(chars + index);
-            return;
+            return this->Append(chars + index);
         }
         index -= 2;
         memcpy(chars + index, digits2(integer), 2);
         this->Append(chars + index);
+        return this;
     }
-    void Append(double value)
+    inline string *Append(double value)
     {
         if (value == 0.0)
         {
-            this->Append("0.0");
-            return;
+            return this->Append("0.0");
         }
         char chars[16];
         i32 result = snprintf(chars, 16, "%lf", value);
@@ -201,13 +202,13 @@ struct string
         }
         chars[result - 1] = '\0';
         this->Append(chars);
+        return this;
     }
-    void Append(float value)
+    inline string *Append(float value)
     {
         if (value == 0.0f)
         {
-            this->Append("0.0");
-            return;
+            return this->Append("0.0");
         }
         char chars[16];
         i32 result = snprintf(chars, 16, "%f", value);
@@ -217,17 +218,57 @@ struct string
         }
         chars[result - 1] = '\0';
         this->Append(chars);
+        return this;
     }
 
-    inline void PrependDeinit(string other)
+    inline string *PrependDeinit(string other)
     {
         this->Prepend(other.buffer);
         other.deinit();
+        return this;
     }
-    inline void AppendDeinit(string other)
+    inline string *AppendDeinit(string other)
     {
         this->Append(other.buffer);
         other.deinit();
+        return this;
+    }
+
+    inline string *TrimStart(usize trimLength)
+    {
+        if (trimLength >= length)
+        {
+            deinit();
+        }
+        else
+        {
+            char *newBuffer = (char*)allocator.Allocate(length - trimLength + 1);
+            memcpy(newBuffer, buffer + trimLength, length - trimLength);
+            newBuffer[length - trimLength] = '\0';
+            allocator.Free(buffer);
+            buffer = newBuffer;
+            length -= trimLength;
+        }
+        return this;
+    }
+    inline string CloneTrimStart(IAllocator allocator, usize trimLength)
+    {
+        if (trimLength >= length)
+        {
+            return string(allocator);
+        }
+        else
+        {
+            char *newBuffer = (char*)allocator.Allocate(length - trimLength);
+            memcpy(newBuffer, buffer + trimLength, length - trimLength);
+            newBuffer[length - trimLength] = '\0';
+
+            string result;
+            result.allocator = allocator;
+            result.buffer = newBuffer;
+            result.length = length - trimLength;
+            return result;
+        }
     }
 
     inline string CloneDeinit(IAllocator allocator)
@@ -238,7 +279,7 @@ struct string
     }
     inline string Clone(IAllocator allocator)
     {
-        return string(allocator, this->buffer);
+        return string(allocator, this->buffer, this->length - 1);
     }
 
     inline bool operator==(const char* other)

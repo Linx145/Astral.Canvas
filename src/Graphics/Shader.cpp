@@ -649,13 +649,13 @@ namespace AstralCanvas
             this->usedMaterials.deinit();
         }
     }
-    i32 CreateShaderFromString(IAllocator allocator, ShaderType shaderType, string jsonString, Shader* result)
+    i32 CreateShaderFromString(IAllocator allocator, string jsonString, Shader* result)
     {
-        *result = AstralCanvas::Shader(allocator, shaderType);
+        *result = AstralCanvas::Shader(allocator, ShaderType_VertexFragment);
         ArenaAllocator localArena = ArenaAllocator(allocator);
         
         JsonElement root;
-        usize parseJsonResult = ParseJsonDocument(localArena.asAllocator, jsonString, &root);
+        usize parseJsonResult = ParseJsonDocument(localArena.AsAllocator(), jsonString, &root);
         if (parseJsonResult != 0)
         {
             localArena.deinit();
@@ -704,10 +704,11 @@ namespace AstralCanvas
 
                 if (computeElement != NULL)
                 {
+                    result->shaderType = ShaderType_Compute;
                     ParseShaderVariables(computeElement, &result->shaderVariables, InputAccessedBy_Compute);
                 
                     JsonElement *computeSpirv = computeElement->GetProperty("spirv");
-                    collections::Array<u32> computeSpirvData = collections::Array<u32>(localArena.asAllocator, computeSpirv->arrayElements.length);
+                    collections::Array<u32> computeSpirvData = collections::Array<u32>(localArena.AsAllocator(), computeSpirv->arrayElements.length);
                     for (usize i = 0; i < computeSpirv->arrayElements.length; i++)
                     {
                         computeSpirvData.data[i] = computeSpirv->arrayElements.data[i].GetUint32();
@@ -731,6 +732,7 @@ namespace AstralCanvas
                 }
                 else
                 {
+                    result->shaderType = ShaderType_VertexFragment;
                     JsonElement *vertexElement = root.GetProperty("vertex");
                     JsonElement *fragmentElement = root.GetProperty("fragment");
 
@@ -742,8 +744,8 @@ namespace AstralCanvas
                         JsonElement *vertexSpirv = vertexElement->GetProperty("spirv");
                         JsonElement *fragmentSpirv = fragmentElement->GetProperty("spirv");
 
-                        collections::Array<u32> vertexSpirvData = collections::Array<u32>(localArena.asAllocator, vertexSpirv->arrayElements.length);
-                        collections::Array<u32> fragmentSpirvData = collections::Array<u32>(localArena.asAllocator, fragmentSpirv->arrayElements.length);
+                        collections::Array<u32> vertexSpirvData = collections::Array<u32>(localArena.AsAllocator(), vertexSpirv->arrayElements.length);
+                        collections::Array<u32> fragmentSpirvData = collections::Array<u32>(localArena.AsAllocator(), fragmentSpirv->arrayElements.length);
 
                         for (usize i = 0; i < vertexSpirv->arrayElements.length; i++)
                         {
@@ -808,7 +810,7 @@ namespace AstralCanvas
                 result->shaderPipelineLayout = NULL;
                 if (layoutInfo.bindingCount > 0)
                 {
-                    collections::Array<VkDescriptorSetLayoutBinding> bindings = collections::Array<VkDescriptorSetLayoutBinding>(localArena.asAllocator, layoutInfo.bindingCount);
+                    collections::Array<VkDescriptorSetLayoutBinding> bindings = collections::Array<VkDescriptorSetLayoutBinding>(localArena.AsAllocator(), layoutInfo.bindingCount);
 
                     for (usize i = 0; i < result->shaderVariables.uniforms.capacity; i++)
                     {
@@ -846,10 +848,12 @@ namespace AstralCanvas
 
                 if (computeElement != NULL)
                 {
+                    result->shaderType = ShaderType_Compute;
                     ParseShaderVariables(computeElement, &result->shaderVariables, InputAccessedBy_Compute);
                 }
                 else
                 {
+                    result->shaderType = ShaderType_VertexFragment;
                     JsonElement *vertexElement = root.GetProperty("vertex");
                     JsonElement *fragmentElement = root.GetProperty("fragment");
 
@@ -861,8 +865,8 @@ namespace AstralCanvas
                         JsonElement *vertexMetal = vertexElement->GetProperty("msl");
                         JsonElement *fragmentMetal = fragmentElement->GetProperty("msl");
                         
-                        string vertexMetalString = vertexMetal->GetString(&localArena.asAllocator);
-                        string fragmentMetalString = fragmentMetal->GetString(&localArena.asAllocator);
+                        string vertexMetalString = vertexMetal->GetString(&localArena.AsAllocator());
+                        string fragmentMetalString = fragmentMetal->GetString(&localArena.AsAllocator());
                         
                         if (!AstralCanvasMetal_CreateShaderProgram(vertexMetalString, fragmentMetalString, &result->shaderModule1, &result->shaderModule2))
                         {

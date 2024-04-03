@@ -32,7 +32,7 @@ extern "C"
     DynamicFunction i32 AstralCanvasShader_GetVariableBinding(AstralCanvasShader ptr, const char *varName);
     DynamicFunction AstralCanvasShaderVariable AstralCanvasShader_GetVariableAt(AstralCanvasShader ptr, usize at);
     DynamicFunction void AstralCanvasShader_Deinit(AstralCanvasShader ptr);
-    DynamicFunction i32 AstralCanvasShader_FromString(AstralCanvas_ShaderType shaderType, const char* jsonString, AstralCanvasShader *result);
+    DynamicFunction i32 AstralCanvasShader_FromString(const char* jsonString, AstralCanvasShader *result);
 
     DynamicFunction void AstralCanvasShader_GetExportedMaterials(AstralCanvasShader ptr, AstralCanvasExportedMaterial* materials, u32* numExportedMaterials);
 

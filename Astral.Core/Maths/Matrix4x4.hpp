@@ -198,7 +198,7 @@ namespace Maths
 			};
 			return Matrix4x4(&m[0]);
 		}
-		inline static Matrix4x4 CreatePerspectiveFOV(float FOV, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
+		inline static Matrix4x4 CreatePerspectiveFOV(float FOV, float aspectRatioYoverX, float nearPlaneDistance, float farPlaneDistance)
 		{
 #if DEBUG
 			if (FOV <= 0.0f || FOV >= PI || nearPlaneDistance <= 0.0f || farPlaneDistance <= 0.0f || farPlaneDistance < nearPlaneDistance)
@@ -207,7 +207,7 @@ namespace Maths
 			}
 #endif
 			float yScale = 1.0f / tanf(FOV * 0.5f);
-			float xScale = yScale / aspectRatio;
+			float xScale = yScale / aspectRatioYoverX;
 			float m[16] = {
 				xScale, 0.0f, 0.0f, 0.0f,
 				0.0f, yScale, 0.0f, 0.0f,
@@ -223,6 +223,16 @@ namespace Maths
 				0.0f, 2.0f / height, 0.0f, 0.0f,
 				0.0f, 0.0f, 1.0f / (nearZ - farZ), 0.0f,
 				0.0f, 0.0f, nearZ / (nearZ - farZ), 1.0f
+			};
+			return Matrix4x4(m);
+		}
+		inline static Matrix4x4 CreateOrthographicOffset(Maths::Vec3 offset, float width, float height, float nearZ, float farZ)
+		{
+			float m[16] = {
+				2.0f / width, 0.0f, 0.0f, 0.0f,
+				0.0f, 2.0f / height, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f / (nearZ - farZ), 0.0f,
+				offset.X, offset.Y, offset.Z + nearZ / (nearZ - farZ), 1.0f
 			};
 			return Matrix4x4(m);
 		}

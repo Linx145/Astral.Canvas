@@ -62,7 +62,7 @@ namespace path
 
         if (dotPosition != path.length + 1 && (finalDirPosition == path.length + 1 || finalDirPosition < dotPosition))
         {
-            return string(allocator, path.buffer + dotPosition, path.length - dotPosition);
+            return string(allocator, path.buffer + dotPosition, path.length - dotPosition - 1);
         }
         else
         {
@@ -93,6 +93,12 @@ namespace path
         }
 
         return string(allocator, path.buffer, actualLastIndex);
+    }
+    inline string GetDirectoryDeinit(IAllocator allocator, string path)
+    {
+        string result = GetDirectory(allocator, path);
+        path.deinit();
+        return result;
     }
     inline string GetFileName(IAllocator allocator, string path)
     {
