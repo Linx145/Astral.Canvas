@@ -41,6 +41,7 @@ namespace AstralCanvas
 
         void SetClipArea(Maths::Rectangle newClipArea);
         void SetVertexBuffer(const VertexBuffer *vb, u32 bindingPoint = 0);
+        void SetComputeBufferAsVertexBuffer(const ComputeBuffer* computeBuffer, u32 bindingPoint = 0);
         void SetInstanceBuffer(const InstanceBuffer *instanceBuffer, u32 bindingPoint = 0);
         void SetIndexBuffer(const IndexBuffer *indexBuffer);
         void SetRenderTarget(RenderTarget *target);
@@ -56,6 +57,7 @@ namespace AstralCanvas
         void SetShaderVariableTextures(const char* variableName, Texture2D **textures, usize count);
         void SetShaderVariableSampler(const char* variableName, SamplerState *sampler);
         void SetShaderVariableSamplers(const char* variableName, SamplerState **samplers, usize count);
+        void SetShaderVariableComputeBuffer(const char* variableName, ComputeBuffer *computeBuffer);
 
         void SendUpdatedUniforms();
 

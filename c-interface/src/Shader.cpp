@@ -1,6 +1,34 @@
 #include "Astral.Canvas/Graphics/Shader.h"
 #include "Graphics/Shader.hpp"
 
+exportC void AstralCanvasExportedMaterial_Deinit(AstralCanvasExportedMaterial material)
+{
+    free(material.params);
+}
+exportC void AstralCanvasShader_GetExportedMaterials(AstralCanvasShader ptr, AstralCanvasExportedMaterial* materials, u32* numExportedMaterials)
+{
+    if (numExportedMaterials != NULL)
+    {
+        *numExportedMaterials = ((AstralCanvas::Shader *)ptr)->usedMaterials.length;
+    }
+    if (materials != NULL)
+    {
+        for (usize i = 0; i < ((AstralCanvas::Shader *)ptr)->usedMaterials.length; i++)
+        {
+            AstralCanvas::ShaderMaterialExport *in = &((AstralCanvas::Shader *)ptr)->usedMaterials.data[i];
+            AstralCanvasExportedMaterial out;
+            out.name = in->name.buffer;
+            out.paramsCount = in->params.length;
+            out.params = (AstralCanvasExportedMaterialParam *)malloc(sizeof(AstralCanvasExportedMaterialParam) * in->params.length);
+            for (usize j = 0; j < out.paramsCount; j++)
+            {
+                out.params[j].name = in->params.data[j].name.buffer;
+                out.params[j].size = in->params.data[j].size;
+            }
+            materials[i] = out;
+        }
+    }
+}
 exportC AstralCanvas_ShaderType AstralCanvasShader_GetType(AstralCanvasShader ptr)
 {
     return (AstralCanvas_ShaderType)((AstralCanvas::Shader *)ptr)->shaderType;

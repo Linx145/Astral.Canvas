@@ -22,6 +22,8 @@ namespace AstralCanvas
         void SetData(u8* bytes, usize elementsToSet);
         void *GetData(IAllocator allocator, usize* dataLength);
         void Construct();
+        void FlagToClear();
+        static void ClearAllFlagged();
         void deinit();
     };
 }

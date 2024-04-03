@@ -64,6 +64,31 @@ namespace AstralCanvas
                 break;
         }
     }
+    void Graphics::SetComputeBufferAsVertexBuffer(const ComputeBuffer* computeBuffer, u32 bindingPoint)
+    {
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
+
+                vkCmdBindVertexBuffers(cmdBuffer, bindingPoint, 1, (VkBuffer*)&computeBuffer->handle, &bindBufferNoOffsets);
+                break;
+            }
+            #endif
+#ifdef ASTRALCANVAS_METAL
+            case Backend_Metal:
+            {
+                #error TODO
+                //AstralCanvasMetal_SetVertexBuffer(this->currentCommandEncoderInstance, vb, bindingPoint);
+                break;
+            }
+#endif
+            default:
+                break;
+        }
+    }
     void Graphics::SetInstanceBuffer(const InstanceBuffer *instanceBuffer, u32 bindingPoint)
     {
         switch (GetActiveBackend())
@@ -387,6 +412,13 @@ namespace AstralCanvas
             }
             this->currentRenderPipeline = pipeline;
             this->usedShaders.Add(pipeline->shader);
+        }
+    }
+    void Graphics::SetShaderVariableComputeBuffer(const char* variableName, ComputeBuffer *computeBuffer)
+    {
+        if (currentRenderPipeline != NULL)
+        {
+            currentRenderPipeline->shader->SetShaderVariableComputeBuffer(variableName, computeBuffer);
         }
     }
     void Graphics::SetShaderVariable(const char* variableName, void* ptr, usize size)

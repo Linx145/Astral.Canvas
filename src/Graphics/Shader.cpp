@@ -30,6 +30,7 @@ namespace AstralCanvas
 
         this->descriptorForThisDrawCall = 0;
         this->descriptorSets = collections::vector<void *>();
+        this->usedMaterials = collections::Array<ShaderMaterialExport>();
     }
     Shader::Shader(IAllocator allocator, ShaderType type)
     {
@@ -43,6 +44,7 @@ namespace AstralCanvas
 
         this->descriptorForThisDrawCall = 0;
         this->descriptorSets = collections::vector<void *>(allocator);
+        this->usedMaterials = collections::Array<ShaderMaterialExport>();
     }
     void ParseShaderVariables(JsonElement *json, ShaderVariables *results, ShaderInputAccessedBy accessedByShaderOfType)
     {
@@ -638,6 +640,14 @@ namespace AstralCanvas
         }
 
         this->shaderVariables.deinit();
+        if (this->usedMaterials.data != NULL)
+        {
+            for (usize i = 0; i < this->usedMaterials.length; i++)
+            {
+                this->usedMaterials.data[i].deinit();
+            }
+            this->usedMaterials.deinit();
+        }
     }
     i32 CreateShaderFromString(IAllocator allocator, ShaderType shaderType, string jsonString, Shader* result)
     {
@@ -650,6 +660,38 @@ namespace AstralCanvas
         {
             localArena.deinit();
             return (i32)parseJsonResult;
+        }
+        Json::JsonElement *materialsElement = root.GetProperty("materials");
+        if (materialsElement != NULL)
+        {
+            result->usedMaterials = collections::Array<ShaderMaterialExport>(result->allocator, materialsElement->childObjects.Count);
+            u32 materialIndex = 0;
+            for (usize i = 0; i < materialsElement->childObjects.bucketsCount; i++)
+            {
+                if (materialsElement->childObjects.buckets[i].initialized)
+                {
+                    for (usize j = 0; j < materialsElement->childObjects.buckets[i].entries.count; j++)
+                    {
+                        Json::JsonElement *materialElement = &materialsElement->childObjects.buckets[i].entries.ptr[j].value;
+                        result->usedMaterials.data[materialIndex].name = string(result->allocator, materialsElement->childObjects.buckets[i].entries.ptr[j].key.buffer);
+                        result->usedMaterials.data[materialIndex].params = collections::Array<ShaderMaterialExportParam>(result->allocator, materialElement->childObjects.Count);
+                        u32 paramIndex = 0;
+                        for (usize c = 0; c < materialElement->childObjects.bucketsCount; c++)
+                        {
+                            if (materialElement->childObjects.buckets[c].initialized)
+                            {
+                                for (usize d = 0; d < materialElement->childObjects.buckets[c].entries.count; d++)
+                                {
+                                    result->usedMaterials.data[materialIndex].params.data[paramIndex].name = string(result->allocator, materialElement->childObjects.buckets[c].entries.ptr[d].key.buffer);
+                                    result->usedMaterials.data[materialIndex].params.data[paramIndex].size = materialElement->childObjects.buckets[c].entries.ptr[d].value.GetUint32();
+                                    paramIndex++;
+                                }
+                            }
+                        }
+                        materialIndex++;
+                    }
+                }
+            }
         }
         
         switch (GetActiveBackend())

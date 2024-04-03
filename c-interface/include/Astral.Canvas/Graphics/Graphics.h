@@ -27,6 +27,7 @@ extern "C"
     DynamicFunction AstralCanvasRenderTarget AstralCanvasGraphics_GetCurrentRenderTarget(AstralCanvasGraphics ptr);
     DynamicFunction u32 AstralCanvasGraphics_GetCurrentRenderProgramPass(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_SetVertexBuffer(AstralCanvasGraphics ptr, const AstralCanvasVertexBuffer vb, u32 bindingPoint);
+    DynamicFunction void AstralCanvasGraphics_SetComputeBufferAsVertexBuffer(AstralCanvasGraphics ptr, const AstralCanvasComputeBuffer computeBuffer, u32 bindingPoint);
     DynamicFunction void AstralCanvasGraphics_SetInstanceBuffer(AstralCanvasGraphics ptr, const AstralCanvasInstanceBuffer instanceBuffer, u32 bindingPoint);
     DynamicFunction void AstralCanvasGraphics_SetIndexBuffer(AstralCanvasGraphics ptr, const AstralCanvasIndexBuffer indexBuffer);
     DynamicFunction void AstralCanvasGraphics_SetRenderTarget(AstralCanvasGraphics ptr, AstralCanvasRenderTarget target);
@@ -39,6 +40,7 @@ extern "C"
     DynamicFunction void AstralCanvasGraphics_SetShaderVariableTextures(AstralCanvasGraphics ptr, const char* variableName, AstralCanvasTexture2D *textures, usize count);
     DynamicFunction void AstralCanvasGraphics_SetShaderVariableSampler(AstralCanvasGraphics ptr, const char* variableName, AstralCanvasSamplerState sampler);
     DynamicFunction void AstralCanvasGraphics_SetShaderVariableSamplers(AstralCanvasGraphics ptr, const char* variableName, AstralCanvasSamplerState *samplers, usize count);
+    DynamicFunction void AstralCanvasGraphics_SetShaderVariableComputeBuffer(AstralCanvasGraphics ptr, const char* variableName, AstralCanvasComputeBuffer computeBuffer);
     DynamicFunction void AstralCanvasGraphics_SendUpdatedUniforms(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_DrawIndexedPrimitives(AstralCanvasGraphics ptr, u32 indexCount, u32 instanceCount, u32 firstIndex, u32 vertexOffset, u32 firstInstance);
     DynamicFunction void AstralCanvasGraphics_DrawIndexedPrimitivesIndirectCount(AstralCanvasGraphics ptr, AstralCanvasComputeBuffer drawDataBuffer, usize drawDataBufferOffset, AstralCanvasComputeBuffer drawCountBuffer, usize drawCountBufferOffset, u32 maxDrawCount);

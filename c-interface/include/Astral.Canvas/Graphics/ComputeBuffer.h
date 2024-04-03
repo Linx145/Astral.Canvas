@@ -17,6 +17,8 @@ extern "C"
     DynamicFunction bool AstralCanvasComputeBuffer_GetCanAccessAsVertexBuffer(AstralCanvasComputeBuffer ptr);
     DynamicFunction bool AstralCanvasComputeBuffer_GetCPUCanRead(AstralCanvasComputeBuffer ptr);
     DynamicFunction void AstralCanvasComputeBuffer_DisposeGottenData(void* ptr);
+    DynamicFunction void AstralCanvasComputeBuffer_FlagToClear(AstralCanvasComputeBuffer ptr);
+    DynamicFunction void AstralCanvasComputeBuffer_ClearAllFlagged();
 
 #ifdef __cplusplus
 }

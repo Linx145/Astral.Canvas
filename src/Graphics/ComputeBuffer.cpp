@@ -12,6 +12,8 @@
 
 namespace AstralCanvas
 {
+    collections::vector<ComputeBuffer*> computeBuffersToClear;
+
     ComputeBuffer::ComputeBuffer()
     {
         handle = NULL;
@@ -125,6 +127,32 @@ namespace AstralCanvas
             default:
                 break;
         }
+    }
+    void ComputeBuffer::FlagToClear()
+    {
+        computeBuffersToClear.Add(this);
+    }
+    void ComputeBuffer::ClearAllFlagged()
+    {
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+                VkCommandBuffer transientCmdBuffer = AstralCanvasVk_CreateTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, true);
+                for (usize i = 0; i < computeBuffersToClear.count; i++)
+                {
+                    vkCmdFillBuffer(transientCmdBuffer, (VkBuffer)computeBuffersToClear.ptr[i]->handle, 0, computeBuffersToClear.ptr[i]->elementCount * computeBuffersToClear.ptr[i]->elementSize, 0);
+                }
+                AstralCanvasVk_EndTransientCommandBuffer(gpu, &gpu->DedicatedTransferQueue, transientCmdBuffer);
+                break;
+            }
+            #endif
+            default:
+                break;
+        }
+        computeBuffersToClear.Clear();
     }
     void ComputeBuffer::deinit()
     {

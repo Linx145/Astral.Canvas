@@ -17,6 +17,10 @@ exportC void AstralCanvasGraphics_SetVertexBuffer(AstralCanvasGraphics ptr, cons
 {
     ((AstralCanvas::Graphics *)ptr)->SetVertexBuffer((const AstralCanvas::VertexBuffer*)vb, bindingPoint);
 }
+exportC void AstralCanvasGraphics_SetComputeBufferAsVertexBuffer(AstralCanvasGraphics ptr, const AstralCanvasComputeBuffer computeBuffer, u32 bindingPoint)
+{
+    ((AstralCanvas::Graphics *)ptr)->SetComputeBufferAsVertexBuffer((const AstralCanvas::ComputeBuffer*)computeBuffer, bindingPoint);
+}
 exportC void AstralCanvasGraphics_SetInstanceBuffer(AstralCanvasGraphics ptr, const AstralCanvasInstanceBuffer instanceBuffer, u32 bindingPoint)
 {
     ((AstralCanvas::Graphics *)ptr)->SetInstanceBuffer((const AstralCanvas::InstanceBuffer*)instanceBuffer, bindingPoint);
@@ -64,6 +68,10 @@ exportC void AstralCanvasGraphics_SetShaderVariableSampler(AstralCanvasGraphics 
 exportC void AstralCanvasGraphics_SetShaderVariableSamplers(AstralCanvasGraphics ptr, const char* variableName, AstralCanvasSamplerState *samplers, usize count)
 {
     ((AstralCanvas::Graphics *)ptr)->SetShaderVariableSamplers(variableName, (AstralCanvas::SamplerState**)samplers, count);
+}
+exportC void AstralCanvasGraphics_SetShaderVariableComputeBuffer(AstralCanvasGraphics ptr, const char* variableName, AstralCanvasComputeBuffer computeBuffer)
+{
+    ((AstralCanvas::Graphics *)ptr)->SetShaderVariableComputeBuffer(variableName, (AstralCanvas::ComputeBuffer*)computeBuffer);
 }
 exportC void AstralCanvasGraphics_SendUpdatedUniforms(AstralCanvasGraphics ptr)
 {

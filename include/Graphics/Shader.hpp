@@ -14,6 +14,26 @@
 
 namespace AstralCanvas
 {
+    struct ShaderMaterialExportParam
+    {
+        string name;
+        usize size;
+    };
+    struct ShaderMaterialExport
+    {
+        string name;
+        collections::Array<ShaderMaterialExportParam> params;
+
+        inline void deinit()
+        {
+            name.deinit();
+            for (usize i = 0; i < params.length; i++)
+            {
+                params.data[i].name.deinit();
+            }
+            params.deinit();
+        }
+    };
     struct Shader
     {
         IAllocator allocator;
@@ -23,6 +43,8 @@ namespace AstralCanvas
         ShaderVariables shaderVariables;
         PipelineLayout shaderPipelineLayout;
         bool uniformsHasBeenSet;
+
+        collections::Array<ShaderMaterialExport> usedMaterials;
 
         usize descriptorForThisDrawCall;
         collections::vector<void *> descriptorSets;

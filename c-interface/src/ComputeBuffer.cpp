@@ -51,3 +51,11 @@ exportC void AstralCanvasComputeBuffer_DisposeGottenData(void* ptr)
         free(ptr);
     }
 }
+exportC void AstralCanvasComputeBuffer_FlagToClear(AstralCanvasComputeBuffer ptr)
+{
+    ((AstralCanvas::ComputeBuffer *)ptr)->FlagToClear();
+}
+exportC void AstralCanvasComputeBuffer_ClearAllFlagged()
+{
+    AstralCanvas::ComputeBuffer::ClearAllFlagged();
+}

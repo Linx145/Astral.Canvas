@@ -9,9 +9,9 @@ extern "C"
 
     typedef void *AstralCanvasComputePipeline;
     DynamicFunction AstralCanvasComputePipeline AstralCanvasComputePipeline_Create(AstralCanvasShader shader);
-    DynamicFunction AstralCanvasShader AstralCanvasComputePipeline_GetShader(AstralCanvasComputePipeline *ptr);
-    DynamicFunction void AstralCanvasComputePipeline_Deinit(AstralCanvasComputePipeline *ptr);
-    DynamicFunction void AstralCanvasComputePipeline_DispatchNow(AstralCanvasComputePipeline *ptr, i32 threadsX, i32 threadsY, i32 threadsZ);
+    DynamicFunction AstralCanvasShader AstralCanvasComputePipeline_GetShader(AstralCanvasComputePipeline ptr);
+    DynamicFunction void AstralCanvasComputePipeline_Deinit(AstralCanvasComputePipeline ptr);
+    DynamicFunction void AstralCanvasComputePipeline_DispatchNow(AstralCanvasComputePipeline ptr, i32 threadsX, i32 threadsY, i32 threadsZ);
 
 #ifdef __cplusplus
 }
