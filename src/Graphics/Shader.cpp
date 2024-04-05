@@ -722,6 +722,9 @@ namespace AstralCanvas
                     computeCreateInfo.pCode = computeSpirvData.data;
 
                     VkShaderModule computeShaderModule;
+                    #if DEBUG
+                    printf("Attempting to create compute shader module\n");
+                    #endif
                     if (vkCreateShaderModule(logicalDevice, &computeCreateInfo, NULL, &computeShaderModule) != VK_SUCCESS)
                     {
                         localArena.deinit();

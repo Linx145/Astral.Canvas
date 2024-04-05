@@ -12,10 +12,10 @@ exportC usize AstralCanvasComputeBuffer_Create_GetCount(AstralCanvasComputeBuffe
     AstralCanvas::ComputeBuffer *buffer = (AstralCanvas::ComputeBuffer *)ptr;
     return buffer->elementCount;
 }
-exportC AstralCanvasComputeBuffer AstralCanvasComputeBuffer_Create(usize elementSize, usize elementCount, bool accessedAsVertexBuffer, bool CPUCanRead)
+exportC AstralCanvasComputeBuffer AstralCanvasComputeBuffer_Create(usize elementSize, usize elementCount, bool accessedAsVertexBuffer, bool accessedAsIndirectDrawData, bool CPUCanRead)
 {
     AstralCanvas::ComputeBuffer *buffer = (AstralCanvas::ComputeBuffer*)GetCAllocator().Allocate(sizeof(AstralCanvas::ComputeBuffer));
-    *buffer = AstralCanvas::ComputeBuffer(elementSize, elementCount, accessedAsVertexBuffer, CPUCanRead);
+    *buffer = AstralCanvas::ComputeBuffer(elementSize, elementCount, accessedAsVertexBuffer, accessedAsIndirectDrawData, CPUCanRead);
     return buffer;
 }
 exportC void AstralCanvasComputeBuffer_Deinit(AstralCanvasComputeBuffer ptr)

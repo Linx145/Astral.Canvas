@@ -58,7 +58,8 @@ struct string
     {
         if (buffer != NULL)
         {
-            this->allocator.FREEPTR(buffer);
+            this->allocator.Free(buffer);
+            buffer = NULL;
             length = 0;
         }
     }

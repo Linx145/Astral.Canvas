@@ -12,12 +12,13 @@ namespace AstralCanvas
         usize elementSize;
         usize elementCount;
         bool accessedAsVertexBuffer;
+        bool accessedAsIndirectDrawData;
         bool CPUCanRead;
 
         MemoryAllocation memoryAllocation;
 
         ComputeBuffer();
-        ComputeBuffer(usize elementSize, usize elementCount, bool accessedAsVertexBuffer, bool CPUCanRead);
+        ComputeBuffer(usize elementSize, usize elementCount, bool accessedAsVertexBuffer = false, bool accessedAsIndirectDrawData = false, bool CPUCanRead = false);
 
         void SetData(u8* bytes, usize elementsToSet);
         void *GetData(IAllocator allocator, usize* dataLength);

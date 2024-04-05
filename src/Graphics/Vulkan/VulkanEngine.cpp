@@ -331,6 +331,7 @@ void AstralCanvasVk_Deinitialize(IAllocator allocator, AstralCanvas::Window* win
 		{
 			AstralCanvasVk_DestroySwapchain(swapchain);
 			free(swapchain);
+			swapchain = NULL;
 		}
 	}
 
@@ -372,16 +373,20 @@ bool AstralCanvasVk_BeginDraw(AstralCanvas::Window *window)
 	AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)window->swapchain;
 
 	VkFence toWaitFor = gpu->DedicatedGraphicsQueue.queueFence;
-	vkWaitForFences(gpu->logicalDevice, 1, &toWaitFor, true, UINT64_MAX);
-	vkResetFences(gpu->logicalDevice, 1, &toWaitFor);
-
-	swapchain->recreatedThisFrame = false;
-
-	if (AstralCanvasVk_SwapchainSwapBuffers(gpu, swapchain, AstralCanvasVk_GetAwaitPresentCompleteSemaphore(), NULL))
+	//if (swapchain->presentedPreviousFrame)
 	{
-		swapchain->recreatedThisFrame = true;
-		return false;
+		vkWaitForFences(gpu->logicalDevice, 1, &toWaitFor, true, UINT64_MAX);
+
+		swapchain->recreatedThisFrame = false;
+
+		swapchain->presentedPreviousFrame = false;
+		if (AstralCanvasVk_SwapchainSwapBuffers(gpu, swapchain, AstralCanvasVk_GetAwaitPresentCompleteSemaphore(), NULL))
+		{
+			swapchain->recreatedThisFrame = true;
+			return false;
+		}
 	}
+	vkResetFences(gpu->logicalDevice, 1, &toWaitFor);
 
 	VkCommandBuffer mainCmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
 	vkResetCommandBuffer(mainCmdBuffer, 0);
@@ -407,60 +412,64 @@ void AstralCanvasVk_EndDraw(AstralCanvas::Window *window)
 	VkPipelineStageFlags waitFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	VkCommandBuffer mainCmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
 
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pWaitDstStageMask = &waitFlags;
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &awaitPresentComplete;
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &awaitRenderComplete;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &mainCmdBuffer;
-
-	AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
-	gpu->DedicatedGraphicsQueue.queueMutex.EnterLock();
-	if (vkQueueSubmit(gpu->DedicatedGraphicsQueue.queue, 1, &submitInfo, gpu->DedicatedGraphicsQueue.queueFence) != VK_SUCCESS)
-	{
-		THROW_ERR("Error submitting vulkan queue");
-	}
-	gpu->DedicatedGraphicsQueue.queueMutex.ExitLock();
-
 	AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)window->swapchain;
 
-	VkPresentInfoKHR presentInfo{};
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &swapchain->handle;
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &awaitRenderComplete;
-	presentInfo.pImageIndices = &swapchain->currentImageIndex;
-
-	gpu->DedicatedGraphicsQueue.queueMutex.EnterLock();
-	VkResult presentResults = vkQueuePresentKHR(gpu->DedicatedGraphicsQueue.queue, &presentInfo);
-	swapchain->renderTargets.data[swapchain->currentImageIndex].textures.data[0].imageLayout = (u32)VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	gpu->DedicatedGraphicsQueue.queueMutex.ExitLock();
-
-	if (presentResults == VK_ERROR_OUT_OF_DATE_KHR || presentResults == VK_SUBOPTIMAL_KHR || onResized)
+	//if (swapchain->renderTargets.data[swapchain->currentImageIndex].textures.data[0].imageLayout == (u32)VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
 	{
-		if (!swapchain->recreatedThisFrame)
-		{
-            AstralCanvasVk_DestroySwapchain(swapchain);
-            AstralCanvasVk_SwapchainRecreate(swapchain, gpu);
-		}
-		if (onResized)
-		{
-			onResized = false;
-		}
-		if (presentResults == VK_ERROR_OUT_OF_DATE_KHR || presentResults == VK_SUBOPTIMAL_KHR)
-		{
-			presentResults = VK_SUCCESS;
-		}
-		//swapChain.Recreate(SwapChain.QuerySwapChainSupport(CurrentGPU.Device));
-	}
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pWaitDstStageMask = &waitFlags;
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = &awaitPresentComplete;
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = &awaitRenderComplete;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &mainCmdBuffer;
 
-	if (presentResults != VK_SUCCESS)
-	{
-		THROW_ERR("Error presenting queue");
+		AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
+		gpu->DedicatedGraphicsQueue.queueMutex.EnterLock();
+		if (vkQueueSubmit(gpu->DedicatedGraphicsQueue.queue, 1, &submitInfo, gpu->DedicatedGraphicsQueue.queueFence) != VK_SUCCESS)
+		{
+			THROW_ERR("Error submitting vulkan queue");
+		}
+		gpu->DedicatedGraphicsQueue.queueMutex.ExitLock();
+
+		swapchain->presentedPreviousFrame = true;
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &swapchain->handle;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = &awaitRenderComplete;
+		presentInfo.pImageIndices = &swapchain->currentImageIndex;
+
+		gpu->DedicatedGraphicsQueue.queueMutex.EnterLock();
+		VkResult presentResults = vkQueuePresentKHR(gpu->DedicatedGraphicsQueue.queue, &presentInfo);
+		swapchain->renderTargets.data[swapchain->currentImageIndex].textures.data[0].imageLayout = (u32)VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		gpu->DedicatedGraphicsQueue.queueMutex.ExitLock();
+
+		if (presentResults == VK_ERROR_OUT_OF_DATE_KHR || presentResults == VK_SUBOPTIMAL_KHR || onResized)
+		{
+			if (!swapchain->recreatedThisFrame)
+			{
+				AstralCanvasVk_DestroySwapchain(swapchain);
+				AstralCanvasVk_SwapchainRecreate(swapchain, gpu);
+			}
+			if (onResized)
+			{
+				onResized = false;
+			}
+			if (presentResults == VK_ERROR_OUT_OF_DATE_KHR || presentResults == VK_SUBOPTIMAL_KHR)
+			{
+				presentResults = VK_SUCCESS;
+			}
+			//swapChain.Recreate(SwapChain.QuerySwapChainSupport(CurrentGPU.Device));
+		}
+
+		if (presentResults != VK_SUCCESS)
+		{
+			THROW_ERR("Error presenting queue");
+		}
 	}
 }
 #endif

@@ -66,7 +66,7 @@ exportC i32 AstralCanvasShader_FromString(const char* jsonString, AstralCanvasSh
     AstralCanvas::Shader *shader = (AstralCanvas::Shader *)GetCAllocator().Allocate(sizeof(AstralCanvas::Shader));
     string inputString = string(GetCAllocator(), jsonString);
     i32 errorLine = AstralCanvas::CreateShaderFromString(GetCAllocator(), inputString, shader);
-
+    inputString.deinit();
     *result = shader;
     return errorLine;
 }

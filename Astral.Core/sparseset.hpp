@@ -34,7 +34,7 @@ namespace collections
         }
         void deinit()
         {
-            if (ptr != NULL && this->allocator.instance != NULL)
+            if (ptr != NULL && this->allocator.allocFunction != NULL)
             {
                 this->allocator.FREEPTR(ptr);
             }

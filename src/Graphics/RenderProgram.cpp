@@ -322,7 +322,7 @@ namespace AstralCanvas
 
     RenderProgram *GetDynamicRenderProgram(IAllocator allocator, ImageFormat imageFormat, ImageFormat depthFormat, bool mustClear, bool willDrawToWindow)
     {
-        if (dynamicProgramCache.allocator.instance == NULL)
+        if (dynamicProgramCache.allocator.allocFunction == NULL)
         {
             dynamicProgramCacheAllocator = GetCAllocator();
             dynamicProgramCache = collections::hashmap<RenderProgramSignature, RenderProgram>(dynamicProgramCacheAllocator, &RenderProgramSignatureHash, &RenderProgramSignatureEql);

@@ -45,7 +45,7 @@ namespace collections
         }
         void deinit()
         {
-            if (data != NULL && allocator.instance != NULL)
+            if (data != NULL && allocator.allocFunction != NULL)
             {
                 allocator.FREEPTR(data);
             }

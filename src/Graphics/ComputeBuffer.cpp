@@ -22,12 +22,13 @@ namespace AstralCanvas
 
         memoryAllocation.unused = 0;
     }
-    ComputeBuffer::ComputeBuffer(usize elementSize, usize elementCount, bool accessedAsVertexBuffer, bool CPUCanRead)
+    ComputeBuffer::ComputeBuffer(usize elementSize, usize elementCount, bool accessedAsVertexBuffer, bool accessedAsIndirectDrawData, bool CPUCanRead)
     {
         handle = NULL;
         this->elementCount = elementCount;
         this->elementSize = elementSize;
         this->accessedAsVertexBuffer = accessedAsVertexBuffer;
+        this->accessedAsIndirectDrawData = accessedAsIndirectDrawData;
         this->CPUCanRead = CPUCanRead;
         this->memoryAllocation.unused = 0;
 
@@ -113,6 +114,10 @@ namespace AstralCanvas
                 if (this->accessedAsVertexBuffer)
                 {
                     usageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+                }
+                if (this->accessedAsIndirectDrawData)
+                {
+                    usageFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
                 }
                 if (this->CPUCanRead)
                 {

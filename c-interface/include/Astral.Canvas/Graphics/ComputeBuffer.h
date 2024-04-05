@@ -10,7 +10,7 @@ extern "C"
 
     DynamicFunction usize AstralCanvasComputeBuffer_ElementGetSize(AstralCanvasComputeBuffer ptr);
     DynamicFunction usize AstralCanvasComputeBuffer_ElementGetCount(AstralCanvasComputeBuffer ptr);
-    DynamicFunction AstralCanvasComputeBuffer AstralCanvasComputeBuffer_Create(usize elementSize, usize elementCount, bool accessedAsVertexBuffer, bool CPUCanRead);
+    DynamicFunction AstralCanvasComputeBuffer AstralCanvasComputeBuffer_Create(usize elementSize, usize elementCount, bool accessedAsVertexBuffer, bool accessedAsIndirectDrawData, bool CPUCanRead);
     DynamicFunction void AstralCanvasComputeBuffer_Deinit(AstralCanvasComputeBuffer ptr);
     DynamicFunction void AstralCanvasComputeBuffer_SetData(AstralCanvasComputeBuffer ptr, u8* bytes, usize elementsToSet);
     DynamicFunction void *AstralCanvasComputeBuffer_GetData(AstralCanvasComputeBuffer ptr, usize* dataLength);

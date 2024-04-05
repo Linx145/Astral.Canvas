@@ -32,7 +32,7 @@ namespace AstralCanvas
 
     VertexDeclaration *GetVertexPositionColorDecl()
     {
-        if (vertexPositionColorDecl.allocator.instance != NULL)
+        if (vertexPositionColorDecl.allocator.allocFunction != NULL)
         {
             return &vertexPositionColorDecl;
         }
@@ -48,7 +48,7 @@ namespace AstralCanvas
     }
     VertexDeclaration *GetVertexPositionColorTextureDecl()
     {
-        if (vertexPositionColorTextureDecl.allocator.instance != NULL)
+        if (vertexPositionColorTextureDecl.allocator.allocFunction != NULL)
         {
             return &vertexPositionColorTextureDecl;
         }
@@ -65,7 +65,7 @@ namespace AstralCanvas
     }
     VertexDeclaration *GetVertexPositionTextureColorDecl()
     {
-        if (vertexPositionTextureColorDecl.allocator.instance != NULL)
+        if (vertexPositionTextureColorDecl.allocator.allocFunction != NULL)
         {
             return &vertexPositionTextureColorDecl;
         }
@@ -82,7 +82,7 @@ namespace AstralCanvas
     }
     VertexDeclaration *GetVertexPositionNormalTextureDecl()
     {
-        if (vertexPositionNormalTextureDecl.allocator.instance != NULL)
+        if (vertexPositionNormalTextureDecl.allocator.allocFunction != NULL)
         {
             return &vertexPositionNormalTextureDecl;
         }
@@ -99,7 +99,7 @@ namespace AstralCanvas
     }
     VertexDeclaration *GetInstanceDataMatrixDecl()
     {
-        if (instanceDataMatrixDecl.allocator.instance != NULL)
+        if (instanceDataMatrixDecl.allocator.allocFunction != NULL)
         {
             return &instanceDataMatrixDecl;
         }
