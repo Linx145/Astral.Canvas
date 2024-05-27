@@ -17,7 +17,15 @@ namespace Maths
 #endif
 		};
 
-		Quaternion(float x, float y, float z, float w)
+		inline Quaternion()
+		{
+			X = 0.0f;
+			Y = 0.0f;
+			Z = 0.0f;
+			W = 1.0f;
+		}
+
+		inline Quaternion(float x, float y, float z, float w)
 		{
 #ifdef USE_SSE
 			asM128 = _mm_set_ps(x, y, z, w);
@@ -28,7 +36,7 @@ namespace Maths
 			W = w;
 #endif
 		}
-		Quaternion(Vec3 vector, float scalar)
+		inline Quaternion(Vec3 vector, float scalar)
 		{
 #ifdef USE_SSE
 			asM128 = _mm_set_ps(vector.X, vector.Y, vector.Z, scalar);
@@ -40,7 +48,7 @@ namespace Maths
 #endif
 		}
 #ifdef USE_SSE
-		Quaternion(__m128 m128)
+		inline Quaternion(__m128 m128)
 		{
 			asM128 = m128;
 		}

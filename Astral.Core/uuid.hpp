@@ -34,13 +34,13 @@ struct uuid
     inline bool Equals(uuid other)
     {
         //lol
-        u64* asPointer = (u64*)this;
-        u64* otherAsPointer = (u64*)&other;
+        u64* asPointer = (u64*)byte;
+        u64* otherAsPointer = (u64*)other.byte;
         return asPointer[0] == otherAsPointer[0] && asPointer[1] == otherAsPointer[1];
     }
     inline u32 GetHashCode()
     {
-        return Murmur3((u8*)this, 16);
+        return Murmur3(byte, 16);
     }
 };
 inline u32 UuidHash(uuid ID)

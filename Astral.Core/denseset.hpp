@@ -6,25 +6,25 @@
 namespace collections
 {
     template <typename T>
-    struct sparseset
+    struct denseset
     {
         IAllocator allocator;
         T *ptr;
         usize capacity;
 
-        sparseset()
+        denseset()
         {
             allocator = IAllocator{};
             ptr = NULL;
             capacity = 0;
         }
-        sparseset(IAllocator myAllocator)
+        denseset(IAllocator myAllocator)
         {
             allocator = myAllocator;
             ptr = NULL;
             capacity = 0;
         }
-        sparseset(IAllocator myAllocator, usize minCapacity)
+        denseset(IAllocator myAllocator, usize minCapacity)
         {
             this->allocator = myAllocator;
             ptr = NULL;
@@ -42,7 +42,7 @@ namespace collections
         }
         void EnsureArrayCapacity(usize minCapacity)
         {
-            if (capacity < minCapacity || ptr == NULL)
+            if (capacity <= minCapacity || ptr == NULL)
             {
                 usize newCapacity = capacity;
                 if (newCapacity == 0)
@@ -54,13 +54,23 @@ namespace collections
                     newCapacity *= 2;
                 }
                 T *newPtr = (T*)allocator.Allocate(sizeof(T) * newCapacity);
-                for (usize i = 0; i < capacity; i += 1)
+                if (ptr != NULL)
                 {
-                    newPtr[i] = ptr[i];
+                    for (usize i = 0; i < capacity; i++)
+                    {
+                        newPtr[i] = ptr[i];
+                    }
+                }
+                else
+                {
+                    for (usize i = 0; i < capacity; i++)
+                    {
+                        newPtr[i] = T();
+                    }
                 }
                 for (usize i = capacity; i < newCapacity; i++)
                 {
-                    newPtr[i] = {};
+                    newPtr[i] = T();
                 }
                 if (ptr != NULL)
                 {
@@ -70,10 +80,11 @@ namespace collections
                 capacity = newCapacity;
             }
         }
-        void Insert(usize index, T value)
+        T* Insert(usize index, T value)
         {
             EnsureArrayCapacity(index);
             ptr[index] = value;
+            return &ptr[index];
         }
         T *Get(usize index)
         {
@@ -81,7 +92,8 @@ namespace collections
             {
                 return NULL;
             }
-            return &ptr[index];
+            T *result = &ptr[index];
+            return result;
         }
     };
 }

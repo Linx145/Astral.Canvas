@@ -45,6 +45,18 @@ bool PointerEql(T* A, T* B)
     return A == B;
 }
 
+template<typename T>
+u32 IntegerHash(T integer)
+{
+    return (u32)integer;
+}
+
+template<typename T>
+bool IntegerEql(T A, T B)
+{
+    return A == B;
+}
+
 inline u32 CombineHash(u32 left, u32 right)
 {
     return left ^ (right + 0x9e3779b9 + (left << 6) + (left >> 2));

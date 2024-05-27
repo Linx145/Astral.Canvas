@@ -1,4 +1,5 @@
 #pragma once
+#define VEC4_H
 #include "Maths/Vec2.hpp"
 #include "Maths/Vec3.hpp"
 #include "Maths/Matrix4x4.hpp"
@@ -250,7 +251,7 @@ namespace Maths
             return sqrtf(Dot(*this, *this));
         }
 
-        static Vec4 Lerp(Vec4 A, Vec4 B, Vec4 amount)
+        static inline Vec4 Lerp4(Vec4 A, Vec4 B, Vec4 amount)
         {
 #ifdef USE_SSE
             __m128 sub = _mm_sub_ps(_mm_set1_ps(1.0f), amount.asM128);
@@ -269,7 +270,7 @@ namespace Maths
         static inline Vec4 Lerp(Vec4 A, Vec4 B, float amount)
         {
 #ifdef USE_SSE
-            return Lerp(A, B, Vec4(amount));
+            return Lerp4(A, B, Vec4(amount));
 #else
             Vec4 result;
             result.X = A.X + (B.X - A.X) * amount;

@@ -10,7 +10,7 @@
 namespace collections
 {
     template <typename T>
-    struct vector
+    struct list
     {
         def_delegate(EqlFunc, bool, T, T);
 
@@ -19,24 +19,28 @@ namespace collections
         usize capacity;
         usize count;
 
-        vector()
+        list()
         {
             allocator = IAllocator{};
             ptr = NULL;
             capacity = 0;
             count = 0;
         }
-        vector(IAllocator myAllocator)
+        list(IAllocator myAllocator)
         {
             allocator = myAllocator;
             ptr = NULL;
             capacity = 0;
             count = 0;
         }
-        vector(IAllocator myAllocator, usize minCapacity)
+        list(IAllocator myAllocator, usize minCapacity)
         {
             this->allocator = myAllocator;
             ptr = (T*)this->allocator.Allocate(sizeof(T) * minCapacity);
+            for (usize i = 0; i < minCapacity; i++)
+            {
+                ptr[i] = T();
+            }
             capacity = minCapacity;
             count = 0;
         }
@@ -52,9 +56,9 @@ namespace collections
 
         void EnsureArrayCapacity(usize minCapacity)
         {
-            if (capacity < minCapacity)
+            if (capacity <= minCapacity)
             {
-                i32 newCapacity = capacity;
+                usize newCapacity = capacity;
                 if (newCapacity == 0)
                 {
                     newCapacity = 4;
@@ -71,6 +75,10 @@ namespace collections
                         newPtr[i] = ptr[i];
                     }
                     allocator.Free(ptr);
+                }
+                for (usize i = capacity; i < newCapacity; i++)
+                {
+                    newPtr[i] = T();
                 }
                 ptr = newPtr;
                 capacity = newCapacity;
@@ -107,6 +115,10 @@ namespace collections
         }
         void Clear()
         {
+            for (usize i = 0; i < count; i++)
+            {
+                ptr[i] = T();
+            }
             count = 0;
         }
         T *Get(usize index)
@@ -121,6 +133,7 @@ namespace collections
             {
                 ptr[index] = ptr[count - 1];
             }
+            ptr[count - 1] = T();
             count -= 1;
         }
         void RemoveAt_Pullback(usize index)
@@ -133,6 +146,7 @@ namespace collections
                     ptr[i] = ptr[i + 1];
                 }
             }
+            ptr[count - 1] = T();
             count -= 1;
         }
         void RemoveManyAt(usize index, usize numRemoves)
@@ -141,6 +155,10 @@ namespace collections
             for (usize i = index; i < count - numRemoves; i++)
             {
                 ptr[i] = ptr[i + numRemoves];
+            }
+            for (usize i = count - numRemoves; i < count; i++)
+            {
+                ptr[i] = T();
             }
             count -= numRemoves;
         }
@@ -203,7 +221,7 @@ namespace collections
         {
             return collections::Array<T>(NULL, this->ptr, this->count);
         }
-        void AddAllDeinit(collections::vector<T> *from)
+        void AddAllDeinit(collections::list<T> *from)
         {
             for (usize i = 0; i < from->count; i++)
             {

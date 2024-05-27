@@ -259,6 +259,7 @@ namespace AstralCanvas
     {
         if (!this->constructed || this->isDisposed)
         {
+            printf("Texture already disposed.\n");
             return;
         }
         switch (GetActiveBackend())

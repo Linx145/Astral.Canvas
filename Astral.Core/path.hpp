@@ -8,6 +8,7 @@
 
 namespace path
 {
+    //Swaps the extension of a file path. newExtension must include the period
     inline string SwapExtension(IAllocator allocator, string path, const char* newExtension)
     {
         usize dotPosition = path.length + 1; //impossible number
@@ -30,15 +31,27 @@ namespace path
         if (dotPosition != path.length + 1 && (finalDirPosition == path.length + 1 || finalDirPosition < dotPosition))
         {
             string result = string(allocator, path.buffer, dotPosition);
-            result.Append(newExtension);
+            if (newExtension != NULL)
+            {
+                result.Append(newExtension);
+            }
             return result;
         }
         else
         {
             string result = string(allocator, path.buffer);
-            result.Append(newExtension);
+            if (newExtension != NULL)
+            {
+                result.Append(newExtension);
+            }
             return result;
         }
+    }
+    inline string SwapExtensionDeinit(IAllocator allocator, string path, const char* newExtension)
+    {
+        string result = SwapExtension(allocator, path, newExtension);
+        path.deinit();
+        return result;
     }
     //Including the '.'
     inline string GetExtension(IAllocator allocator, string path)

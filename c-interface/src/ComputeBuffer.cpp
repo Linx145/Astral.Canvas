@@ -2,12 +2,12 @@
 #include "allocators.hpp"
 #include "Graphics/ComputeBuffer.hpp"
 
-exportC usize AstralCanvasComputeBuffer_Create_GetSize(AstralCanvasComputeBuffer ptr)
+exportC usize AstralCanvasComputeBuffer_ElementGetSize(AstralCanvasComputeBuffer ptr)
 {
     AstralCanvas::ComputeBuffer *buffer = (AstralCanvas::ComputeBuffer *)ptr;
     return buffer->elementSize;
 }
-exportC usize AstralCanvasComputeBuffer_Create_GetCount(AstralCanvasComputeBuffer ptr)
+exportC usize AstralCanvasComputeBuffer_ElementGetCount(AstralCanvasComputeBuffer ptr)
 {
     AstralCanvas::ComputeBuffer *buffer = (AstralCanvas::ComputeBuffer *)ptr;
     return buffer->elementCount;
@@ -38,6 +38,11 @@ exportC bool AstralCanvasComputeBuffer_GetCanAccessAsVertexBuffer(AstralCanvasCo
 {
     AstralCanvas::ComputeBuffer *buffer = (AstralCanvas::ComputeBuffer *)ptr;
     return buffer->accessedAsVertexBuffer;
+}
+exportC bool AstralCanvasComputeBuffer_GetCanAccessAsDrawIndirectParams(AstralCanvasComputeBuffer ptr)
+{
+    AstralCanvas::ComputeBuffer *buffer = (AstralCanvas::ComputeBuffer *)ptr;
+    return buffer->accessedAsIndirectDrawData;
 }
 exportC bool AstralCanvasComputeBuffer_GetCPUCanRead(AstralCanvasComputeBuffer ptr)
 {

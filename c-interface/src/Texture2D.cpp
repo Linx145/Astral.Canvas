@@ -53,7 +53,7 @@ exportC void *AstralCanvasTexture2D_GetImageView(AstralCanvasTexture2D ptr)
 exportC void AstralCanvasTexture2D_Deinit(AstralCanvasTexture2D ptr)
 {
     ((AstralCanvas::Texture2D *)ptr)->deinit();
-    GetCAllocator().Free(ptr);
+    free(ptr);
 }
 
 exportC AstralCanvasTexture2D AstralCanvasTexture2D_FromHandle(void *handle, u32 width, u32 height, AstralCanvas_ImageFormat imageFormat, bool usedForRenderTarget)

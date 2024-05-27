@@ -127,7 +127,7 @@ namespace collections
                     {
                         for (usize j = 0; j < buckets[i].entries.count; j++)
                         {
-                            u32 newKeyHash = hashFunc(buckets[i].entries.ptr[j].key);
+                            u32 newKeyHash = buckets[i].keyHash; // hashFunc(buckets[i].entries.ptr[j].key);
                             usize newIndex = newKeyHash % newSize;
                             newBuckets[newIndex].initialized = true;
                             newBuckets[newIndex].keyHash = newKeyHash;
@@ -264,6 +264,49 @@ namespace collections
             }
 
             return result;
+        }
+
+        struct Iterator
+        {
+            hashmap<K, V> *map;
+            usize i;
+            usize j;
+            bool completed;
+
+            Iterator(hashmap<K, V> *map)
+            {
+                this->map = map;
+                i = 0;
+                j = 0;
+                completed = false;
+            }
+
+            Entry* Next()
+            {
+                if (i >= map->bucketsCount || completed)
+                {
+                    return NULL;
+                }
+                while (!map->buckets[i].initialized || j >= map->buckets[i].entries.count)
+                {
+                    i++;
+                    if (i >= map->bucketsCount)
+                    {
+                        completed = true;
+                        return NULL;
+                    }
+                    if (map->buckets[i].initialized)
+                    {
+                        j = 0;
+                        break;
+                    }
+                }
+                return &map->buckets[i].entries.ptr[j++];
+            }
+        };
+        inline Iterator GetIterator()
+        {
+            return Iterator(this);
         }
     };
 }

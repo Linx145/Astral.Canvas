@@ -28,6 +28,9 @@ constexpr float Radian2Degree = 180.0f / 3.1415927f;
 #define I8Min -128
 #define I8Max 127
 
+#define MAX(a, b) ((a > b) ? a : b)
+#define MIN(a, b) ((a < b) ? a : b)
+
 namespace Maths
 {
 	u64 inline rotl64(u64 value, u64 amount)
@@ -169,6 +172,10 @@ namespace Maths
 		if (angle > PI)
 			return angle - PI * 2.0f;
 		return angle;
+	}
+	float inline LerpFloat(float current, float designated, float amt)
+	{
+		return current + (designated - current) * amt;
 	}
 	float inline LerpAngle(float current, float designated, float amt)
 	{

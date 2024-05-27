@@ -1,45 +1,47 @@
 #pragma once
+#if 0
+#error todo
 #include "allocators.hpp"
 
 namespace collections
 {
 	template<typename T>
-	struct linkedlist;
-	template<typename T>
-	struct linkednode;
-
-	template<typename T>
-	struct linkednode
+	struct LinkedVecNode
 	{
-		linkednode<T>* next;
-		linkednode<T>* prev;
-		linkedlist* list;
+		i32 next;
+		i32 prev;
 		T value;
 	};
 
 	template<typename T>
-	struct linkedlist
+	struct linkedvectors
 	{
 		IAllocator allocator;
-		linkednode<T>* first;
-		linkednode<T>* last;
+		collections::vector<LinkedVecNode<T>> elements;
+		collections::vector<i32> freeIndices;
+		i32 firstIndex;
+		i32 lastIndex;
 		usize count;
 
 		linkedlist()
 		{
 			allocator = IAllocator{};
-			first = NULL;
-			last = NULL;
+			elements = collections::vector<linkednode<T>>();
+			freeIndices = collections::vector<i32>();
+			firstIndex = -1;
+			lastIndex = -1;
 			count = 0;
 		}
 		linkedlist(IAllocator myAllocator)
 		{
 			allocator = myAllocator;
-			first = NULL;
-			last = NULL;
+			elements = collections::vector<linkednode<T>>(allocator);
+			freeIndices = collections::vector<i32>(allocator);
+			firstIndex = -1;
+			lastIndex = -1;
 			count = 0;
 		}
-		bool AddListAfter(linkednode<T>* after, linkedlist<T>* listToAdd)
+		/*bool AddListAfter(linkednode<T>* after, linkedlist<T>* listToAdd)
 		{
 			//operation can only continue if listToAdd has objects within, and the allocator is the same instance
 			if (listToAdd->allocator != this->allocator || listToAdd->first == NULL || listToAdd->last == NULL)
@@ -65,7 +67,7 @@ namespace collections
 			listToAdd->first = NULL;
 			listToAdd->last = NULL;
 			return true;
-		}
+		}*/
 		linkednode<T>* AddBefore(T item, linkednode<T>* before)
 		{
 			linkednode<T>* node = (linkednode<T>*)allocator.Allocate(sizeof(linkednode<T>));
@@ -176,3 +178,4 @@ namespace collections
 		}
 	};
 }
+#endif

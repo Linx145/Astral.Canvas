@@ -37,6 +37,12 @@ struct string
         this->buffer = NULL;
         this->length = 0;
     }
+    inline string(IAllocator allocator, usize length)
+    {
+        this->allocator = allocator;
+        this->buffer = (char*)allocator.Allocate(length);
+        this->length = length;
+    }
     inline string(IAllocator myAllocator, const char* source)
     {
         this->allocator = myAllocator;
@@ -243,9 +249,9 @@ struct string
         }
         else
         {
-            char *newBuffer = (char*)allocator.Allocate(length - trimLength + 1);
+            char *newBuffer = (char*)allocator.Allocate(length - trimLength);
             memcpy(newBuffer, buffer + trimLength, length - trimLength);
-            newBuffer[length - trimLength] = '\0';
+            newBuffer[length - trimLength - 1] = '\0';
             allocator.Free(buffer);
             buffer = newBuffer;
             length -= trimLength;
@@ -262,7 +268,7 @@ struct string
         {
             char *newBuffer = (char*)allocator.Allocate(length - trimLength);
             memcpy(newBuffer, buffer + trimLength, length - trimLength);
-            newBuffer[length - trimLength] = '\0';
+            newBuffer[length - trimLength - 1] = '\0';
 
             string result;
             result.allocator = allocator;
@@ -282,6 +288,13 @@ struct string
     {
         return string(allocator, this->buffer, this->length - 1);
     }
+    inline wchar_t* ToWString(IAllocator allocator)
+    {
+        wchar_t *result = (wchar_t *)allocator.Allocate(sizeof(wchar_t) * length);
+        swprintf(result, length, L"%hs", buffer);
+        result[length - 1] = L'\0';
+        return result;
+    }
 
     inline bool operator==(const char* other)
     {
@@ -298,6 +311,22 @@ struct string
             return this->buffer != other;
         }
         return strcmp(this->buffer, other) != 0;
+    }
+    inline bool operator==(string other)
+    {
+        if (this->buffer == NULL || other == NULL)
+        {
+            return this->buffer == other.buffer;
+        }
+        return strcmp(this->buffer, other.buffer) == 0;
+    }
+    inline bool operator!=(string other)
+    {
+        if (this->buffer == NULL || other == NULL)
+        {
+            return this->buffer != other.buffer;
+        }
+        return strcmp(this->buffer, other.buffer) != 0;
     }
 };
 

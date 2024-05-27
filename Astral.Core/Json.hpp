@@ -5,6 +5,7 @@
 #include "hashmap.hpp"
 #include "io.hpp"
 #include "stdio.h"
+#include "Maths/Util.hpp"
 
 namespace Json
 {
@@ -109,14 +110,22 @@ namespace Json
         {
             JsonTokenType tokenType = JsonToken_IntegerLiteral;
 
+            if (this->elementType == JsonElement_Array)
+            {
+                return JsonToken_LBracket;
+            }
+            if (this->elementType == JsonElement_Object)
+            {
+                return JsonToken_LBrace;
+            }
             //this is not possible unless we are a string "" so
             if (this->value.length == 0)
             {
-                tokenType = JsonToken_StringLiteral;
+                return JsonToken_StringLiteral;
             }
             else
             {
-                for (usize i = 0; i < this->value.length; i++)
+                for (usize i = 0; i < this->value.length - 1; i++)
                 {
                     if ((this->value.buffer[i] == '-' && i > 0) || !isdigit(this->value.buffer[i]))
                     {
@@ -127,7 +136,9 @@ namespace Json
                                 tokenType = JsonToken_StringLiteral;
                             }
                             else
+                            {
                                 tokenType = JsonToken_FloatLiteral;
+                            }
                         }
                         else
                         {
@@ -150,6 +161,82 @@ namespace Json
             }
             return tokenType;
         }
+        inline void GetInteger(void* output, i8* type)
+        {
+            if (elementType != JsonElement_Property)
+            {
+                return;
+            }
+            u64 result = 0;
+            u64 index = 1;
+            for (i64 i = value.length - 1; i >= 0; i--)
+            {
+                if (value.buffer[i] >= '0' && value.buffer[i] <= '9')
+                {
+                    u64 amount = index * (value.buffer[i] - (u64)'0');
+                    result += amount;
+                    index *= 10;
+                }
+            }
+            if (value.buffer[0] == '-')
+            {
+                if (result < I8Max)
+                {
+                    i8 i8result = (i8)result * -1;
+                    *((i8 *)output) = i8result;
+                    *type = -1;
+                }
+                else if (result < I16Max)
+                {
+                    i16 i16result = (i16)result * -1;
+                    *((i16 *)output) = i16result;
+                    *type = -2;
+                }
+                else if (result < I32Max)
+                {
+                    i32 i32result = (i32)result * -1;
+                    *((i32 *)output) = i32result;
+                    *type = -3;
+                }
+                else// if (result > I64Max)
+                {
+                    if (result > I64Max)
+                    {
+                        result = I64Max;
+                    }
+                    i64 i64result = (i64)result * -1;
+                    *((i64 *)output) = i64result;
+                    *type = -4;
+                }
+            }
+            else
+            {
+                if (result < U8Max)
+                {
+                    u8 u8result = (u8)result;
+                    *((u8 *)output) = u8result;
+                    *type = 1;
+                }
+                else if (result < U16Max)
+                {
+                    u16 u16result = (u16)result;
+                    *((u16 *)output) = u16result;
+                    *type = 2;
+                }
+                else if (result < U32Max)
+                {
+                    u32 u32result = (u32)result;
+                    *((u32 *)output) = u32result;
+                    *type = 3;
+                }
+                else
+                {
+                    u64 u64result = (u64)result;
+                    *((u64 *)output) = u64result;
+                    *type = 4;
+                }
+            }
+        }
         inline i32 GetInt32()
         {
             if (elementType != JsonElement_Property)
@@ -157,7 +244,21 @@ namespace Json
                 return 0;
             }
 
-            i32 result = atoi(value.buffer);
+            i32 result = 0;
+            i32 index = 1;
+            for (i64 i = value.length - 1; i >= 0; i--)
+            {
+                if (value.buffer[i] >= '0' && value.buffer[i] <= '9')
+                {
+                    i32 amount = index * (value.buffer[i] - (i32)'0');
+                    result += amount;
+                    index *= 10;
+                }
+                else if (value.buffer[i] == '-' && i == 0)
+                {
+                    result *= -1;
+                }
+            }
 
             return result;
         }
@@ -215,6 +316,39 @@ namespace Json
 
             return result;
         }
+        #ifdef VEC2_H
+        inline Maths::Vec2 GetVec2()
+        {
+            if (elementType != JsonElement_Array)
+            {
+                return Maths::Vec2(0.0f);
+            }
+            Maths::Vec2 result = Maths::Vec2(arrayElements.data[0].GetFloat(), arrayElements.data[1].GetFloat());
+            return result;
+        }
+        #endif
+        #ifdef VEC3_H
+        inline Maths::Vec3 GetVec3()
+        {
+            if (elementType != JsonElement_Array)
+            {
+                return Maths::Vec3(0.0f);
+            }
+            Maths::Vec3 result = Maths::Vec3(arrayElements.data[0].GetFloat(), arrayElements.data[1].GetFloat(), arrayElements.data[2].GetFloat());
+            return result;
+        }
+        #endif
+        #ifdef VEC4_H
+        inline Maths::Vec4 GetVec4()
+        {
+            if (elementType != JsonElement_Array)
+            {
+                return Maths::Vec4(0.0f);
+            }
+            Maths::Vec4 result = Maths::Vec4(arrayElements.data[0].GetFloat(), arrayElements.data[1].GetFloat(), arrayElements.data[2].GetFloat(), arrayElements.data[3].GetFloat());
+            return result;
+        }
+        #endif
         inline string GetString(IAllocator allocator)
         {
             collections::vector<CharSlice> charSlices = collections::vector<CharSlice>(GetCAllocator());
@@ -250,6 +384,18 @@ namespace Json
         inline string GetStringRaw(IAllocator allocator)
         {
             return string(allocator, value.buffer);
+        }
+        template<typename T>
+        inline T GetBytesAsT()
+        {
+            T result = T(); //invoke default constructor
+            u8 *asPtr = (u8*)&result;
+            for (usize i = 0; i < this->arrayElements.length; i++)
+            {
+                u8 byte = (u8)this->arrayElements.data[i].GetUint32();
+                asPtr[i] = byte;
+            }
+            return result;
         }
         inline JsonElement *GetProperty(string propertyName)
         {
@@ -291,7 +437,7 @@ namespace Json
     inline usize ReadJsonFile(IAllocator allocator, string fileFullPath, JsonElement* result)
     {
         IAllocator cAllocator = GetCAllocator();
-        string fileContents = io::ReadFile(cAllocator, fileFullPath.buffer);
+        string fileContents = io::ReadFile(cAllocator, fileFullPath.buffer, false);
         if (fileContents.buffer == NULL)
         {
             return false;
@@ -579,22 +725,16 @@ collections::Array<u8> Json::JsonElement::GetAsRawData(IAllocator allocator)
     collections::vector<u8> results = collections::vector<u8>(GetCAllocator());
     if (this->elementType == JsonElement_Object)
     {
-        for (usize i = 0; i < childObjects.filledBuckets; i++)
+        for (usize i = 0; i < arrayElements.length; i++)
         {
-            if (childObjects.buckets[i].initialized)
+            collections::Array<u8> toAppend = arrayElements.data[i].GetAsRawData(GetCAllocator());
+            if (toAppend.data != NULL)
             {
-                for (usize j = 0; j < childObjects.buckets[i].entries.count; j++)
+                for (usize c = 0; c < toAppend.length; c++)
                 {
-                    collections::Array<u8> toAppend = childObjects.buckets[i].entries.ptr[j].value.GetAsRawData(GetCAllocator());
-                    if (toAppend.data != NULL)
-                    {
-                        for (usize c = 0; c < toAppend.length; c++)
-                        {
-                            results.Add(toAppend.data[c]);
-                        }
-                        toAppend.deinit();
-                    }
+                    results.Add(toAppend.data[c]);
                 }
+                toAppend.deinit();
             }
         }
     }
@@ -928,6 +1068,8 @@ bool Json::ParseJsonElement(IAllocator allocator, JsonTokenizer *tokenizer, Json
         *result = JsonElement(collections::hashmap<string, JsonElement>(allocator, &stringHash, &stringEql));
         tokenizer->Next();
 
+        collections::vector<JsonElement> childObjectsOrdered = collections::vector<JsonElement>(GetCAllocator());
+
         while (true)
         {
             JsonToken propertyNameToken = tokenizer->Next();
@@ -952,6 +1094,7 @@ bool Json::ParseJsonElement(IAllocator allocator, JsonTokenizer *tokenizer, Json
                 return false;
             }
             result->childObjects.Add(propertyName, subElementResult);
+            childObjectsOrdered.Add(subElementResult);
 
             if (tokenizer->PeekNext().tokenType == JsonToken_Comma)
             {
@@ -959,6 +1102,7 @@ bool Json::ParseJsonElement(IAllocator allocator, JsonTokenizer *tokenizer, Json
                 continue;
             }
         }
+        result->arrayElements = childObjectsOrdered.ToOwnedArrayWith(allocator);
         return true;
     }
     return false;

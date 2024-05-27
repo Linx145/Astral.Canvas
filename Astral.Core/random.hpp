@@ -33,10 +33,10 @@ struct Random
         result.Seed(seed);
         return result;
     }
-    static Random FromTime()
+    static Random FromTime(i32 offset = 0)
     {
         Random result;
-        u64 currentTime = time(NULL);
+        u64 currentTime = time(NULL) + offset;
         result.Seed(currentTime);
         return result;
     }

@@ -5,6 +5,8 @@
 #include "Maths/Quaternion.hpp"
 #include "option.hpp"
 
+#include "assert.h"
+
 namespace Maths
 {
 	struct Matrix4x4
@@ -198,21 +200,17 @@ namespace Maths
 			};
 			return Matrix4x4(&m[0]);
 		}
-		inline static Matrix4x4 CreatePerspectiveFOV(float FOV, float aspectRatioYoverX, float nearPlaneDistance, float farPlaneDistance)
+		inline static Matrix4x4 CreatePerspectiveFOV(float FOV, float aspectRatioXoverY, float nearPlaneDistance, float farPlaneDistance)
 		{
-#if DEBUG
-			if (FOV <= 0.0f || FOV >= PI || nearPlaneDistance <= 0.0f || farPlaneDistance <= 0.0f || farPlaneDistance < nearPlaneDistance)
-			{
-				return Identity();
-			}
-#endif
+			assert(FOV > 0.0f && FOV < PI && nearPlaneDistance > 0.0f && farPlaneDistance > 0.0f && farPlaneDistance > nearPlaneDistance);
+
 			float yScale = 1.0f / tanf(FOV * 0.5f);
-			float xScale = yScale / aspectRatioYoverX;
+			float xScale = yScale / aspectRatioXoverY;
 			float m[16] = {
 				xScale, 0.0f, 0.0f, 0.0f,
 				0.0f, yScale, 0.0f, 0.0f,
 				0.0f, 0.0f, farPlaneDistance / (nearPlaneDistance - farPlaneDistance), -1.0f,
-				0.0f, 0.0f, nearPlaneDistance* farPlaneDistance / (nearPlaneDistance - farPlaneDistance), 0.0f
+				0.0f, 0.0f, nearPlaneDistance * farPlaneDistance / (nearPlaneDistance - farPlaneDistance), 0.0f
 			};
 			return Matrix4x4(m);
 		}
@@ -358,81 +356,30 @@ namespace Maths
 		Matrix4x4 operator*(const Matrix4x4 other)
 		{
 #ifdef USE_SSE
-			Matrix4x4 m;
+			Matrix4x4 result;
+			const __m128 BCx = other.row1;
+			const __m128 BCy = other.row2;
+			const __m128 BCz = other.row3;
+			const __m128 BCw = other.row4;
 
-			{
-				__m128 e0 = _mm_shuffle_ps(other.row1, other.row1, _MM_SHUFFLE(0, 0, 0, 0));
-				__m128 e1 = _mm_shuffle_ps(other.row1, other.row1, _MM_SHUFFLE(1, 1, 1, 1));
-				__m128 e2 = _mm_shuffle_ps(other.row1, other.row1, _MM_SHUFFLE(2, 2, 2, 2));
-				__m128 e3 = _mm_shuffle_ps(other.row1, other.row1, _MM_SHUFFLE(3, 3, 3, 3));
+			float *leftRowPointer = &M11;
+			float *resultRowPointer = &result.M11;
 
-				__m128 m0 = _mm_mul_ps(row1, e0);
-				__m128 m1 = _mm_mul_ps(row2, e1);
-				__m128 m2 = _mm_mul_ps(row3, e2);
-				__m128 m3 = _mm_mul_ps(row4, e3);
+			for (unsigned int i = 0; i < 4; ++i, leftRowPointer += 4, resultRowPointer += 4) {
+				__m128 ARx = _mm_set1_ps(leftRowPointer[0]);
+				__m128 ARy = _mm_set1_ps(leftRowPointer[1]);
+				__m128 ARz = _mm_set1_ps(leftRowPointer[2]);
+				__m128 ARw = _mm_set1_ps(leftRowPointer[3]);
 
-				__m128 a0 = _mm_add_ps(m0, m1);
-				__m128 a1 = _mm_add_ps(m2, m3);
-				__m128 a2 = _mm_add_ps(a0, a1);
+				__m128 X = _mm_mul_ps(ARx, BCx); // ARx * BCx;
+				__m128 Y = _mm_mul_ps(ARy, BCy);
+				__m128 Z = _mm_mul_ps(ARz, BCz);
+				__m128 W = _mm_mul_ps(ARw, BCw);
 
-				m.row1 = a2;
+				__m128 R = _mm_add_ps(_mm_add_ps(X, Y), _mm_add_ps(Z, W)); // X + Y + Z + W;
+				_mm_store_ps(resultRowPointer, R);
 			}
-
-			{
-				__m128 e0 = _mm_shuffle_ps(other.row2, other.row2, _MM_SHUFFLE(0, 0, 0, 0));
-				__m128 e1 = _mm_shuffle_ps(other.row2, other.row2, _MM_SHUFFLE(1, 1, 1, 1));
-				__m128 e2 = _mm_shuffle_ps(other.row2, other.row2, _MM_SHUFFLE(2, 2, 2, 2));
-				__m128 e3 = _mm_shuffle_ps(other.row2, other.row2, _MM_SHUFFLE(3, 3, 3, 3));
-
-				__m128 m0 = _mm_mul_ps(row1, e0);
-				__m128 m1 = _mm_mul_ps(row2, e1);
-				__m128 m2 = _mm_mul_ps(row3, e2);
-				__m128 m3 = _mm_mul_ps(row4, e3);
-
-				__m128 a0 = _mm_add_ps(m0, m1);
-				__m128 a1 = _mm_add_ps(m2, m3);
-				__m128 a2 = _mm_add_ps(a0, a1);
-
-				m.row2 = a2;
-			}
-
-			{
-				__m128 e0 = _mm_shuffle_ps(other.row3, other.row3, _MM_SHUFFLE(0, 0, 0, 0));
-				__m128 e1 = _mm_shuffle_ps(other.row3, other.row3, _MM_SHUFFLE(1, 1, 1, 1));
-				__m128 e2 = _mm_shuffle_ps(other.row3, other.row3, _MM_SHUFFLE(2, 2, 2, 2));
-				__m128 e3 = _mm_shuffle_ps(other.row3, other.row3, _MM_SHUFFLE(3, 3, 3, 3));
-
-				__m128 m0 = _mm_mul_ps(row1, e0);
-				__m128 m1 = _mm_mul_ps(row2, e1);
-				__m128 m2 = _mm_mul_ps(row3, e2);
-				__m128 m3 = _mm_mul_ps(row4, e3);
-
-				__m128 a0 = _mm_add_ps(m0, m1);
-				__m128 a1 = _mm_add_ps(m2, m3);
-				__m128 a2 = _mm_add_ps(a0, a1);
-
-				m.row3 = a2;
-			}
-
-			{
-				__m128 e0 = _mm_shuffle_ps(other.row4, other.row4, _MM_SHUFFLE(0, 0, 0, 0));
-				__m128 e1 = _mm_shuffle_ps(other.row4, other.row4, _MM_SHUFFLE(1, 1, 1, 1));
-				__m128 e2 = _mm_shuffle_ps(other.row4, other.row4, _MM_SHUFFLE(2, 2, 2, 2));
-				__m128 e3 = _mm_shuffle_ps(other.row4, other.row4, _MM_SHUFFLE(3, 3, 3, 3));
-
-				__m128 m0 = _mm_mul_ps(row1, e0);
-				__m128 m1 = _mm_mul_ps(row2, e1);
-				__m128 m2 = _mm_mul_ps(row3, e2);
-				__m128 m3 = _mm_mul_ps(row4, e3);
-
-				__m128 a0 = _mm_add_ps(m0, m1);
-				__m128 a1 = _mm_add_ps(m2, m3);
-				__m128 a2 = _mm_add_ps(a0, a1);
-
-				m.row4 = a2;
-			}
-
-			return m;
+			return result;
 #else
 			Matrix4x4 m;
 

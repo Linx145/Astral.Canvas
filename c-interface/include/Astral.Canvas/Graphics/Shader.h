@@ -12,17 +12,17 @@ extern "C"
     typedef void *AstralCanvasShaderVariable;
     typedef void *AstralCanvasShader;
 
-    struct AstralCanvasExportedMaterialParam
+    typedef struct
     {
         const char *name;
         usize size;
-    };
-    struct AstralCanvasExportedMaterial
+    } AstralCanvasExportedMaterialParam;
+    typedef struct
     {
         const char *name;
         usize paramsCount;
         AstralCanvasExportedMaterialParam *params;
-    };
+    } AstralCanvasExportedMaterial;
     DynamicFunction void AstralCanvasExportedMaterial_Deinit(AstralCanvasExportedMaterial material);
 
     DynamicFunction AstralCanvas_ShaderType AstralCanvasShader_GetType(AstralCanvasShader ptr);
@@ -31,6 +31,7 @@ extern "C"
     DynamicFunction void *AstralCanvasShader_GetPipelineLayout(AstralCanvasShader ptr);
     DynamicFunction i32 AstralCanvasShader_GetVariableBinding(AstralCanvasShader ptr, const char *varName);
     DynamicFunction AstralCanvasShaderVariable AstralCanvasShader_GetVariableAt(AstralCanvasShader ptr, usize at);
+    DynamicFunction void AstralCanvasShader_GetAllVariables(AstralCanvasShader ptr, AstralCanvasShaderVariable *array, usize *numVariables);
     DynamicFunction void AstralCanvasShader_Deinit(AstralCanvasShader ptr);
     DynamicFunction i32 AstralCanvasShader_FromString(const char* jsonString, AstralCanvasShader *result);
 

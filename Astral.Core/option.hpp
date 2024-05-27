@@ -1,5 +1,6 @@
 #pragma once
 #include "Linxc.h"
+#include "assert.h"
 
 template <typename T>
 struct option

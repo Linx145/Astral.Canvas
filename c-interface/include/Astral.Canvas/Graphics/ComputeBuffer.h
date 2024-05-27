@@ -15,6 +15,7 @@ extern "C"
     DynamicFunction void AstralCanvasComputeBuffer_SetData(AstralCanvasComputeBuffer ptr, u8* bytes, usize elementsToSet);
     DynamicFunction void *AstralCanvasComputeBuffer_GetData(AstralCanvasComputeBuffer ptr, usize* dataLength);
     DynamicFunction bool AstralCanvasComputeBuffer_GetCanAccessAsVertexBuffer(AstralCanvasComputeBuffer ptr);
+    DynamicFunction bool AstralCanvasComputeBuffer_GetCanAccessAsDrawIndirectParams(AstralCanvasComputeBuffer ptr);
     DynamicFunction bool AstralCanvasComputeBuffer_GetCPUCanRead(AstralCanvasComputeBuffer ptr);
     DynamicFunction void AstralCanvasComputeBuffer_DisposeGottenData(void* ptr);
     DynamicFunction void AstralCanvasComputeBuffer_FlagToClear(AstralCanvasComputeBuffer ptr);

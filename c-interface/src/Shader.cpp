@@ -53,6 +53,32 @@ exportC AstralCanvasShaderVariable AstralCanvasShader_GetVariableAt(AstralCanvas
 {
     return ((AstralCanvas::Shader *)ptr)->shaderVariables.uniforms.Get(at);
 }
+exportC void AstralCanvasShader_GetAllVariables(AstralCanvasShader ptr, AstralCanvasShaderVariable *array, usize *numVariables)
+{
+    AstralCanvas::Shader *self = ((AstralCanvas::Shader *)ptr);
+    if (numVariables != NULL)
+    {
+        for (usize i = 0; i < self->shaderVariables.uniforms.capacity; i++)
+        {
+            if (self->shaderVariables.uniforms.ptr[i].variableName.buffer == NULL)
+            {
+                break;
+            }
+            (*numVariables) += 1;
+        }
+    }
+    if (array != NULL)
+    {
+        for (usize i = 0; i < self->shaderVariables.uniforms.capacity; i++)
+        {
+            if (self->shaderVariables.uniforms.ptr[i].variableName.buffer == NULL)
+            {
+                break;
+            }
+            array[i] = self->shaderVariables.uniforms.Get(i);
+        }
+    }
+}
 exportC void AstralCanvasShader_Deinit(AstralCanvasShader ptr)
 {
     ((AstralCanvas::Shader *)ptr)->deinit();

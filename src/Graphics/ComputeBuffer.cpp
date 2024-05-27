@@ -41,7 +41,8 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_VULKAN
             case Backend_Vulkan:
             {
-                usize lengthOfBytes = elementsToSet * elementSize;
+                memcpy(this->memoryAllocation.vkAllocationInfo.pMappedData, bytes, elementsToSet * elementSize);
+                /*usize lengthOfBytes = elementsToSet * elementSize;
                 AstralVulkanGPU *gpu = AstralCanvasVk_GetCurrentGPU();
                 VkBuffer stagingBuffer = AstralCanvasVk_CreateResourceBuffer(gpu, lengthOfBytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
                 MemoryAllocation stagingMemory = AstralCanvasVk_AllocateMemoryForBuffer(stagingBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
@@ -51,7 +52,7 @@ namespace AstralCanvas
                 AstralCanvasVk_CopyBufferToBuffer(gpu, stagingBuffer, (VkBuffer)this->handle, lengthOfBytes);
 
                 vkDestroyBuffer(gpu->logicalDevice, stagingBuffer, NULL);
-                vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);
+                vmaFreeMemory(AstralCanvasVk_GetCurrentVulkanAllocator(), stagingMemory.vkAllocation);*/
 
                 break;
             }
@@ -125,7 +126,7 @@ namespace AstralCanvas
                 }
                 this->handle = AstralCanvasVk_CreateResourceBuffer(AstralCanvasVk_GetCurrentGPU(), size, usageFlags);
 
-                this->memoryAllocation = AstralCanvasVk_AllocateMemoryForBuffer((VkBuffer)this->handle, VMA_MEMORY_USAGE_GPU_ONLY, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                this->memoryAllocation = AstralCanvasVk_AllocateMemoryForBuffer((VkBuffer)this->handle, VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
                 break;
             }
             #endif

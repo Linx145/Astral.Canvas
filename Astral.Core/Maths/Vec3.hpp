@@ -1,4 +1,5 @@
 #pragma once
+#define VEC3_H
 #include "Maths/Vec2.hpp"
 #include <math.h>
 
@@ -131,6 +132,10 @@ namespace Maths
             result.Y = Y * oneOverLength;
             result.Z = Z * oneOverLength;
             return result;
+        }
+        inline Vec2 ToVector2()
+        {
+            return Maths::Vec2(X, Y);
         }
         static inline float Dot(Vec3 A, Vec3 B)
         {

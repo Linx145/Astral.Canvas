@@ -16,15 +16,72 @@
 #endif
 #if POSIX
 #include <unistd.h>
+#include <dirent.h>
 #endif
 
 namespace io
 {
-    inline string ReadFile(IAllocator allocator, const char* path)
+    inline string BinaryReadString(IAllocator allocator, FILE *fs)
+    {
+        long currentPos = ftell(fs);
+
+        usize size = 0;
+        while (true)
+        {
+            i32 result = fgetc(fs);
+            if (result != 0 && result != -1)
+            {
+                size++;
+            }
+            else
+                break;
+        }
+        string str = string(allocator, size);
+        fseek(fs, 0, currentPos);
+        fread(str.buffer, 1, size, fs);
+        return str;
+    }
+    inline i32 BinaryReadInt32(FILE *fs)
+    {
+        i32 result;
+        fscanf(fs, "%i", &result);
+        return result;
+    }
+    inline i64 BinaryReadInt64(FILE *fs)
+    {
+        i64 result;
+        fscanf(fs, "%lli", &result);
+        return result;
+    }
+    inline u32 BinaryReadUint32(FILE *fs)
+    {
+        u32 result;
+        fscanf(fs, "%u", &result);
+        return result;
+    }
+    inline u64 BinaryReadUint64(FILE *fs)
+    {
+        u64 result;
+        fscanf(fs, "%llu", &result);
+        return result;
+    }
+    inline float BinaryReadFloat(FILE *fs)
+    {
+        float result;
+        fscanf(fs, "%f", &result);
+        return result;
+    }
+    inline double BinaryReadDouble(FILE *fs)
+    {
+        double result;
+        fscanf(fs, "%d", &result);
+        return result;
+    }
+    inline string ReadFile(IAllocator allocator, const char* path, bool isBinary)
     {
         string result = string(allocator);
 
-        FILE *fs = fopen(path, "r");
+        FILE *fs = fopen(path, isBinary ? "rb" : "r");
         if (fs != NULL)
         {
             usize size = 0;
@@ -143,9 +200,9 @@ namespace io
             if (strcmp(findFileResult.cFileName, ".") != 0 && strcmp(findFileResult.cFileName, "..") != 0)
             {
                 //printf("%s\n", &findFileResult.cFileName[0]);
-                string replaced = ReplaceChar(allocator, &findFileResult.cFileName[0], '\\', '/');
+                string replaced = ReplaceChar(defaultAllocator, &findFileResult.cFileName[0], '\\', '/');
 
-                string fullPath = string(defaultAllocator, dirPath);
+                string fullPath = string(allocator, dirPath);
                 fullPath.Append("/");
                 fullPath.Append(replaced.buffer);
                 if (!io::DirectoryExists(fullPath.buffer))
@@ -161,6 +218,35 @@ namespace io
         }
 
         FindClose(handle);
+
+        return results.ToOwnedArrayWith(allocator);
+#else
+        collections::vector<string> results = collections::vector<string>(GetCAllocator());
+
+        struct dirent *dent;
+        DIR *srcdir = opendir(dirPath);
+        while((dent = readdir(srcdir)) != NULL)
+        {
+            struct stat st;
+
+            if(strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0)
+            {
+                continue;
+            }
+            if (fstatat(dirfd(srcdir), dent->d_name, &st, 0) < 0)
+            {
+                continue;
+            }
+
+            if (S_ISDIR(st.st_mode))
+            {
+                //dircount++
+                string fullPath = string(allocator, dirPath);
+                fullPath.Append("/");
+                fullPath.Append(dent->d_name);
+                results.Add(fullPath);
+            }
+        }
 
         return results.ToOwnedArrayWith(allocator);
 #endif
@@ -205,6 +291,37 @@ namespace io
         }
 
         FindClose(handle);
+
+        return results.ToOwnedArrayWith(allocator);
+#else
+        collections::vector<string> results = collections::vector<string>(defaultAllocator);
+        struct dirent *dir;
+        DIR *d = opendir(dirPath);
+        if (d != NULL) 
+        {
+            while ((dir = readdir(d)) != NULL) 
+            {
+                struct stat st;
+
+                if(strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0)
+                {
+                    continue;
+                }
+                if (fstatat(dirfd(srcdir), dent->d_name, &st, 0) < 0)
+                {
+                    continue;
+                }
+
+                if (!S_ISDIR(st.st_mode))
+                {
+                    string fullPath = string(allocator, dirPath);
+                    fullPath.Append("/");
+                    fullPath.Append(dir->d_name);
+                    results.Add(fullPath);
+                }
+            }
+            closedir(d);
+        }
 
         return results.ToOwnedArrayWith(allocator);
 #endif

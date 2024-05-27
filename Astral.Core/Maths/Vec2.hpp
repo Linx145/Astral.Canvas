@@ -1,4 +1,5 @@
 #pragma once
+#define VEC2_H
 #include <math.h>
 
 namespace Maths
@@ -8,17 +9,17 @@ namespace Maths
         float X;
         float Y;
 
-        Vec2()
+        inline Vec2()
         {
             X = 0.0f;
             Y = 0.0f;
         };
-        Vec2(float x, float y)
+        inline Vec2(float x, float y)
         {
             X = x;
             Y = y;
         }
-        Vec2(float val)
+        inline Vec2(float val)
         {
             X = val;
             Y = val;
@@ -114,6 +115,12 @@ namespace Maths
             float dx = B.X - A.X;
             float dy = B.Y - A.Y;
             return sqrtf(dx * dx + dy * dy);
+        }
+        static inline float DistanceSquare(Vec2 A, Vec2 B)
+        {
+            float dx = B.X - A.X;
+            float dy = B.Y - A.Y;
+            return dx * dx + dy * dy;
         }
         static inline Vec2 Lerp(Vec2 A, Vec2 B, float amount)
         {
