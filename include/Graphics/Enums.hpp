@@ -53,7 +53,8 @@ namespace AstralCanvas
     {
         Backend_Vulkan,
         Backend_Metal,
-        Backend_D3D12
+        Backend_D3D12,
+        Backend_OpenGL
     };
 
     enum CullMode

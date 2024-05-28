@@ -5,13 +5,13 @@ namespace AstralCanvas
 {
     ShaderVariables::ShaderVariables()
     {
-        this->uniforms = collections::sparseset<ShaderResource>();
+        this->uniforms = collections::denseset<ShaderResource>();
         this->allocator = IAllocator{};
     }
     ShaderVariables::ShaderVariables(IAllocator allocator)
     {
         this->allocator = allocator;
-        this->uniforms = collections::sparseset<ShaderResource>(allocator, 16);
+        this->uniforms = collections::denseset<ShaderResource>(allocator, 16);
     }
     void ShaderVariables::deinit()
     {

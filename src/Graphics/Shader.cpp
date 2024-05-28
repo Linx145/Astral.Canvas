@@ -479,6 +479,13 @@ namespace AstralCanvas
     }
     void Shader::SetShaderVariable(const char* variableName, void* ptr, usize size)
     {
+        #ifdef ASTRALCANVAS_OPENGL
+        if (GetActiveBackend() == Backend_OpenGL)
+        {
+            //do gl set shader uniform stuff
+        }
+        #endif
+        #ifdef ASTRALCANVAS_VULKAN || ASTRALCANVAS_METAL
         CheckDescriptorSetAvailability();
         ShaderVariables *variables = &shaderVariables;
         for (usize i = 0; i < variables->uniforms.capacity; i++)
@@ -499,6 +506,7 @@ namespace AstralCanvas
                 variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].ub.SetData(ptr, size);
             }
         }
+        #endif
     }
     void Shader::SetShaderVariableTextures(const char* variableName, Texture2D **textures, usize count)
     {
