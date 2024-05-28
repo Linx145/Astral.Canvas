@@ -51,18 +51,21 @@ i32 AstralCanvasVk_GetComputeQueue(AstralVulkanQueueProperties *properties, VkPh
         }
     }
 
-    AstralVulkanQueueResult queueResult;
-    queueResult.type = AstralVulkanQueue_Compute;
-    queueResult.queueIndex = 0;
-    queueResult.queueID = properties->dedicatedComputeQueueIndex;
-    for (i32 i = 0; i < properties->queueCreationResults.count; i++)
+    if (properties->dedicatedTransferQueueIndex != properties->dedicatedGraphicsQueueIndex)
     {
-        if (properties->queueCreationResults.Get(i)->queueID == properties->dedicatedComputeQueueIndex)
+        AstralVulkanQueueResult queueResult;
+        queueResult.type = AstralVulkanQueue_Compute;
+        queueResult.queueIndex = 0;
+        queueResult.queueID = properties->dedicatedComputeQueueIndex;
+        for (i32 i = 0; i < properties->queueCreationResults.count; i++)
         {
-            queueResult.queueIndex += 1;
+            if (properties->queueCreationResults.Get(i)->queueID == properties->dedicatedComputeQueueIndex)
+            {
+                queueResult.queueIndex += 1;
+            }
         }
+        properties->queueCreationResults.Add(queueResult);
     }
-    properties->queueCreationResults.Add(queueResult);
 
     return properties->dedicatedComputeQueueIndex;
 }
@@ -97,18 +100,21 @@ i32 AstralCanvasVk_GetTransferQueue(AstralVulkanQueueProperties *properties, VkP
         }
     }
 
-    AstralVulkanQueueResult queueResult;
-    queueResult.type = AstralVulkanQueue_Transfer;
-    queueResult.queueIndex = 0;
-    queueResult.queueID = properties->dedicatedTransferQueueIndex;
-    for (i32 i = 0; i < properties->queueCreationResults.count; i++)
+    if (properties->dedicatedTransferQueueIndex != properties->dedicatedGraphicsQueueIndex)
     {
-        if (properties->queueCreationResults.Get(i)->queueID == properties->dedicatedTransferQueueIndex)
+        AstralVulkanQueueResult queueResult;
+        queueResult.type = AstralVulkanQueue_Transfer;
+        queueResult.queueIndex = 0;
+        queueResult.queueID = properties->dedicatedTransferQueueIndex;
+        for (i32 i = 0; i < properties->queueCreationResults.count; i++)
         {
-            queueResult.queueIndex += 1;
+            if (properties->queueCreationResults.Get(i)->queueID == properties->dedicatedTransferQueueIndex)
+            {
+                queueResult.queueIndex += 1;
+            }
         }
+        properties->queueCreationResults.Add(queueResult);
     }
-    properties->queueCreationResults.Add(queueResult);
 
     return properties->dedicatedTransferQueueIndex;
 }

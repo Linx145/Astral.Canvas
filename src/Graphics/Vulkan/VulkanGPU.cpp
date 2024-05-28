@@ -141,16 +141,25 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator allocat
 	createInfo.flags = NULL;
 
 	i32 graphicsQueueIndex = AstralCanvasVk_GetQueue(&gpu->queueInfo, gpu->physicalDevice, AstralVulkanQueue_Graphics);
+	printf("Creating graphics queue, index is %i\n", graphicsQueueIndex);
 	createInfo.queueFamilyIndex = graphicsQueueIndex;
 	createInfos.Add(createInfo);
 	
 	i32 transferQueueIndex = AstralCanvasVk_GetQueue(&gpu->queueInfo, gpu->physicalDevice, AstralVulkanQueue_Transfer);
-	createInfo.queueFamilyIndex = transferQueueIndex;
-	createInfos.Add(createInfo);
+	if (transferQueueIndex != graphicsQueueIndex)
+	{
+		printf("Creating transfer queue, index is %i\n", transferQueueIndex);
+		createInfo.queueFamilyIndex = transferQueueIndex;
+		createInfos.Add(createInfo);
+	}
 	
 	i32 computeQueueIndex = AstralCanvasVk_GetQueue(&gpu->queueInfo, gpu->physicalDevice, AstralVulkanQueue_Compute);
-	createInfo.queueFamilyIndex = computeQueueIndex;
-	createInfos.Add(createInfo);
+	if (computeQueueIndex != graphicsQueueIndex)
+	{
+		printf("Creating compute queue, index is %i\n", computeQueueIndex);
+		createInfo.queueFamilyIndex = computeQueueIndex;
+		createInfos.Add(createInfo);
+	}
 
 	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -218,6 +227,14 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator allocat
 			}
 		}
 	}
+	if (gpu->DedicatedTransferQueue.queue == NULL)
+	{
+		gpu->DedicatedTransferQueue = gpu->DedicatedGraphicsQueue;
+	}
+	if (gpu->DedicatedComputeQueue.queue == NULL)
+	{
+		gpu->DedicatedComputeQueue = gpu->DedicatedGraphicsQueue;
+	}
 
 	createInfos.deinit();
 
@@ -226,9 +243,15 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator allocat
 
 void AstralCanvasVk_ReleaseGPU(AstralVulkanGPU *gpu)
 {
+	if (gpu->DedicatedComputeQueue.queue != gpu->DedicatedGraphicsQueue.queue)
+	{
+		gpu->DedicatedComputeQueue.deinit();
+	}
+	if (gpu->DedicatedTransferQueue.queue != gpu->DedicatedGraphicsQueue.queue)
+	{
+		gpu->DedicatedTransferQueue.deinit();
+	}
 	gpu->DedicatedGraphicsQueue.deinit();
-	gpu->DedicatedComputeQueue.deinit();
-	gpu->DedicatedTransferQueue.deinit();
 	if (gpu->logicalDevice != NULL)
 	{
 		vkDestroyDevice(gpu->logicalDevice, NULL);
