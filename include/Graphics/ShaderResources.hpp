@@ -1,6 +1,6 @@
 #pragma once
 #include "Linxc.h"
-#include "sparseset.hpp"
+#include "denseset.hpp"
 #include "vector.hpp"
 #include "string.hpp"
 #include "Graphics/Enums.hpp"
@@ -52,7 +52,7 @@ namespace AstralCanvas
     struct ShaderVariables
     {
         IAllocator allocator;
-        collections::sparseset<ShaderResource> uniforms;
+        collections::denseset<ShaderResource> uniforms;
 
         ShaderVariables();
         ShaderVariables(IAllocator allocator);

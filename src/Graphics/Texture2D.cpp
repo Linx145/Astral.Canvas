@@ -186,6 +186,13 @@ namespace AstralCanvas
                 break;
             }
 #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                //gl stuff stuff
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unrecognised backend when attempting to create a texture");
                 break;

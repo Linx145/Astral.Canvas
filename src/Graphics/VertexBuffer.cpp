@@ -62,6 +62,12 @@ namespace AstralCanvas
                 break;
             }
             #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                break;
+            }
+            #endif
             default:
                 break;
         }
