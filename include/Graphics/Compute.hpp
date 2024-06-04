@@ -8,8 +8,9 @@ namespace AstralCanvas
     {
         void *handle;
         Shader *shader;
+#ifdef ASTRALCANVAS_VULKAN
         VkPipelineLayout layout;
-
+#endif
         ComputePipeline();
         ComputePipeline(Shader *computeShader);
         void Construct();

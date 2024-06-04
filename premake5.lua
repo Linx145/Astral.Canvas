@@ -44,7 +44,7 @@ workspace "AstralCanvas"
             systemversion "latest"
             includedirs "%{VULKAN_SDK}/Include"
             links { "%{VULKAN_SDK}/Lib/vulkan-1.lib" }
-            defines { "ASTRALCANVAS_VULKAN" }
+            defines { "ASTRALCANVAS_OPENGL" }
 
         filter "system:macosx"
             links {"Cocoa.framework", "IOKit.framework", "Metal.framework", "MetalKit.framework", "QuartzCore.framework"}
@@ -91,7 +91,7 @@ workspace "AstralCanvas"
             systemversion "latest"
             includedirs "%{VULKAN_SDK}/Include"
             links { "%{VULKAN_SDK}/Lib/vulkan-1.lib" }
-            defines { "ASTRALCANVAS_VULKAN" }
+            defines { "ASTRALCANVAS_OPENGL" }
 
         filter "system:macosx"
             defines { "ASTRALCANVAS_METAL", "_GLFW_COCOA", "GLFW_EXPOSE_NATIVE_COCOA" }

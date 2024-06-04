@@ -9,19 +9,27 @@
 #include "Graphics/Vulkan/VulkanHelpers.hpp"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
+#endif
+
 namespace AstralCanvas
 {
     ComputePipeline::ComputePipeline()
     {
         this->handle = NULL;
         this->shader = NULL;
+#ifdef ASTRALCANVAS_VULKAN
         this->layout = NULL;
+#endif
     }
     ComputePipeline::ComputePipeline(Shader *computeShader)
     {
         this->handle = NULL;
         this->shader = computeShader;
+#ifdef ASTRALCANVAS_VULKAN
         this->layout = NULL;
+#endif
         this->Construct();
     }
     void ComputePipeline::Construct()
@@ -75,6 +83,28 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 programHandle = glCreateProgram();
+
+                glAttachShader(programHandle, (u32)shader->shaderModule1);
+                glLinkProgram(programHandle);
+                glDetachShader(programHandle, (u32)shader->shaderModule1);
+
+                GLint isLinked = 0;
+                glGetProgramiv(programHandle, GL_LINK_STATUS, (int*)&isLinked);
+                if (isLinked == GL_FALSE)
+                {
+                    glDeleteProgram(programHandle);
+                    THROW_ERR("Failed to link OpenGL compute pipeline!");
+                }
+
+                this->handle = (void*)programHandle;
+
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: ComputePipeline Construct");
                 break;
@@ -110,6 +140,18 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                glUseProgram((GLuint)this->handle);
+
+                glDispatchCompute(threadsX, threadsY, threadsZ);
+
+                glUseProgram(0);
+                //glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: ComputePipeline DispatchNow");
                 break;
@@ -127,6 +169,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                glDeleteProgram((GLuint)this->handle);
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: ComputePipeline deinit");
                 break;

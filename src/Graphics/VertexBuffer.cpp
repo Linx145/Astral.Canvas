@@ -10,6 +10,10 @@
 #include "Graphics/Metal/MetalImplementations.h"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
+#endif
+
 namespace AstralCanvas
 {
     VertexBuffer::VertexBuffer()
@@ -65,6 +69,9 @@ namespace AstralCanvas
             #ifdef ASTRALCANVAS_OPENGL
             case Backend_OpenGL:
             {
+                u32 intHandle;
+                glGenBuffers(1, &intHandle);
+                handle = (void*)intHandle;
                 break;
             }
             #endif
@@ -107,6 +114,15 @@ namespace AstralCanvas
                 break;
             }
             #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                //glBindBuffer(GL_ARRAY_BUFFER, (u32)this->handle);
+                glNamedBufferData((u32)this->handle, count * this->vertexType->size, verticesData, GL_STATIC_DRAW);
+                //glBindBuffer(GL_ARRAY_BUFFER, 0);
+                break;
+            }
+            #endif
             default:
                 break;
         }
@@ -146,6 +162,21 @@ namespace AstralCanvas
                     break;
                 }
                 #endif
+                #ifdef ASTRALCANVAS_OPENGL
+                case Backend_OpenGL:
+                {
+                    usize lengthOfBytes = this->vertexCount * this->vertexType->size;
+                    void* result;
+                    glGetNamedBufferSubData((u32)this->handle, 0, lengthOfBytes, result);
+
+                    if (dataLength != NULL)
+                    {
+                        *dataLength = lengthOfBytes;
+                    }
+
+                    return result;
+                }
+                #endif
                 default:
                     break;
             }
@@ -172,6 +203,13 @@ namespace AstralCanvas
             {
                 AstralCanvasMetal_DestroyVertexBuffer(this);
                 break;
+            }
+            #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)this->handle;
+                glDeleteBuffers(1, &intHandle);
             }
             #endif
             default:

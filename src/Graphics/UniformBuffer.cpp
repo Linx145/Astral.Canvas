@@ -10,6 +10,10 @@
 #include "Graphics/Metal/MetalImplementations.h"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
+#endif
+
 namespace AstralCanvas
 {
     UniformBuffer::UniformBuffer()
@@ -39,6 +43,18 @@ namespace AstralCanvas
                 break;
             }
             #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle;
+                glGenBuffers(1, &intHandle);
+                handle = (void*)intHandle;
+
+                // set binding point
+                glBindBufferBase(GL_UNIFORM_BUFFER, this->bindingPoint, intHandle);
+            }
+            break;
+            #endif
             default:
                 break;
         }
@@ -54,12 +70,19 @@ namespace AstralCanvas
                 break;
             }
             #endif
-#ifdef ASTRALCANVAS_METAL
+            #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
                 AstralCanvasMetal_CreateUniformBuffer(this, ptr, ptrSize);
                 break;
             }
+            #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                glNamedBufferData((u32)this->handle, ptrSize, ptr, GL_STATIC_DRAW);
+            }
+            break;
 #endif
             default:
                 break;
@@ -81,13 +104,21 @@ namespace AstralCanvas
                 break;
             }
             #endif
-#ifdef ASTRALCANVAS_METAL
+            #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
                 AstralCanvasMetal_DestroyUniformBuffer(this);
                 break;
             }
-#endif
+            #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)this->handle;
+                glDeleteBuffers(1, &intHandle);
+            }
+            break;
+            #endif
             default:
                 break;
         }

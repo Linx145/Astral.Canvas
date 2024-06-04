@@ -1,6 +1,7 @@
 #include "Graphics/Graphics.hpp"
 #include "Graphics/CurrentBackend.hpp"
 #include "hash.hpp"
+#include "ErrorHandling.hpp"
 
 #ifdef ASTRALCANVAS_VULKAN
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
@@ -9,7 +10,10 @@
 
 #ifdef ASTRALCANVAS_METAL
 #include "Graphics/Metal/MetalImplementations.h"
-#include "ErrorHandling.hpp"
+#endif
+
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
 #endif
 
 namespace AstralCanvas
@@ -38,6 +42,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                THROW_ERR("graphics.cpp: opengl await graphics idle");
+                break;
+            }
+#endif
         }
     }
     void Graphics::SetVertexBuffer(const VertexBuffer *vb, u32 bindingPoint)
@@ -48,11 +59,19 @@ namespace AstralCanvas
             case Backend_Vulkan:
             {
                 VkCommandBuffer cmdBuffer = AstralCanvasVk_GetMainCmdBuffer();
-
+                
                 vkCmdBindVertexBuffers(cmdBuffer, bindingPoint, 1, (VkBuffer*)&vb->handle, &bindBufferNoOffsets);
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)vb->handle;
+                glBindBuffer(GL_ARRAY_BUFFER, intHandle);
+            }
+            break;
+#endif
 #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
@@ -77,14 +96,22 @@ namespace AstralCanvas
                 break;
             }
             #endif
-#ifdef ASTRALCANVAS_METAL
+            #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
                 #error TODO
                 //AstralCanvasMetal_SetVertexBuffer(this->currentCommandEncoderInstance, vb, bindingPoint);
                 break;
             }
-#endif
+            #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)computeBuffer->handle;
+                glBindBuffer(GL_ARRAY_BUFFER, intHandle);
+            }
+            break;
+            #endif
             default:
                 break;
         }
@@ -102,13 +129,21 @@ namespace AstralCanvas
                 break;
             }
             #endif
-#ifdef ASTRALCANVAS_METAL
+            #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
                 AstralCanvasMetal_SetInstanceBuffer(this->currentCommandEncoderInstance, instanceBuffer, bindingPoint);
                 break;
             }
-#endif
+            #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)instanceBuffer->handle;
+                glBindBuffer(GL_ARRAY_BUFFER, intHandle);
+            }
+            break;
+            #endif
             default:
                 break;
         }
@@ -133,6 +168,14 @@ namespace AstralCanvas
                 //AstralCanvasMetal_SetIndexBuffer(this->currentCommandEncoderInstance, indexBuffer);
                 break;
             }
+#endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL: 
+            {
+                u32 intHandle = (u32)indexBuffer->handle;
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, intHandle);
+            }
+            break;
 #endif
             default:
                 break;
@@ -172,6 +215,17 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                glScissor(
+                    ClipArea.X,
+                    ClipArea.Y,
+                    ClipArea.Width,
+                    ClipArea.Height);
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: Graphics SetClipArea");
                 break;
@@ -262,6 +316,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                THROW_ERR("opengl start render program");
+                break;
+            }
+#endif
 #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
@@ -407,6 +468,14 @@ namespace AstralCanvas
                     break;
                 }
 #endif
+#ifdef ASTRALCANVAS_OPENGL
+                case Backend_OpenGL:
+                {
+                    void* handle = pipeline->GetOrCreateFor(this->currentRenderProgram, currentRenderPass);
+                    glUseProgram((u32)handle);
+                    break;
+                }
+#endif
                 default:
                     break;
             }
@@ -479,6 +548,14 @@ namespace AstralCanvas
                     break;
                 }
                 #endif
+#ifdef ASTRALCANVAS_OPENGL
+                case Backend_OpenGL:
+                {
+                    // not sure what this is for
+                    THROW_ERR("opengl send uniforms");
+                    break;
+                }
+#endif
                 default:
                     break;
             }
@@ -511,6 +588,20 @@ namespace AstralCanvas
                     break;
                 }
 #endif
+#ifdef ASTRALCANVAS_OPENGL
+                case Backend_OpenGL:
+                {
+
+                    glMultiDrawElementsIndirect(
+                        GL_TRIANGLES, 
+                        GL_BYTE, 
+                        drawDataBuffer->GetData(IAllocator(), NULL), // specifies the address of a structure containing an array of draw parameters
+                        drawCount, 
+                        sizeof(DrawIndexedIndirectCommand)
+                    );
+                    break;
+                }
+#endif
                 default:
                     break;
             }
@@ -540,6 +631,20 @@ namespace AstralCanvas
                     break;
                 }
 #endif
+#ifdef ASTRALCANVAS_OPENGL
+                case Backend_OpenGL:
+                {
+                    glMultiDrawElementsIndirectCount(GL_TRIANGLES,
+                        GL_BYTE,
+                        drawDataBuffer->GetData(IAllocator(), NULL),
+                        (GLintptr)drawCountBuffer->GetData(IAllocator(), NULL),
+                        maxDrawCount,
+                        sizeof(DrawIndexedIndirectCommand)
+                    );
+
+                    break;
+                }
+#endif
                 default:
                     break;
             }
@@ -565,6 +670,13 @@ namespace AstralCanvas
                 case Backend_Metal:
                 {
                     AstralCanvasMetal_DrawIndexedPrimitives(this->currentCommandEncoderInstance, this->currentIndexBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+                    break;
+                }
+#endif
+#ifdef ASTRALCANVAS_OPENGL
+                case Backend_OpenGL:
+                {
+                    glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_BYTE, 0, instanceCount);
                     break;
                 }
 #endif

@@ -13,6 +13,8 @@ namespace AstralCanvas
         u32 width;
         /// The height of the texture in pixels
         u32 height;
+        /// The number of channels in the file
+        int channelCount;
         /// Whether the texture has been deinit'd
         bool isDisposed;
         /// Whether the texture has been constructed from it's byte data

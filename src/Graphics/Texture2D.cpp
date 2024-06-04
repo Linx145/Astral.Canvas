@@ -13,6 +13,10 @@
 #include "Graphics/Metal/MetalImplementations.h"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
+#endif
+
 namespace AstralCanvas
 {
     void Texture2D::Construct()
@@ -25,21 +29,28 @@ namespace AstralCanvas
         {
             switch (GetActiveBackend())
             {
-#ifdef ASTRALCANVAS_VULKAN
+                #ifdef ASTRALCANVAS_VULKAN
                 case Backend_Vulkan:
                 {
                     //guaranteed to be B8G8R8A8 Unorm for now 
                     this->imageFormat = ImageFormat_B8G8R8A8Unorm;// AstralCanvasVk_GetCurrentSwapchain()->imageFormat;
                     break;
                 }
-#endif
-#ifdef ASTRALCANVAS_METAL
+                #endif
+                #ifdef ASTRALCANVAS_METAL
                 case Backend_Metal:
                 {
                     this->imageFormat = AstralCanvasMetal_GetSwapchainFormat();
                     break;
                 }
-#endif
+                #endif
+                #ifdef ASTRALCANVAS_OPENGL
+                //case Backend_OpenGL:
+                //{
+                //    THROW_ERR("texture2D opengl");
+                //}
+                //break;
+                #endif
                 default:
                     break;
             }
@@ -179,20 +190,24 @@ namespace AstralCanvas
                 break;
             }
             #endif
-#ifdef ASTRALCANVAS_METAL
+            #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
                 AstralCanvasMetal_CreateTexture(this);
                 break;
             }
-#endif
-#ifdef ASTRALCANVAS_OPENGL
+            #endif
+            #ifdef ASTRALCANVAS_OPENGL
             case Backend_OpenGL:
             {
-                //gl stuff stuff
+                //glTexImage2D()
+                //this->imageHandle
+                u32 intHandle;
+                glGenTextures(1, &intHandle);
+                this->imageHandle = (void*)intHandle;
                 break;
             }
-#endif
+            #endif
             default:
                 THROW_ERR("Unrecognised backend when attempting to create a texture");
                 break;
@@ -250,12 +265,37 @@ namespace AstralCanvas
                 return bytes;
             }
             #endif
-#ifdef ASTRALCANVAS_METAL
+            #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
                 break;
             }
-#endif
+            #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                // retrieve the new texture data
+                GLenum format;
+                if (this->channelCount == 1)
+                {
+                    format = GL_RED;
+                }
+                else if (this->channelCount == 3)
+                {
+                    format = GL_RGB;
+                }
+                else if (this->channelCount == 4)
+                {
+                    
+                    format = GL_RGBA;
+                }
+                else THROW_ERR("Texture channel count undefined");//printf("Texture channel count undefined");
+                glGetTextureImage((u32)imageHandle, 0, format, GL_UNSIGNED_BYTE, sizeof(bytes), bytes);
+
+                return bytes;
+            }
+            break;
+            #endif
             default:
                 THROW_ERR("Unimplemented backend: Texture2D GetData");
                 break;
@@ -286,12 +326,20 @@ namespace AstralCanvas
                 break;
             }
             #endif
-#ifdef ASTRALCANVAS_METAL
+            #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
                 AstralCanvasMetal_DestroyTexture(this);
                 break;
             }
+            #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)this->imageHandle;
+                glDeleteTextures(1, &intHandle);
+            }
+            break;
 #endif
             default:
                 THROW_ERR("Unimplemented backend: Texture2D deinit");
@@ -317,6 +365,7 @@ namespace AstralCanvas
         result.bytes = NULL;
         result.constructed = false;
         result.isDisposed = false;
+        result.channelCount = 0;
 
         i32 channelsInFile = 0;
         i32 width;
@@ -325,6 +374,7 @@ namespace AstralCanvas
 
         result.width = width;
         result.height = height;
+        result.channelCount = channelsInFile;
 
         result.Construct();
         if (!storeData)
@@ -348,6 +398,8 @@ namespace AstralCanvas
         result.constructed = false;
         result.isDisposed = false;
 
+        result.channelCount = 4;
+
         result.Construct();
         return result;
     }
@@ -364,6 +416,8 @@ namespace AstralCanvas
         result.usedForRenderTarget = usedForRenderTarget;
         result.constructed = false;
         result.isDisposed = false;
+
+        result.channelCount = 4;
 
         result.Construct();
         result.bytes = NULL;

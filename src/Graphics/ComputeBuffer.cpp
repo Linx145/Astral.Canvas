@@ -10,6 +10,13 @@
 #include "Graphics/Metal/MetalImplementations.h"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
+#endif
+
+#include "vector.hpp"
+#include "ErrorHandling.hpp"
+
 namespace AstralCanvas
 {
     collections::vector<ComputeBuffer*> computeBuffersToClear;
@@ -57,6 +64,14 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                glNamedBufferData((u32)this->handle, elementsToSet * elementSize, bytes, GL_STATIC_DRAW);
+
+                break;
+            }
+#endif
             default:
                 break;
         }
@@ -96,6 +111,21 @@ namespace AstralCanvas
                     break;
                 }
                 #endif
+#ifdef ASTRALCANVAS_OPENGL
+                case Backend_OpenGL:
+                {
+                    usize lengthOfBytes = elementCount * elementSize;
+                    void* result;
+                    glGetNamedBufferSubData((u32)this->handle, 0, lengthOfBytes, result);
+
+                    if (dataLength != NULL)
+                    {
+                        *dataLength = lengthOfBytes;
+                    }
+
+                    return result;
+                }
+#endif
                 default:
                     break;
             }
@@ -130,6 +160,17 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                // generate ssbo
+                u32 intHandle;
+                glCreateBuffers(1, &intHandle);
+
+                this->handle = (void*)intHandle;
+                break;
+            }
+#endif
             default:
                 break;
         }
@@ -155,6 +196,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                THROW_ERR("Unimplemented");
+                break;
+            }
+#endif
             default:
                 break;
         }
@@ -175,6 +223,15 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)this->handle;
+                glDeleteBuffers(1, &intHandle);
+
+                break;
+            }
+#endif
             default:
                 break;
         }

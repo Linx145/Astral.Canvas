@@ -12,6 +12,11 @@
 #include "Graphics/Metal/MetalImplementations.h"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics//Glad/glad.h"
+#endif
+
+
 namespace AstralCanvas
 {
     RenderPipeline::RenderPipeline()
@@ -40,6 +45,48 @@ namespace AstralCanvas
     }
     void *RenderPipeline::GetOrCreateFor(AstralCanvas::RenderProgram *renderProgram, u32 renderPassToUse)
     {
+        #ifdef ASTRALCANVAS_OPENGL
+        if (GetActiveBackend() == Backend_OpenGL)
+        {
+            // if can get then get
+            void *resultID = zoneToPipelineInstance.GetCopyOr(RenderPipelineBindZone{NULL, 0}, NULL);
+            if (resultID != NULL)
+            {
+                return resultID;
+            }
+
+            // else create
+            RenderPipeline* pipeline = this;
+
+            // create shader program
+            u32 programHandle = glCreateProgram();
+
+            glAttachShader(programHandle, (u32)pipeline->shader->shaderModule1);
+            glAttachShader(programHandle, (u32)pipeline->shader->shaderModule2);
+
+            //signal this program to be seperable
+            //glProgramParameteri(programHandle, GL_PROGRAM_SEPARABLE, GL_TRUE);
+
+            // link program
+            glLinkProgram(programHandle);
+
+            glDetachShader(programHandle, (u32)pipeline->shader->shaderModule1);
+            glDetachShader(programHandle, (u32)pipeline->shader->shaderModule2);
+
+            GLint isLinked = 0;
+            glGetProgramiv(programHandle, GL_LINK_STATUS, (int*)&isLinked);
+            if (isLinked == GL_FALSE)
+            {
+                glDeleteProgram(programHandle);
+                THROW_ERR("Failed to link OpenGL vertex fragment pipeline!");
+            }
+
+            zoneToPipelineInstance.Add(RenderPipelineBindZone{ NULL, 0 }, (void*)programHandle);
+
+            return (void*)programHandle;
+        }
+        #endif
+
         RenderPipelineBindZone bindZone;
         bindZone.renderProgramHandle = renderProgram->handle;
         bindZone.subPassHandle = renderPassToUse;
@@ -298,7 +345,7 @@ namespace AstralCanvas
                 vkDestroyPipelineLayout(AstralCanvasVk_GetCurrentGPU()->logicalDevice, (VkPipelineLayout)this->layout, NULL);
                 break;
             }
-            #endif
+#endif
 #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
@@ -315,6 +362,18 @@ namespace AstralCanvas
                 }
                 break;
             }
+#endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                auto iterator = this->zoneToPipelineInstance.GetIterator();
+                for (auto kvp = iterator.Next(); !iterator.completed; kvp = iterator.Next())
+                {
+                    u32 programHandle = (u32)kvp->value;
+                    glDeleteProgram(programHandle);
+                }
+            }
+            break;
 #endif
             default:
                 THROW_ERR("Unimplemented backend: RenderPipeline deinit");

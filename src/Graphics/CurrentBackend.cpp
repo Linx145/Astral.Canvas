@@ -7,7 +7,10 @@ namespace AstralCanvas
         #ifdef MACOS
         return Backend_Metal;
         #endif
+#ifdef ASTRALCANVAS_VULKAN
         return Backend_Vulkan;
+#endif
+        return Backend_OpenGL;
     }
     void AstralCanvas_SetActiveBackend(GraphicsBackend backend)
     {

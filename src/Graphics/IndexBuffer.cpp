@@ -10,6 +10,10 @@
 #include "Graphics/Metal/MetalImplementations.h"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
+#endif
+
 namespace AstralCanvas
 {
     IndexBuffer::IndexBuffer()
@@ -48,6 +52,15 @@ namespace AstralCanvas
                 break;
             }
             #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle;
+                glGenBuffers(1, &intHandle);
+                this->handle = (void*)intHandle;
+            }
+            break;
+            #endif
             default:
                 break;
         }
@@ -73,13 +86,20 @@ namespace AstralCanvas
                 break;
             }
             #endif
-#ifdef ASTRALCANVAS_METAL
+            #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
                 AstralCanvasMetal_CreateIndexBuffer(this, bytes, lengthOfBytes);
                 break;
             }
-#endif
+            #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                glNamedBufferData((u32)this->handle, indexCount * lengthOfBytes, bytes, GL_STATIC_DRAW);
+            }
+            break;
+            #endif
             default:
                 break;
         }
@@ -99,13 +119,21 @@ namespace AstralCanvas
                 break;
             }
             #endif
-#ifdef ASTRALCANVAS_METAL
+            #ifdef ASTRALCANVAS_METAL
             case Backend_Metal:
             {
                 AstralCanvasMetal_DestroyIndexBuffer(this);
                 break;
             }
-#endif
+            #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)this->handle;
+                glDeleteBuffers(1, &intHandle);
+            }
+            break;
+            #endif
             default:
                 break;
         }

@@ -10,6 +10,10 @@
 #include "Graphics/Metal/MetalImplementations.h"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
+#endif
+
 namespace AstralCanvas
 {
     InstanceBuffer::InstanceBuffer()
@@ -54,6 +58,15 @@ namespace AstralCanvas
                 break;
             }
             #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle;
+                glGenBuffers(1, &intHandle);
+                this->handle = (void*)intHandle;
+                break;
+            }
+            #endif
             default:
                 break;
         }
@@ -77,6 +90,13 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                glNamedBufferData((u32)this->handle, count * this->instanceSize, instancesData, GL_STATIC_DRAW);
+                break;
+            }
+#endif
             default:
                 break;
         }
@@ -103,6 +123,14 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)this->handle;
+                glDeleteBuffers(1, &intHandle);
+                break;
+            }
+#endif
             default:
                 break;
         }

@@ -14,6 +14,7 @@ namespace AstralCanvas
     };
     struct VertexDeclaration
     {
+        u32 handle;
         IAllocator allocator;
         collections::vector<VertexElement> elements;
         usize size;
@@ -22,6 +23,8 @@ namespace AstralCanvas
         void deinit();
         VertexDeclaration();
         VertexDeclaration(IAllocator thisAllocator, usize size, VertexInputRate inputRate);
+
+        void Construct();
     };
 
     struct VertexPositionColor

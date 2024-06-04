@@ -14,6 +14,10 @@
 #include "Graphics/Metal/MetalImplementations.h"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
+#endif
+
 using namespace Json;
 
 namespace AstralCanvas
@@ -296,14 +300,63 @@ namespace AstralCanvas
                 }
     #endif
     #ifdef ASTRALCANVAS_METAL
-            case Backend_Metal:
+                case Backend_Metal:
+                    {
+                        AstralCanvasMetal_AddUniformDescriptorSets(this);
+                        break;
+                    }
+    #endif
+    #ifdef ASTRALCANVAS_OPENGL
+                case Backend_OpenGL:
                 {
-                    AstralCanvasMetal_AddUniformDescriptorSets(this);
+                    descriptorSets.Add(NULL);
+                    for (usize i = 0; i < shaderVariables.uniforms.capacity; i++)
+                    {
+                        ShaderResource* resource = &shaderVariables.uniforms.ptr[i];
+                        if (resource->variableName.buffer == NULL)
+                        {
+                            break;
+                        }
+                        ShaderStagingMutableState newMutableState{};
+                        switch (resource->type)
+                        {
+                            case ShaderResourceType_StructuredBuffer:
+                            {
+                                newMutableState.computeBuffer = NULL;
+                                break;
+                            }
+                            case ShaderResourceType_Uniform:
+                            {
+                                newMutableState.ub = UniformBuffer(resource->size);
+                                newMutableState.ownsUniformBuffer = true;
+                                break;
+                            }
+                            case ShaderResourceType_InputAttachment:
+                            {
+                                newMutableState.textures = collections::Array<Texture2D*>(this->allocator, 1);
+                                //newMutableState.imageInfos = this->allocator.Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
+                                break;
+                            }
+                            case ShaderResourceType_Texture:
+                            {
+                                newMutableState.textures = collections::Array<Texture2D*>(this->allocator, max(resource->arrayLength, 1));
+                                //newMutableState.imageInfos = this->allocator.Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.textures.length);
+                                break;
+                            }
+                            case ShaderResourceType_Sampler:
+                            {
+                                newMutableState.samplers = collections::Array<SamplerState*>(this->allocator, max(resource->arrayLength, 1));
+                                //newMutableState.samplerInfos = this->allocator.Allocate(sizeof(VkDescriptorImageInfo) * newMutableState.samplers.length);
+                                break;
+                            }
+                        }
+                        shaderVariables.uniforms.ptr[i].stagingData.Add(newMutableState);
+                    }
                     break;
                 }
     #endif
-            default:
-                break;
+                default:
+                    break;
             }
         }
     }
@@ -449,6 +502,113 @@ namespace AstralCanvas
                 break;
             }
 #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                for (usize i = 0; i < this->shaderVariables.uniforms.capacity; i++)
+                {
+                    if (this->shaderVariables.uniforms.ptr[i].variableName.buffer == NULL)
+                    {
+                        break;
+                    }
+
+                    ShaderStagingMutableState* toMutate = &this->shaderVariables.uniforms.ptr[i].stagingData.ptr[this->descriptorForThisDrawCall];
+                    if (!toMutate->mutated)
+                    {
+                        continue;
+                    }
+                    //set mutated to false in anticipation of reuse for next frame
+                    toMutate->mutated = false;
+
+                    switch (this->shaderVariables.uniforms.ptr[i].type)
+                    {
+                        case ShaderResourceType_InputAttachment:
+                        {
+                            VkDescriptorImageInfo imageInfo{};
+                            imageInfo.sampler = NULL;
+                            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //(VkImageLayout)toMutate->textures.data[i]->imageLayout;
+                            imageInfo.imageView = (VkImageView)toMutate->textures.data[0]->imageView;
+                            ((VkDescriptorImageInfo*)toMutate->imageInfos)[0] = imageInfo;
+
+                            setWrite.dstArrayElement = 0;
+                            setWrite.descriptorCount = toMutate->textures.length;
+                            setWrite.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+                            setWrite.pImageInfo = (VkDescriptorImageInfo*)toMutate->imageInfos;
+                            break;
+                        }
+                        case ShaderResourceType_Uniform:
+                        {
+                            UniformBuffer buffer = toMutate->ub;
+                            /*bufferInfos[bufferInfoCount].buffer = (VkBuffer)buffer.handle;
+                            bufferInfos[bufferInfoCount].offset = 0;
+                            bufferInfos[bufferInfoCount].range = buffer.size;*/
+
+                            glBindBuffer(GL_UNIFORM_BUFFER, (GLuint)buffer.handle);
+
+                            break;
+                        }
+                        case ShaderResourceType_Texture:
+                        {
+                            glUniform1i(unifrom location, "variablename");
+                            /*for (usize i = 0; i < toMutate->textures.length; i++)
+                            {
+                                VkDescriptorImageInfo imageInfo{};
+                                imageInfo.sampler = NULL;
+                                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //(VkImageLayout)toMutate->textures.data[i]->imageLayout;
+                                imageInfo.imageView = (VkImageView)toMutate->textures.data[i]->imageView;
+                                ((VkDescriptorImageInfo*)toMutate->imageInfos)[i] = imageInfo;
+                            }
+
+                            setWrite.dstArrayElement = 0;
+                            setWrite.descriptorCount = toMutate->textures.length;
+                            setWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                            setWrite.pImageInfo = (VkDescriptorImageInfo*)toMutate->imageInfos;*/
+
+                            break;
+                        }
+                        case ShaderResourceType_Sampler:
+                        {
+                            for (usize i = 0; i < toMutate->samplers.length; i++)
+                            {
+                                VkDescriptorImageInfo samplerInfo{};
+                                samplerInfo.sampler = (VkSampler)toMutate->samplers.data[i]->handle;
+                                samplerInfo.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                                samplerInfo.imageView = NULL;
+                                ((VkDescriptorImageInfo*)toMutate->samplerInfos)[i] = samplerInfo;
+                            }
+
+                            setWrite.dstArrayElement = 0;
+                            setWrite.descriptorCount = toMutate->samplers.length;
+                            setWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+                            setWrite.pImageInfo = (VkDescriptorImageInfo*)toMutate->samplerInfos;
+
+                            break;
+                        }
+                        case ShaderResourceType_StructuredBuffer:
+                        {
+                            ComputeBuffer* buffer = toMutate->computeBuffer;
+                            bufferInfos[bufferInfoCount].buffer = (VkBuffer)buffer->handle;
+                            bufferInfos[bufferInfoCount].offset = 0;
+                            bufferInfos[bufferInfoCount].range = buffer->elementSize * buffer->elementCount;
+
+                            setWrite.dstArrayElement = 0;
+                            setWrite.descriptorCount = 1;
+                            setWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                            setWrite.pBufferInfo = &bufferInfos[bufferInfoCount];
+
+                            bufferInfoCount += 1;
+
+                            break;
+                        }
+                        default:
+                        {
+                            break;
+                        }
+                    }
+                }
+                break;
+            }
+#endif
             default:
                 THROW_ERR("Unimplemented backend: Shader SyncUniformsWithGPU");
                 break;
@@ -479,13 +639,6 @@ namespace AstralCanvas
     }
     void Shader::SetShaderVariable(const char* variableName, void* ptr, usize size)
     {
-        #ifdef ASTRALCANVAS_OPENGL
-        if (GetActiveBackend() == Backend_OpenGL)
-        {
-            //do gl set shader uniform stuff
-        }
-        #endif
-        #ifdef ASTRALCANVAS_VULKAN || ASTRALCANVAS_METAL
         CheckDescriptorSetAvailability();
         ShaderVariables *variables = &shaderVariables;
         for (usize i = 0; i < variables->uniforms.capacity; i++)
@@ -506,10 +659,12 @@ namespace AstralCanvas
                 variables->uniforms.ptr[i].stagingData.ptr[descriptorForThisDrawCall].ub.SetData(ptr, size);
             }
         }
-        #endif
     }
     void Shader::SetShaderVariableTextures(const char* variableName, Texture2D **textures, usize count)
     {
+#ifdef ASTRALCANVAS_OPENGL
+        THROW_ERR("Bindless texturing not supported in OpenGL!");
+#endif
         CheckDescriptorSetAvailability();
         ShaderVariables *variables = &shaderVariables;
         for (usize i = 0; i < variables->uniforms.capacity; i++)
@@ -561,6 +716,9 @@ namespace AstralCanvas
     }
     void Shader::SetShaderVariableSamplers(const char* variableName, SamplerState **samplers, usize count)
     {
+#ifdef ASTRALCANVAS_OPENGL
+        THROW_ERR("Bindless texturing not supported in OpenGL!");
+#endif
         CheckDescriptorSetAvailability();
         ShaderVariables *variables = &shaderVariables;
         for (usize i = 0; i < variables->uniforms.capacity; i++)
@@ -639,6 +797,14 @@ namespace AstralCanvas
                 AstralCanvasMetal_DestroyShaderProgram(this->shaderModule1, this->shaderModule2);
                 this->shaderModule1 = NULL;
                 this->shaderModule2 = NULL;
+                break;
+            }
+#endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                glDeleteShader((u32)shaderModule1);
+                glDeleteShader((u32)shaderModule2);
                 break;
             }
 #endif
@@ -886,6 +1052,122 @@ namespace AstralCanvas
                         {
                             THROW_ERR("Failed to create metal shader program!");
                         }
+                    }
+                }
+                return 0;
+            }
+#endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                JsonElement* computeElement = root.GetProperty("compute");
+
+                if (computeElement != NULL)
+                {
+                    result->shaderType = ShaderType_Compute;
+                    ParseShaderVariables(computeElement, &result->shaderVariables, InputAccessedBy_Compute);
+
+                    // get shader binary as string
+                    JsonElement* computeSpirv = computeElement->GetProperty("spirv");
+                    string computeString = computeSpirv->value;
+
+                    u32 computeHandle = glCreateShader(GL_COMPUTE_SHADER);
+
+                    // Apply the shader SPIR-V to the shader object
+                    glShaderBinary(1, &computeHandle, GL_SHADER_BINARY_FORMAT_SPIR_V,
+                        computeString.buffer, computeString.length);
+
+                    // compile spirv --> glsl
+                    glSpecializeShader(computeHandle, "main", 0, nullptr, nullptr);
+                    
+                    GLint isCompiled = 0;
+                    glGetShaderiv(computeHandle, GL_COMPILE_STATUS, &isCompiled);
+                    if (isCompiled == GL_FALSE)
+                    {
+                        glDeleteShader(computeHandle);
+                        THROW_ERR("Failed to compile OpenGL compute shader!");
+                    }
+
+                    result->shaderModule1 = (void*)computeHandle;
+
+                    //// create shader program
+                    //u32 programHandle = glCreateProgram();
+                    //
+                    //glAttachShader(programHandle, computeHandle);
+                    //glLinkProgram(programHandle);
+                    //
+                    //// delete shader
+                    //glDetachShader(programHandle, computeHandle);
+                    //glDeleteShader(computeHandle);
+                    //
+                    //GLint isLinked = 0;
+                    //glGetProgramiv(programHandle, GL_LINK_STATUS, (int*)&isLinked);
+                    //if (isLinked == GL_FALSE)
+                    //{
+                    //    glDeleteProgram(programHandle);
+                    //    THROW_ERR("Failed to link OpenGL compute program!");
+                    //}
+                }
+                else
+                {
+                    // get the spirv shaders and compile
+                    result->shaderType = ShaderType_VertexFragment;
+                    JsonElement* vertexElement = root.GetProperty("vertex");
+                    JsonElement* fragmentElement = root.GetProperty("fragment");
+
+                    if (vertexElement != NULL && fragmentElement != NULL)
+                    {
+                        ParseShaderVariables(vertexElement, &result->shaderVariables, InputAccessedBy_Vertex);
+                        ParseShaderVariables(fragmentElement, &result->shaderVariables, InputAccessedBy_Fragment);
+
+                        // get spirv binary to convert to string
+                        JsonElement* vertexSpirv = vertexElement->GetProperty("spirv");
+                        JsonElement* fragmentSpirv = fragmentElement->GetProperty("spirv");
+
+                        collections::Array<u32> vertexSpirvData = collections::Array<u32>(localArena.AsAllocator(), vertexSpirv->arrayElements.length);
+                        collections::Array<u32> fragmentSpirvData = collections::Array<u32>(localArena.AsAllocator(), fragmentSpirv->arrayElements.length);
+
+                        for (usize i = 0; i < vertexSpirv->arrayElements.length; i++)
+                        {
+                            vertexSpirvData.data[i] = vertexSpirv->arrayElements.data[i].GetUint32();
+                        }
+                        for (usize i = 0; i < fragmentSpirv->arrayElements.length; i++)
+                        {
+                            fragmentSpirvData.data[i] = fragmentSpirv->arrayElements.data[i].GetUint32();
+                        }
+
+                        u32 vertexHandle = glCreateShader(GL_VERTEX_SHADER);
+                        u32 fragmentHandle = glCreateShader(GL_FRAGMENT_SHADER);
+
+                        // Apply the shaders SPIR-V to the shader objects
+                        glShaderBinary(1, &vertexHandle, GL_SHADER_BINARY_FORMAT_SPIR_V,
+                            vertexSpirvData.data, vertexSpirvData.length * 4);
+
+                        glShaderBinary(1, &fragmentHandle, GL_SHADER_BINARY_FORMAT_SPIR_V,
+                            fragmentSpirvData.data, fragmentSpirvData.length * 4);
+
+                        // specialize the shaders (analogous to compiling glsl shader)
+                        glSpecializeShader(vertexHandle, "main", 0, nullptr, nullptr);
+                        glSpecializeShader(fragmentHandle, "main", 0, nullptr, nullptr);
+
+                        
+
+                        GLint isCompiled = 0;
+                        glGetShaderiv(vertexHandle, GL_COMPILE_STATUS, &isCompiled);
+                        if (isCompiled == GL_FALSE)
+                        {
+                            glDeleteShader(vertexHandle);
+                            THROW_ERR("Failed to compile OpenGL vertex shader!");
+                        }
+                        glGetShaderiv(fragmentHandle, GL_COMPILE_STATUS, &isCompiled);
+                        if (isCompiled == GL_FALSE)
+                        {
+                            glDeleteShader(fragmentHandle);
+                            THROW_ERR("Failed to compile OpenGL fragment shader!");
+                        }
+
+                        result->shaderModule1 = (void*)vertexHandle;
+                        result->shaderModule1 = (void*)fragmentHandle;
                     }
                 }
                 return 0;

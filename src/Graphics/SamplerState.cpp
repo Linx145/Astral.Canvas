@@ -10,6 +10,10 @@
 #include "Graphics/Metal/MetalImplementations.h"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
+#endif
+
 #include "ErrorHandling.hpp"
 
 namespace AstralCanvas
@@ -84,6 +88,16 @@ namespace AstralCanvas
                 break;
             }
 #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle;
+                glCreateSamplers(1, &intHandle);
+
+                handle = (void*)intHandle;
+                break;
+            }
+#endif
             default:
             {
                 THROW_ERR("Unimplemented backend: SamplerState Create");
@@ -110,6 +124,15 @@ namespace AstralCanvas
             case Backend_Metal:
             {
                 AstralCanvasMetal_DestroySampler(this);
+                break;
+            }
+#endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)handle;
+                glDeleteSamplers(1, &intHandle);
+
                 break;
             }
 #endif

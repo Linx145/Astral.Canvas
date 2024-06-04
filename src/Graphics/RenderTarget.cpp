@@ -6,6 +6,10 @@
 #include "Graphics/Vulkan/VulkanInstanceData.hpp"
 #endif
 
+#ifdef ASTRALCANVAS_OPENGL
+#include "Graphics/Glad/glad.h"
+#endif
+
 namespace AstralCanvas
 {
     void RenderTarget::deinit()
@@ -32,6 +36,14 @@ namespace AstralCanvas
                 break;
             }
             #endif
+#ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle = (u32)this->renderTargetHandle;
+                glDeleteFramebuffers(1, &intHandle);
+            }
+            break;
+#endif
             default:
                 THROW_ERR("Unimplemented backend: RenderTarget deinit");
                 break;
@@ -87,6 +99,15 @@ namespace AstralCanvas
             {
                 //metal doesnt require a dedicated framebuffer handle 
                 //like Vulkan, so we don't have to do anything
+                break;
+            }
+            #endif
+            #ifdef ASTRALCANVAS_OPENGL
+            case Backend_OpenGL:
+            {
+                u32 intHandle;
+                glGenFramebuffers(1, &intHandle);
+                this->renderTargetHandle = (void*)intHandle;
                 break;
             }
             #endif
