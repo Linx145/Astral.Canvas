@@ -12,13 +12,7 @@ project "GLFW"
 		"src/input.c",
 		"src/monitor.c",
 		"src/vulkan.c",
-		"src/window.c",
-		"src/platform.c",
-		"src/null_init.c",
-		"src/null_joystick.c",
-		"src/null_monitor.c",
-		"src/null_joystick.c",
-		"src/null_window.c"
+		"src/window.c"
 	}
 
     filter "configurations:Debug"
@@ -33,7 +27,6 @@ project "GLFW"
 		systemversion "latest"
         defines { "_GLFW_WIN32", "_CRT_SECURE_NO_WARNINGS" }
         files {
-			"src/win32_module.c",
 			"src/win32_init.c",
 			"src/win32_joystick.c",
 			"src/win32_monitor.c",
@@ -48,7 +41,6 @@ project "GLFW"
 	filter "system:macosx"
 		defines { "_GLFW_COCOA", "GLFW_EXPOSE_NATIVE_COCOA" }
         files {
-			"src/posix_module.c",
 			"src/cocoa_init.m",
 			"src/cocoa_monitor.m",
 			"src/cocoa_window.m",
@@ -63,7 +55,6 @@ project "GLFW"
     filter "system:linux"
         defines { "_GLFW_X11" }
         files {
-			"src/posix_module.c",
 			"src/x11_init.c",
 			"src/x11_monitor.c",
 			"src/x11_window.c",

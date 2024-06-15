@@ -777,7 +777,6 @@ namespace AstralCanvas
                         VkShaderModule vertexShaderModule;
                         if (vkCreateShaderModule(logicalDevice, &vertexCreateInfo, NULL, &vertexShaderModule) != VK_SUCCESS)
                         {
-                            printf("Failed to load vertex shader module\n");
                             localArena.deinit();
                             return -1;
                         }
@@ -790,7 +789,6 @@ namespace AstralCanvas
                         VkShaderModule fragmentShaderModule;
                         if (vkCreateShaderModule(logicalDevice, &fragmentCreateInfo, NULL, &fragmentShaderModule) != VK_SUCCESS)
                         {
-                            printf("Failed to load fragment shader module\n");
                             localArena.deinit();
                             return -1;
                         }
@@ -800,7 +798,6 @@ namespace AstralCanvas
                     }
                     else
                     {
-                        printf("Failed to detect shader type\n");
                         localArena.deinit();
                         return -1;
                     }

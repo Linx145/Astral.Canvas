@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
+# Visual Studio Version 16
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Astral.Canvas", "Astral.Canvas.vcxproj", "{363E6D13-A2FE-E849-6B39-32C7D7B82D26}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Astral.Canvas.Dynamic", "Astral.Canvas.Dynamic.vcxproj", "{C94195EE-35AE-50E9-FEA1-E8466ACD7251}"
