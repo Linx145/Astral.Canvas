@@ -65,13 +65,9 @@ exportC void AstralCanvasWindow_CloseWindow(AstralCanvasWindow ptr)
 {
     ((AstralCanvas::Window *)ptr)->CloseWindow();
 }
-exportC void AstralCanvasWindow_SetMouseState(AstralCanvasWindow ptr, AstralCanvasWindowMouseState state)
+exportC void AstralCanvasWindow_SetMouseVisible(AstralCanvasWindow ptr, bool visible)
 {
-    ((AstralCanvas::Window *)ptr)->SetMouseState((AstralCanvas::WindowMouseState)state);
-}
-exportC AstralCanvasWindowMouseState AstralCanvasWindow_GetMouseState(AstralCanvasWindow ptr)
-{
-    return (AstralCanvasWindowMouseState)(((AstralCanvas::Window *)ptr)->GetMouseState());
+    ((AstralCanvas::Window *)ptr)->SetMouseVisible(visible);
 }
 exportC void AstralCanvasWindow_SetMouseIcon(AstralCanvasWindow ptr, void *iconData, u32 iconWidth, u32 iconHeight, i32 originX, i32 originY)
 {
