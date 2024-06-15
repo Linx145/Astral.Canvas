@@ -1,3 +1,4 @@
+#pragma once
 #include "Linxc.h"
 
 #ifdef __cplusplus
