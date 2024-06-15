@@ -7,6 +7,13 @@
 
 namespace AstralCanvas
 {
+	enum WindowMouseState
+	{
+		WindowMouseState_Normal,
+		WindowMouseState_Disabled,
+		WindowMouseState_Hidden
+	};
+
 	def_delegate(WindowOnTextInputFunction, void, void *window, u32 characterUnicode);
 	def_delegate(WindowOnKeyInteractedFunction, void, void *window, AstralCanvas::Keys key, i32 action);
 	struct Window
@@ -36,7 +43,8 @@ namespace AstralCanvas
 		}
 		void SetWindowTitle(string title);
 		void SetFullscreen(bool value);
-		void SetMouseVisible(bool value);
+		void SetMouseState(WindowMouseState value);
+		WindowMouseState GetMouseState();
 		void SetMouseIcon(void *iconData, u32 iconWidth, u32 iconHeight, i32 originX, i32 originY);
 		void CloseWindow();
 		i32 GetCurrentMonitorFramerate();

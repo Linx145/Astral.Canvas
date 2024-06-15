@@ -283,7 +283,7 @@ bool LinxcParser::Compile(const char* outputDirectory)
                 LinxcIncludedFile includedFile = this->includedFiles.buckets[i].entries.Get(j)->value;
                 if (!this->parsedFiles.Contains(includedFile.includeName))
                 {
-                    string contents = io::ReadFile(GetCAllocator(), includedFile.fullNameAndPath.buffer);
+                    string contents = io::ReadFile(GetCAllocator(), includedFile.fullNameAndPath.buffer, false);
                     if (contents.buffer != NULL)
                     {
                         LinxcParsedFile* result = this->ParseFile(includedFile.fullNameAndPath, includedFile.includeName, contents);
@@ -2304,7 +2304,7 @@ option<collections::vector<LinxcStatement>> LinxcParser::ParseCompoundStmt(Linxc
 
                         if (includedFile != NULL)
                         {
-                            string fileContents = io::ReadFile(GetCAllocator(), includedFile->fullNameAndPath.buffer);
+                            string fileContents = io::ReadFile(GetCAllocator(), includedFile->fullNameAndPath.buffer, false);
                             printf("Parsing file %s\n", includedFile->fullNameAndPath.buffer);
                             LinxcParsedFile* parsedInclude = this->ParseFile(includedFile->fullNameAndPath, includedFile->includeName, fileContents);
                             if (parsedInclude->errors.count > 0)
