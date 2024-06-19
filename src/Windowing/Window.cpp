@@ -103,14 +103,34 @@ namespace AstralCanvas
 		glfwSetWindowShouldClose((GLFWwindow *)this->handle, GLFW_TRUE);
 		deinit();
 	}
-	void Window::SetMouseVisible(bool value)
+	void Window::SetMouseState(WindowMouseState state)
 	{
-		if (value)
+		if (state == AstralCanvas::WindowMouseState_Default)
 		{
 			glfwSetInputMode((GLFWwindow *)handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
-		else 
+		else if (state == AstralCanvas::WindowMouseState_Disabled)
+		{
 			glfwSetInputMode((GLFWwindow *)handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+		else
+		{ 
+			glfwSetInputMode((GLFWwindow *)handle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+		}
+	}
+	WindowMouseState Window::GetMouseState()
+	{
+		i32 mouseState = glfwGetInputMode((GLFWwindow *)handle, GLFW_CURSOR);
+
+		switch (mouseState)
+		{
+			case GLFW_CURSOR_NORMAL:
+				return WindowMouseState_Default;
+			case GLFW_CURSOR_DISABLED:
+				return WindowMouseState_Disabled;
+			default:
+				return WindowMouseState_Hidden;
+		}
 	}
 	void Window::SetMouseIcon(void *iconData, u32 iconWidth, u32 iconHeight, i32 originX, i32 originY)
 	{

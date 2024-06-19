@@ -14,7 +14,7 @@ i32 main(int argc, char **argv)
     IAllocator allocator = GetCAllocator();
 
     ArenaAllocator arena = ArenaAllocator(allocator);
-    string str = io::ReadFile(arena.AsAllocator(), argv[1]);
+    string str = io::ReadFile(arena.AsAllocator(), argv[1], false);
 
     if (str.buffer == NULL)
     {
@@ -30,10 +30,10 @@ i32 main(int argc, char **argv)
                 {
                     continue;
                 }
-                string fullPath = string(arena.AsAllocator(), argv[1]);
-                fullPath.Append("/");
-                fullPath.Append(filesInDir.data[i].buffer);
-                str = io::ReadFile(arena.AsAllocator(), fullPath.buffer);
+                //string fullPath = string(arena.AsAllocator(), argv[1]);
+                //fullPath.Append("/");
+                //fullPath.Append(filesInDir.data[i].buffer);
+                str = io::ReadFile(arena.AsAllocator(), filesInDir.data[i].buffer, false);
 
                 AstralShadercCompileResult result = AstralShaderc_CompileShader(arena.AsAllocator(), str);
                 if (result.errorMessage.buffer != NULL)

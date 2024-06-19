@@ -6,6 +6,13 @@ extern "C"
 {
 #endif
 
+	typedef enum
+	{
+		AstralCanvas_WindowMouseState_Default,
+		AstralCanvas_WindowMouseState_Hidden,
+		AstralCanvas_WindowMouseState_Disabled
+	} AstralCanvas_WindowMouseState;
+
     typedef struct
     {
         i32 X;
@@ -37,7 +44,8 @@ extern "C"
     DynamicFunction void AstralCanvasWindow_SetFullscreen(AstralCanvasWindow ptr, bool value);
     DynamicFunction void AstralCanvasWindow_SetOnKeyInteractCallback(AstralCanvasWindow ptr, AstralCanvasWindowOnKeyInteractedFunction callback);
     DynamicFunction void AstralCanvasWindow_SetOnTextInputCallback(AstralCanvasWindow ptr, AstralCanvasWindowOnTextInputFunction callback);
-    DynamicFunction void AstralCanvasWindow_SetMouseVisible(AstralCanvasWindow ptr, bool visible);
+    DynamicFunction void AstralCanvasWindow_SetMouseState(AstralCanvasWindow ptr, AstralCanvas_WindowMouseState state);
+    DynamicFunction AstralCanvas_WindowMouseState AstralCanvasWindow_GetMouseState(AstralCanvasWindow ptr);
     DynamicFunction void AstralCanvasWindow_SetMouseIcon(AstralCanvasWindow ptr, void *iconData, u32 iconWidth, u32 iconHeight, i32 originX, i32 originY);
     DynamicFunction i32 AstralCanvasWindow_GetCurrentMonitorFramerate(AstralCanvasWindow ptr);
 #ifdef __cplusplus
