@@ -5,7 +5,7 @@
 #include "array.hpp"
 #include <stdio.h>
 #include "vector.hpp"
-#include "allocators.hpp"
+#include "ArenaAllocator.hpp"
 
 #include <sys/stat.h>   // For stat().
 
@@ -138,16 +138,45 @@ namespace io
         return false;
     }
 
+    inline void RecursiveCreateDirectories(const char* finalDirPath)
+    {
+        ArenaAllocator arena = ArenaAllocator(GetCAllocator());
+        IAllocator alloc = arena.AsAllocator();
+
+        collections::Array<string> paths = SplitString(alloc, finalDirPath, '/');
+        if (paths.length <= 1) //C:/ is not a valid file
+        {
+            return;
+        }
+        string currentPath = paths.data[0].Clone(alloc);
+
+        for (usize i = 0; i < paths.length; i++)
+        {
+            if (i > 0)
+            {
+                currentPath.Append("/");
+                currentPath.Append(paths.data[i].buffer);
+            }
+            if (!io::DirectoryExists(currentPath.buffer))
+            {
+                io::NewDirectory(currentPath.buffer);
+            }
+        }
+
+        arena.deinit();
+    }
+
     inline FILE* CreateDirectoriesAndFile(const char* path)
     {
-        IAllocator defaultAllocator = GetCAllocator();
-        collections::Array<string> paths = SplitString(defaultAllocator, path, '/');
+        ArenaAllocator arena = ArenaAllocator(GetCAllocator());
+        IAllocator alloc = arena.AsAllocator();
+        collections::Array<string> paths = SplitString(alloc, path, '/');
         if (paths.length <= 1) //C:/ is not a valid file
         {
             return NULL;
         }
         FILE* file = NULL;
-        string currentPath = paths.data[0].Clone(defaultAllocator);
+        string currentPath = paths.data[0].Clone(alloc);
         for (usize i = 0; i < paths.length; i++)
         {
             if (i > 0)
@@ -170,12 +199,7 @@ namespace io
             }
         }
 
-        currentPath.deinit();
-        for (usize i = 0; i < paths.length; i++)
-        {
-            paths.data[i].deinit();
-        }
-        paths.deinit();
+        arena.deinit();
         return file;
     }
 

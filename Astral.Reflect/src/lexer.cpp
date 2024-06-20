@@ -70,8 +70,15 @@ LinxcToken LinxcTokenizer::TokenizeAdvance()
                             state = Linxc_State_Cr;
                             break;
                         case '"':
-                            result.ID = Linxc_StringLiteral;
-                            state = Linxc_State_StringLiteral;
+                            if (self->prevTokenID == Linxc_Keyword_include)
+                            {
+                                state = Linxc_State_MacroString;
+                            }
+                            else
+                            {
+                                result.ID = Linxc_StringLiteral;
+                                state = Linxc_State_StringLiteral;
+                            }
                             break;
                         case '\'':
                             result.ID = Linxc_CharLiteral;
@@ -615,7 +622,7 @@ LinxcToken LinxcTokenizer::TokenizeAdvance()
                 toBreak = true;
                 break;
             case Linxc_State_MacroString:
-                if (c == '>')
+                if (c == '>' || c == '"')
                 {
                     result.ID = Linxc_MacroString;
                     self->index += 1;

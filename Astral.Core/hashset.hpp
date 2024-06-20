@@ -5,6 +5,10 @@
 #include "Linxc.h"
 #include "vector.hpp"
 
+#ifndef foreach
+#define foreach(instance, iterator) for (auto instance = iterator.Next(); !iterator.completed; instance = iterator.Next())
+#endif
+
 namespace collections
 {
     template <typename T>
@@ -156,6 +160,49 @@ namespace collections
                 }
             }
             return false;
+        }
+
+        struct Iterator
+        {
+            hashset<T> *set;
+            usize i;
+            usize j;
+            bool completed;
+
+            Iterator(hashset<T> *set)
+            {
+                this->set = set;
+                i = 0;
+                j = 0;
+                completed = false;
+            }
+
+            T* Next()
+            {
+                if (i >= set->bucketsCount || completed)
+                {
+                    return NULL;
+                }
+                while (!set->buckets[i].initialized || j >= set->buckets[i].entries.count)
+                {
+                    i++;
+                    if (i >= set->bucketsCount)
+                    {
+                        completed = true;
+                        return NULL;
+                    }
+                    if (set->buckets[i].initialized)
+                    {
+                        j = 0;
+                        break;
+                    }
+                }
+                return &set->buckets[i].entries.ptr[j++];
+            }
+        };
+        inline Iterator GetIterator()
+        {
+            return Iterator(this);
         }
     };
 }

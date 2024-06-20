@@ -328,6 +328,24 @@ struct string
         }
         return strcmp(this->buffer, other.buffer) != 0;
     }
+    inline bool StartsWith(text str)
+    {
+        usize len = strlen(str);
+        if (len > length)
+        {
+            return false;
+        }
+        return memcmp(this->buffer, str, len) == 0;
+    }
+    inline bool EndsWith(text str)
+    {
+        usize len = strlen(str);
+        if (len > length)
+        {
+            return false;
+        }
+        return memcmp(this->buffer + length - len, str, len) == 0;
+    }
 };
 
 struct CharSlice

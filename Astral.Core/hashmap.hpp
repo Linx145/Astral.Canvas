@@ -6,6 +6,10 @@
 #include "vector.hpp"
 #include <stdio.h>
 
+#ifndef foreach
+#define foreach(instance, iterator) for (auto instance = iterator.Next(); !iterator.completed; instance = iterator.Next())
+#endif
+
 namespace collections
 {
     template <typename K, typename V>

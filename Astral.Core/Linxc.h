@@ -14,6 +14,9 @@
 #define exportC extern "C"
 #else
 #define exportC
+#define true 1
+#define false 0
+typedef signed char bool;
 #endif
 
 #ifdef WINDOWS
