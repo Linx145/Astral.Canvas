@@ -24,6 +24,8 @@ extern "C"
     DynamicFunction void AstralCanvasApplication_Run(AstralCanvasApplication app, AstralCanvasUpdateFunction updateFunc, AstralCanvasUpdateFunction drawFunc, AstralCanvasUpdateFunction postEndDrawFunc, AstralCanvasInitFunction initFunc, AstralCanvasDeinitFunction deinitFunc);
     DynamicFunction AstralCanvasGraphics AstralCanvasApplication_GetGraphicsDevice(AstralCanvasApplication ptr);
     DynamicFunction AstralCanvasApplication AstralCanvasApplication_GetInstance();
+    DynamicFunction const char *AstralCanvasApplication_GetClipboardText();
+    DynamicFunction void AstralCanvasApplication_SetClipboardText(const char *text);
 #ifdef __cplusplus
 }
 #endif

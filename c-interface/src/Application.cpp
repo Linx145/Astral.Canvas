@@ -1,33 +1,27 @@
 #include "Astral.Canvas/Application.h"
 #include "Application.hpp"
 
-exportC 
-const char *AstralCanvasApplication_GetApplicationName(AstralCanvasApplication ptr)
+exportC const char *AstralCanvasApplication_GetApplicationName(AstralCanvasApplication ptr)
 {
     return ((AstralCanvas::Application *)ptr)->appName.buffer;
 }
-exportC 
-const char *AstralCanvasApplication_GetEngineName(AstralCanvasApplication ptr)
+exportC const char *AstralCanvasApplication_GetEngineName(AstralCanvasApplication ptr)
 {
     return ((AstralCanvas::Application *)ptr)->engineName.buffer;
 }
-exportC 
-float AstralCanvasApplication_GetFramesPerSecond(AstralCanvasApplication ptr)
+exportC float AstralCanvasApplication_GetFramesPerSecond(AstralCanvasApplication ptr)
 {
     return ((AstralCanvas::Application *)ptr)->framesPerSecond;
 }
-exportC 
-void AstralCanvasApplication_SetFramesPerSecond(AstralCanvasApplication ptr, float frames)
+exportC void AstralCanvasApplication_SetFramesPerSecond(AstralCanvasApplication ptr, float frames)
 {
     ((AstralCanvas::Application *)ptr)->framesPerSecond = frames;
 }
-exportC 
-void AstralCanvasApplication_AddWindow(AstralCanvasApplication ptr, const char *name, i32 width, i32 height, bool resizeable, void *iconData, u32 iconWidth, u32 iconHeight)
+exportC void AstralCanvasApplication_AddWindow(AstralCanvasApplication ptr, const char *name, i32 width, i32 height, bool resizeable, void *iconData, u32 iconWidth, u32 iconHeight)
 {
     ((AstralCanvas::Application *)ptr)->AddWindow(name, width, height, resizeable, iconData, iconWidth, iconHeight);
 }
-exportC 
-AstralCanvasApplication AstralCanvasApplication_Init(const char *appName, const char *engineName, u32 appVersion, u32 engineVersion, float framesPerSecond)
+exportC AstralCanvasApplication AstralCanvasApplication_Init(const char *appName, const char *engineName, u32 appVersion, u32 engineVersion, float framesPerSecond)
 {
     AstralCanvas::ApplicationInit(GetCAllocator(), string(GetCAllocator(), appName), string(GetCAllocator(), engineName), appVersion, engineVersion, framesPerSecond);
 
@@ -53,4 +47,12 @@ exportC AstralCanvasApplication AstralCanvasApplication_GetInstance()
 exportC void AstralCanvasApplication_ResetDeltaTimer(AstralCanvasApplication ptr)
 {
     ((AstralCanvas::Application *)ptr)->ResetDeltaTimer();
+}
+exportC const char *AstralCanvasApplication_GetClipboardText()
+{
+    return AstralCanvas::GetClipboardText();
+}
+exportC void AstralCanvasApplication_SetClipboardText(const char *text)
+{
+    AstralCanvas::SetClipboardText(text);
 }

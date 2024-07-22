@@ -279,4 +279,12 @@ namespace AstralCanvas
                 break;
         }
 	}
+	const char *GetClipboardText()
+	{
+		return glfwGetClipboardString(NULL);
+	}
+	void SetClipboardText(const char *text)
+	{
+		glfwSetClipboardString(NULL, text);
+	}
 }

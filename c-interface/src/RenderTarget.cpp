@@ -65,4 +65,5 @@ exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateWithInputTexture
 exportC void AstralCanvasRenderTarget_Deinit(AstralCanvasRenderTarget ptr)
 {
     ((AstralCanvas::RenderTarget *)ptr)->deinit();
+    free(ptr);
 }

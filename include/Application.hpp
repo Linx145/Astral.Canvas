@@ -38,4 +38,6 @@ namespace AstralCanvas
 
 	Application* ApplicationInit(IAllocator ASTRALCORE_ALLOCATORS, string appName, string engineName, u32 appVersion, u32 engineVersion, float framesPerSecond);
 	Application* GetAppInstance();
+	const char *GetClipboardText();
+	void SetClipboardText(const char *text);
 }
