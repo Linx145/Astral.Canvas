@@ -4,7 +4,7 @@
 
 exportC AstralCanvasTexture2D AstralCanvasRenderTarget_GetTexture(AstralCanvasRenderTarget ptr, usize index)
 {
-    return &((AstralCanvas::RenderTarget *)ptr)->textures.data[index];
+    return ((AstralCanvas::RenderTarget *)ptr)->textures.data[index];
 }
 exportC exportC u32 AstralCanvasRenderTarget_GetWidth(AstralCanvasRenderTarget ptr)
 {
@@ -33,7 +33,7 @@ exportC void AstralCanvasRenderTarget_SetUseStatus(AstralCanvasRenderTarget ptr,
 exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateFromTextures(AstralCanvasTexture2D thisBackendTexture, AstralCanvasTexture2D thisDepthBuffer, bool isBackbuffer)
 {
     AstralCanvasRenderTarget result = GetCAllocator().Allocate(sizeof(AstralCanvas::RenderTarget));
-    *((AstralCanvas::RenderTarget *)result) = AstralCanvas::RenderTarget(GetCAllocator(), *((AstralCanvas::Texture2D*)thisBackendTexture), *((AstralCanvas::Texture2D*)thisDepthBuffer), isBackbuffer);
+    *((AstralCanvas::RenderTarget *)result) = AstralCanvas::RenderTarget(GetCAllocator(), (AstralCanvas::Texture2D*)thisBackendTexture, (AstralCanvas::Texture2D*)thisDepthBuffer, isBackbuffer);
     if (thisBackendTexture != NULL)
         free(thisBackendTexture);
     if (thisDepthBuffer != NULL)
@@ -49,14 +49,10 @@ exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_Create(u32 width, u32 
 exportC AstralCanvasRenderTarget AstralCanvasRenderTarget_CreateWithInputTextures(u32 width, u32 height, AstralCanvasTexture2D* textures, usize numTextures)
 {
     AstralCanvasRenderTarget result = GetCAllocator().Allocate(sizeof(AstralCanvas::RenderTarget));
-    collections::Array<AstralCanvas::Texture2D> arr = collections::Array<AstralCanvas::Texture2D>(GetCAllocator(), numTextures);
+    collections::Array<AstralCanvas::Texture2D *> arr = collections::Array<AstralCanvas::Texture2D *>(GetCAllocator(), numTextures);
     for (usize i = 0; i < numTextures; i++)
     {
-        arr.data[i] = *(AstralCanvas::Texture2D*)textures[i];
-        //each member of textures is allocated on the heap due to the C API.
-        //Thus, since we are transferring ownership to arr, then to RenderTarget,
-        //we need to free the heap allocation for each texture.
-        free(textures[i]);
+        arr.data[i] = (AstralCanvas::Texture2D *)textures[i];
     }
     *((AstralCanvas::RenderTarget *)result) = AstralCanvas::RenderTarget(GetCAllocator(), width, height, arr);
     //dont deinit arr as it's ownership is now transferred to RenderTarget

@@ -161,6 +161,9 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator allocat
 		createInfos.Add(createInfo);
 	}
 
+	VkPhysicalDeviceFeatures physicalDeviceFeatures = VkPhysicalDeviceFeatures{};
+	physicalDeviceFeatures.fillModeNonSolid = true;
+
 	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	deviceCreateInfo.queueCreateInfoCount = (u32)createInfos.count;
@@ -170,6 +173,7 @@ bool AstralCanvasVk_CreateLogicalDevice(AstralVulkanGPU* gpu, IAllocator allocat
 	deviceCreateInfo.enabledLayerCount = 0;
 	deviceCreateInfo.ppEnabledLayerNames = NULL;
 	deviceCreateInfo.pNext = NULL;
+	deviceCreateInfo.pEnabledFeatures = &physicalDeviceFeatures;
 
 	if (vkCreateDevice(gpu->physicalDevice, &deviceCreateInfo, NULL, &gpu->logicalDevice) != VK_SUCCESS)
 	{

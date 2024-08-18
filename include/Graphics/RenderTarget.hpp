@@ -11,7 +11,7 @@ namespace AstralCanvas
         /// All textures that should be rendered to when using this render target. Normally
         /// consists of a color texture and depth buffer, but you may need to attach
         /// more in the case of more complex render programs.
-        collections::Array<Texture2D> textures;
+        collections::Array<Texture2D *> textures;
         /// The width of the target. Equivalent to backendTexture.width
         u32 width;
         /// The height of the target. Equivalent to backendTexture.height
@@ -27,8 +27,8 @@ namespace AstralCanvas
         bool isDisposed;
         bool constructed;
 
-        RenderTarget(IAllocator allocator, u32 width, u32 height, collections::Array<Texture2D> texturesToUse);
-        RenderTarget(IAllocator allocator, Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer);
+        RenderTarget(IAllocator allocator, u32 width, u32 height, collections::Array<Texture2D *> texturesToUse);
+        RenderTarget(IAllocator allocator, Texture2D *thisBackendTexture, Texture2D *thisDepthBuffer, bool isBackbuffer);
         RenderTarget(IAllocator allocator, u32 width, u32 height, ImageFormat imageFormat, ImageFormat depthFormat);
         void deinit();
         void Construct(AstralCanvas::RenderProgram *renderProgram);

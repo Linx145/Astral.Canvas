@@ -24,6 +24,22 @@ namespace AstralCanvas
         this->currentRenderProgram = NULL;
         this->currentRenderTarget = NULL;
     }
+    RenderTarget *Graphics::GetCurrentWindowRendertarget()
+    {
+        switch (GetActiveBackend())
+        {
+            #ifdef ASTRALCANVAS_VULKAN
+            case Backend_Vulkan:
+            {
+                AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)this->currentWindow->swapchain;
+                return &swapchain->renderTargets.data[swapchain->currentImageIndex];
+            }
+            #endif
+            default:
+                THROW_ERR("Unimplemented backend: Graphics GetCurrentWindowRendertarget");
+                break;
+        }
+    }
     void Graphics::AwaitGraphicsIdle()
     {
         switch (GetActiveBackend())
@@ -196,11 +212,11 @@ namespace AstralCanvas
                 AstralCanvasVkTextureToTransition *textures = (AstralCanvasVkTextureToTransition*)malloc(sizeof(AstralCanvasVkTextureToTransition) * renderTarget->textures.length);
                 for (usize i = 0; i < renderTarget->textures.length; i++)
                 {
-                    textures[i].texture = &renderTarget->textures.data[i];
-                    if (renderTarget->textures.data[i].imageFormat > ImageFormat_DepthNone)
+                    textures[i].texture = renderTarget->textures.data[i];
+                    if (textures[i].texture->imageFormat > ImageFormat_DepthNone)
                     {
-                        if (renderTarget->textures.data[i].imageFormat == ImageFormat_Depth24Stencil8
-                        || renderTarget->textures.data[i].imageFormat == ImageFormat_Depth16Stencil8)
+                        if (textures[i].texture->imageFormat == ImageFormat_Depth24Stencil8
+                        || textures[i].texture->imageFormat == ImageFormat_Depth16Stencil8)
                         {
                             textures[i].aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
                         }
@@ -328,7 +344,7 @@ namespace AstralCanvas
                     {
                         for (usize i = 0; i < currentRenderProgram->attachments.count; i++)
                         {
-                            if (renderTarget->textures.data[i].imageFormat < ImageFormat_DepthNone)
+                            if (renderTarget->textures.data[i]->imageFormat < ImageFormat_DepthNone)
                             {
                                 u64 finalImageLayout;
                                 RenderProgramImageAttachment attachmentData = currentRenderProgram->attachments.ptr[i];
@@ -344,7 +360,7 @@ namespace AstralCanvas
                                 {
                                     finalImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
                                 }
-                                renderTarget->textures.data[i].imageLayout = finalImageLayout;
+                                renderTarget->textures.data[i]->imageLayout = finalImageLayout;
                             }  
                         }
                     }

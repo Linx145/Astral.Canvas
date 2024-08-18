@@ -39,6 +39,7 @@ namespace AstralCanvas
 
         Graphics();
 
+        RenderTarget *GetCurrentWindowRendertarget();
         void SetClipArea(Maths::Rectangle newClipArea);
         void SetVertexBuffer(const VertexBuffer *vb, u32 bindingPoint = 0);
         void SetComputeBufferAsVertexBuffer(const ComputeBuffer* computeBuffer, u32 bindingPoint = 0);

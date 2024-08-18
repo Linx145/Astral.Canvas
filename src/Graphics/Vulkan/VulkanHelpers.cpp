@@ -195,7 +195,8 @@ void AstralCanvasVk_TransitionImageLayout(AstralVulkanGPU *gpu, VkCommandBuffer 
                 break;
 
             default:
-                THROW_ERR("Invalid source layout!");
+                printf("Invalid source layout: %u\n", (u32)oldLayout);
+                assert(false);
                 break;
         }
 

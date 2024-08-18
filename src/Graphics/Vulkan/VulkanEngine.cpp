@@ -445,7 +445,7 @@ void AstralCanvasVk_EndDraw(AstralCanvas::Window *window)
 
 		gpu->DedicatedGraphicsQueue.queueMutex.EnterLock();
 		VkResult presentResults = vkQueuePresentKHR(gpu->DedicatedGraphicsQueue.queue, &presentInfo);
-		swapchain->renderTargets.data[swapchain->currentImageIndex].textures.data[0].imageLayout = (u32)VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		swapchain->renderTargets.data[swapchain->currentImageIndex].textures.data[0]->imageLayout = (u32)VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		gpu->DedicatedGraphicsQueue.queueMutex.ExitLock();
 
 		if (presentResults == VK_ERROR_OUT_OF_DATE_KHR || presentResults == VK_SUBOPTIMAL_KHR || onResized)

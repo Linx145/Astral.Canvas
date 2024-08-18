@@ -1,5 +1,11 @@
 #include "Astral.Canvas/Graphics/Graphics.h"
 #include "Graphics/Graphics.hpp"
+#include "Graphics/CurrentBackend.hpp"
+#include "ErrorHandling.hpp"
+
+#ifdef ASTRALCANVAS_VULKAN
+#include "Graphics/Vulkan/VulkanSwapchain.hpp"
+#endif
 
 exportC AstralCanvasRenderProgram AstralCanvasGraphics_GetCurrentRenderProgram(AstralCanvasGraphics ptr)
 {
@@ -8,6 +14,63 @@ exportC AstralCanvasRenderProgram AstralCanvasGraphics_GetCurrentRenderProgram(A
 exportC AstralCanvasRenderTarget AstralCanvasGraphics_GetCurrentRenderTarget(AstralCanvasGraphics ptr)
 {
     return (AstralCanvasRenderTarget)((AstralCanvas::Graphics *)ptr)->currentRenderTarget;
+}
+exportC u32 AstralCanvasGraphics_SwapchainFrameCount(AstralCanvasGraphics ptr)
+{
+    AstralCanvas::Window *win = ((AstralCanvas::Graphics *)ptr)->currentWindow;
+    assert(win != NULL);
+    void *swapchainPtr = win->swapchain;
+    switch (AstralCanvas::GetActiveBackend())
+    {
+        #ifdef ASTRALCANVAS_VULKAN
+        case AstralCanvas::Backend_Vulkan:
+        {
+            AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)swapchainPtr;
+            return swapchain->imageCount; //->renderTargets.data[swapchain->currentImageIndex];
+        }
+        #endif
+        default:
+            THROW_ERR("Unimplemented backend: AstralCanvasGraphics_SwapchainFrameCount");
+            break;
+    }
+}
+exportC u32 AstralCanvasGraphics_GetCurrentSwapchainFrame(AstralCanvasGraphics ptr)
+{
+    void *swapchainPtr = ((AstralCanvas::Graphics *)ptr)->currentWindow->swapchain;
+    switch (AstralCanvas::GetActiveBackend())
+    {
+        #ifdef ASTRALCANVAS_VULKAN
+        case AstralCanvas::Backend_Vulkan:
+        {
+            AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)swapchainPtr;
+            return swapchain->currentImageIndex; //->renderTargets.data[swapchain->currentImageIndex];
+        }
+        #endif
+        default:
+            THROW_ERR("Unimplemented backend: AstralCanvasGraphics_GetCurrentSwapchainFrame");
+            break;
+    }
+}
+exportC AstralCanvasRenderTarget AstralCanvasGraphics_GetSwapchainFrameRenderTarget(AstralCanvasGraphics ptr, u32 index)
+{
+    void *swapchainPtr = (AstralCanvasRenderTarget)((AstralCanvas::Graphics *)ptr)->currentWindow->swapchain;
+    switch (AstralCanvas::GetActiveBackend())
+    {
+        #ifdef ASTRALCANVAS_VULKAN
+        case AstralCanvas::Backend_Vulkan:
+        {
+            AstralVulkanSwapchain *swapchain = (AstralVulkanSwapchain *)swapchainPtr;
+            return &swapchain->renderTargets.data[index]; //->renderTargets.data[swapchain->currentImageIndex];
+        }
+        #endif
+        default:
+            THROW_ERR("Unimplemented backend: AstralCanvasGraphics_GetSwapchainFrameRenderTarget");
+            break;
+    }
+}
+exportC AstralCanvasRenderTarget AstralCanvasGraphics_GetCurrentWindowRendertarget(AstralCanvasGraphics ptr)
+{
+    return (AstralCanvasRenderTarget)((AstralCanvas::Graphics *)ptr)->GetCurrentWindowRendertarget();
 }
 exportC u32 AstralCanvasGraphics_GetCurrentRenderProgramPass(AstralCanvasGraphics ptr)
 {

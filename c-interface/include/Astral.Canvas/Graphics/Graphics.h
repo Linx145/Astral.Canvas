@@ -25,6 +25,10 @@ extern "C"
 
     DynamicFunction AstralCanvasRenderProgram AstralCanvasGraphics_GetCurrentRenderProgram(AstralCanvasGraphics ptr);
     DynamicFunction AstralCanvasRenderTarget AstralCanvasGraphics_GetCurrentRenderTarget(AstralCanvasGraphics ptr);
+    DynamicFunction AstralCanvasRenderTarget AstralCanvasGraphics_GetCurrentWindowRendertarget(AstralCanvasGraphics ptr);
+    DynamicFunction u32 AstralCanvasGraphics_SwapchainFrameCount(AstralCanvasGraphics ptr);
+    DynamicFunction u32 AstralCanvasGraphics_GetCurrentSwapchainFrame(AstralCanvasGraphics ptr);
+    DynamicFunction AstralCanvasRenderTarget AstralCanvasGraphics_GetSwapchainFrameRenderTarget(AstralCanvasGraphics ptr, u32 index);
     DynamicFunction u32 AstralCanvasGraphics_GetCurrentRenderProgramPass(AstralCanvasGraphics ptr);
     DynamicFunction void AstralCanvasGraphics_SetVertexBuffer(AstralCanvasGraphics ptr, const AstralCanvasVertexBuffer vb, u32 bindingPoint);
     DynamicFunction void AstralCanvasGraphics_SetComputeBufferAsVertexBuffer(AstralCanvasGraphics ptr, const AstralCanvasComputeBuffer computeBuffer, u32 bindingPoint);

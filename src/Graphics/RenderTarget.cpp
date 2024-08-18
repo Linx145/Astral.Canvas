@@ -38,7 +38,7 @@ namespace AstralCanvas
         }
         for (usize i = 0; i < this->textures.length; i++)
         {
-            this->textures.data[i].deinit();
+            this->textures.data[i]->deinit();
         }
         this->textures.deinit();
         this->isDisposed = true;
@@ -65,7 +65,7 @@ namespace AstralCanvas
                 VkImageView *imageViews = (VkImageView*)malloc(createInfo.attachmentCount * sizeof(VkImageView));
                 for (usize i = 0; i < createInfo.attachmentCount; i++)
                 {
-                    imageViews[i] = (VkImageView)this->textures.data[i].imageView;
+                    imageViews[i] = (VkImageView)this->textures.data[i]->imageView;
                 }
                 createInfo.pAttachments = imageViews;
 
@@ -96,7 +96,7 @@ namespace AstralCanvas
         }
         this->constructed = true;
     }
-    RenderTarget::RenderTarget(IAllocator allocator, u32 width, u32 height, collections::Array<Texture2D> texturesToUse)
+    RenderTarget::RenderTarget(IAllocator allocator, u32 width, u32 height, collections::Array<Texture2D *> texturesToUse)
     {
         this->allocator = allocator;
         this->textures = texturesToUse;
@@ -108,14 +108,14 @@ namespace AstralCanvas
         this->isBackbuffer = false;
         this->renderTargetHandle = NULL;
     }
-    RenderTarget::RenderTarget(IAllocator allocator, Texture2D thisBackendTexture, Texture2D thisDepthBuffer, bool isBackbuffer)
+    RenderTarget::RenderTarget(IAllocator allocator, Texture2D *thisBackendTexture, Texture2D *thisDepthBuffer, bool isBackbuffer)
     {
         this->allocator = allocator;
-        this->textures = collections::Array<Texture2D>(allocator, 2);
+        this->textures = collections::Array<Texture2D *>(allocator, 2);
         this->textures.data[0] = thisBackendTexture;
         this->textures.data[1] = thisDepthBuffer;
-        this->width = thisBackendTexture.width;
-        this->height = thisBackendTexture.height;
+        this->width = thisBackendTexture->width;
+        this->height = thisBackendTexture->height;
         this->constructed = false;
         this->isDisposed = false;
         this->hasBeenUsedBefore = false;
@@ -132,8 +132,10 @@ namespace AstralCanvas
         this->renderTargetHandle = NULL;
         u8 *bytes = (u8*)calloc(width * height, 4);
         usize textureLength = 1;
-        Texture2D backendTexture = CreateTextureFromData(bytes, width, height, imageFormat, true, false);
-        Texture2D depthBuffer{};
+        Texture2D *backendTexture = (Texture2D *)malloc(sizeof(Texture2D));
+        Texture2D *depthBuffer = NULL;
+
+        *backendTexture = CreateTextureFromData(bytes, width, height, imageFormat, true, false);
 
         if (depthFormat > ImageFormat_DepthNone)
         {
@@ -142,11 +144,12 @@ namespace AstralCanvas
                 depthFormat = ImageFormat_Depth32;
             }
             textureLength++;
-            depthBuffer = CreateTextureFromData(NULL, width, height, depthFormat, true, false);
+            depthBuffer = (Texture2D *)malloc(sizeof(Texture2D));
+            *depthBuffer = CreateTextureFromData(NULL, width, height, depthFormat, true, false);
         }
         free(bytes);
 
-        this->textures = collections::Array<Texture2D>(allocator, textureLength);
+        this->textures = collections::Array<Texture2D *>(allocator, textureLength);
         this->textures.data[0] = backendTexture;
         if (textureLength == 2)
             this->textures.data[1] = depthBuffer;
