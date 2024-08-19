@@ -72,7 +72,7 @@ namespace AstralCanvas
                     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                     if (this->imageFormat >= ImageFormat_DepthNone)
                     {
-                        createInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+                        createInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                     }
                     else
                     {

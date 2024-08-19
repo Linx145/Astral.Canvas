@@ -210,7 +210,13 @@ namespace AstralCanvas
                     else
                     {
                         attachmentDescriptions[i].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-                        attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+                        if (attachmentData.outputType == RenderPassOutput_ToRenderTarget)
+                        {
+                            attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        }
+                        else attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                        
                         if (attachmentData.clearDepth)
                         {
                             attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;

@@ -344,7 +344,18 @@ namespace AstralCanvas
                     {
                         for (usize i = 0; i < currentRenderProgram->attachments.count; i++)
                         {
-                            if (renderTarget->textures.data[i]->imageFormat < ImageFormat_DepthNone)
+                            if (renderTarget->textures.data[i]->imageFormat > ImageFormat_DepthNone)
+                            {
+                                u64 finalImageLayout;
+                                RenderProgramImageAttachment attachmentData = currentRenderProgram->attachments.ptr[i];
+                                if (attachmentData.outputType == RenderPassOutput_ToRenderTarget)
+                                {
+                                    finalImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                                }
+                                else finalImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                                renderTarget->textures.data[i]->imageLayout = finalImageLayout;
+                            }
+                            else
                             {
                                 u64 finalImageLayout;
                                 RenderProgramImageAttachment attachmentData = currentRenderProgram->attachments.ptr[i];
@@ -361,7 +372,7 @@ namespace AstralCanvas
                                     finalImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
                                 }
                                 renderTarget->textures.data[i]->imageLayout = finalImageLayout;
-                            }  
+                            }
                         }
                     }
                     break;
