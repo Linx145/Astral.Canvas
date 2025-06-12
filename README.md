@@ -2,6 +2,9 @@
   <img src="https://raw.githubusercontent.com/Linx145/Astral.Canvas/master/AstralCanvasLogo.png" width="256"/>
 </p>
 
+# Archival Notice
+This repository has been superseded by [this project](https://github.com/Clouds-of-Eternity/LGFX/). It's the same thing but cleaner and cooler!!!!
+
 # Astral.Canvas
 Astral Canvas is a collection of libraries and frameworks for writing graphical apps with Vulkan and Metal, using either C, C++ or C# (Or through self-written bindings, any language that can call C really, which is all of them).
 
